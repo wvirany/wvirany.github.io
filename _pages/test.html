@@ -9,6 +9,7 @@ author_profile: true
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+
 <style>
 .card {
   box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
@@ -28,19 +29,65 @@ img {
 .container {
   padding: 2px 16px;
 }
+
+.tag-cloud {
+  display: inline-block;
+  color: white;
+  padding: 8px 20px;
+  border-radius: 25px;
+  background-color: #292b2d;
+  margin-top: 8px;
+}
 </style>
+
 </head>
 <body>
 
 <h2>Featured Projects</h2>
 
-<div class="card">
-  <img src="/images/Microbiome-Project-Photo.png" alt="Avatar" style="width:10%">
-  <div class="container">
-    <h4><b>John Doe</b></h4> 
-    <p>Machine Learning Microbiome Proj</p> 
+<div class="row">
+    <div class="column">
+        <div class="card">
+            <img src="/images/Microbiome-Project-Photo.png" alt="Avatar" style="width:25%">
+            <div class="container">
+              <h4><b>Machine Learning Microbiome</b></h4> 
+              <p>Skills:
+                <span class="tag-cloud">Python</span>
+                <span class="tag-cloud">R</span>
+                <span class="tag-cloud">Sckit-Learn</span>
+              </p> 
+            </div>
+          </div>
+    </div>
+    <div class="column">
+        <div class="card">
+            <img src="/images/PolyRegression-Project-Photo.png" alt="Avatar" style="width:25%">
+            <div class="container">
+                <h4><b>Poly Regression</b></h4> 
+                <p>Skills:
+                  <span class="tag-cloud">Python</span>
+                  <span class="tag-cloud">Scikit-Learn</span>
+                  <span class="tag-cloud">Other skill</span>
+                </p> 
+            </div>
+          </div>
+    </div>
+    <div class="column">
+        <div class="card">
+            <img src="/images/TimeSeries-Project-Photo.png" alt="Avatar" style="width:25%">
+            <div class="container">
+                <h4><b>Time Series</b></h4> 
+                <p>Skills:
+                  <span class="tag-cloud">MATLAB</span>
+                  <span class="tag-cloud">PCA</span>
+                  <span class="tag-cloud">Time Series</span>
+                </p> 
+            </div>
+          </div>
+    </div>
   </div>
-</div>
+
+
 
 </body>
 </html> 
