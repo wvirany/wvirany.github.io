@@ -11,7 +11,7 @@ redirect_from:
 
 Hello! Welcome to my personal website. I am a student at the University of Colorado Boulder studying applied math with an emphasis in computer science and a minor in physics. I am concurrently completing my B.S and M.S in Applied Mathematics. I am passionate about machine learning, and I love to tinker and build cool things.
 
-<h2>Featured Projects</hr>
+<h2>Featured Projects</h2>
 
 <!-- <h2><a href="/cv/">CV</a></h2>
 
