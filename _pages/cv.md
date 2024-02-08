@@ -7,15 +7,7 @@ redirect_from:
   - /resume
 ---
 
-{% include base_path %}
-
-<div class="card">
-  <img src="img_avatar.png" alt="Avatar" style="width:100%">
-  <div class="container">
-    <h4><b>Test Card</b></h4>
-    <p>p</p>
-  </div>
-</div>
+{% include cv %}
 
 # Education
 
