@@ -7,7 +7,7 @@ redirect_from:
   - /resume
 ---
 
-{% include cv %}
+{% include base_path %}
 
 # Education
 
