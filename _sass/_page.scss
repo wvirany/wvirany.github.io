@@ -87,7 +87,7 @@
   dt {
     margin-top: 1em;
     font-family: $sans-serif;
-    // font-weight: bold;
+    font-weight: bold;
   }
 
   dd {
@@ -152,6 +152,7 @@
 
     .page__title {
       font-size: $type-size-2;
+      font-style: $header-font-family;
 
       @include breakpoint($small) {
         font-size: $type-size-1;
