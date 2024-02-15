@@ -152,7 +152,7 @@
 
     .page__title {
       font-size: $type-size-2;
-      font-style: $header-font-family;
+      font-style: $global-font-family;
 
       @include breakpoint($small) {
         font-size: $type-size-1;
