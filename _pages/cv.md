@@ -9,6 +9,8 @@ redirect_from:
 
 {% include base_path %}
 
+> This page is currently in development
+
 # Education
 
 ---
