@@ -84,11 +84,13 @@
 
   img {
     max-width: 175px;
-    border-radius: 5px;
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 0 rgb(78, 77, 77);
+    transition: 0.3s;
 
     @include breakpoint($large) {
       padding: 5px;
-      border: 1px solid $border-color;
+      border: 0px solid $border-color;
     }
   }
 }
