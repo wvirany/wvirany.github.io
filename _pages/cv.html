@@ -55,14 +55,23 @@ div.cv {
   padding: 8px;
 }
 
+.header {
+    font-size:25px;
+    font-weight:450;
+    padding:8px;
+    color:white;
+}
+
 
 </style>
 </head>
 
 <body>
+
+    <!-- EDUCATION -->
         
     <div class="cv" style="height:180px;">
-        <div style="font-size:25px; font-weight:450; padding:8px; color:white;">Education</div>
+        <div class="header">Education</div>
 
         <div class="row">
             <div class="column left">
@@ -89,8 +98,10 @@ div.cv {
         </div>
     </div>
 
+    <!-- WORK EXPERIENCE -->
+
     <div class="cv" style="height:333px;">
-        <div style="font-size:25px; font-weight:450; padding:8px; color:white;">Work Experience</div>
+        <div class="header">Work Experience</div>
 
         <div class="row">
             <div class="column left">
@@ -138,20 +149,28 @@ div.cv {
 
     </div>
 
-    <!-- 
+    <!-- TALKS -->
 
-    <div class="cv">
-        <div style="font-size:25px; font-weight:450; padding:8px">Projects</div>
+    <div class="cv" style="height:117px;">
+        <div style="font-size:25px; font-weight:450; padding:8px; color:white;">Talks</div>
+        <div>
+        <div class="row">
+            <div class="column left">
+                <a href="/talks/building_neural_net" style="font-weight: 450;">Building a Neural Network from Scratch</a>
+                <br>
+                <i>University of Colorado Boulder - Undergraduate Chapter of SIAM</i>
+            </div>
+            <div class="column right">
+                <span class="label date">2023.11</span>
+            </div>
+        </div>
+        </div>
     </div>
 
-    <div class="cv">
-        <div style="font-size:25px; font-weight:450; padding:8px">Volunteering</div>
-    </div>
-
-    -->
+    <!-- TEACHING -->
 
     <div class="cv">
-        <div style="font-size:25px; font-weight:450; padding:8px">Teaching</div>
+        <div style="font-size:25px; font-weight:450; padding:8px;">Teaching</div>
 
         <div class="row">
             <div class="column left">
@@ -177,21 +196,7 @@ div.cv {
 
     </div>
 
-    <div class="cv" style="height:117px;">
-        <div style="font-size:25px; font-weight:450; padding:8px; color:white;">Talks</div>
-        <div>
-        <div class="row">
-            <div class="column left">
-                <a href="/talks/building_neural_net" style="font-weight: 450;">Building a Neural Network from Scratch</a>
-                <br>
-                <i>University of Colorado Boulder - Undergraduate Chapter of SIAM</i>
-            </div>
-            <div class="column right">
-                <span class="label date">2023.11</span>
-            </div>
-        </div>
-        </div>
-    </div>
+    <!-- COURSWORK -->
 
     <div class="cv">
         <div style="font-size:25px; font-weight:450; padding:8px; color:white;">Coursework</div>
@@ -231,6 +236,8 @@ div.cv {
         <i style="font-size:14px">This is not an exhaustive list, but most of the relevant courses I have taken</i>
         </div>
     </div>
+
+    <!-- SKILLS -->
 
     <div class="cv">
         <div style="font-size:25px; font-weight:450; padding:8px; color:white;">Skills</div>
