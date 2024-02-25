@@ -72,6 +72,11 @@
 .author__avatar {
   display: table-cell;
   vertical-align: top;
+
+  border-radius: 8px;
+  box-shadow: 2px 2px 0 0 rgb(78, 77, 77);
+  transition: 0.3s;
+
   width: 40px;
   // set width only, for non-square avatars
   // height: 36px;
@@ -85,8 +90,6 @@
   img {
     max-width: 175px;
     border-radius: 8px;
-    box-shadow: 2px 2px 0 0 rgb(78, 77, 77);
-    transition: 0.3s;
 
     @include breakpoint($large) {
       padding: 5px;
