@@ -5,6 +5,11 @@ collection: portfolio
 date: 2023-12-15
 ---
 
+#### Walter Virany
+
+---
+
+
 ![microbiome_cover_photo](/images/Microbiome-Project-Photo.png)
 
 The following is a brief report of the project. The full report and source code can be viewed on [GitHub](https://github.com/wvirany/microbiome)
@@ -18,8 +23,13 @@ The data I will be will be analyzing was taken as a part of the Integrative Huma
 
 I begin by performing exploratory data analysis. First, I plot a histogram of the relative species abundance in three healthy samples and three samples corresponding to patients with IBD. I also normalize the data by dividing each feature by its maximum, scaling each feature to a value between zero and one.
 
-![healthy_histogram](/images/histogram_healthy.png)
-![ibd_histogram](/images/histogram_ibd.png)
+<p align="center">
+  <img src="/images/histogram_healthy.png">
+  <img src="/images/histogram_ibd.png">
+</p>
+
+<!-- ![healthy_histogram](/images/histogram_healthy.png)
+![ibd_histogram](/images/histogram_ibd.png) -->
 
 Immediately we can see that the sampels with IBD seem to have a lower species diversity than the healthy samples.
 
