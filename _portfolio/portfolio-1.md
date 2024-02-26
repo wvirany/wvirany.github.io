@@ -63,7 +63,9 @@ Interestingly, ENetCV returned an L1 ration of .1, which leans more towards an L
 
 I want to determine which features to include in my model, so I will train/test the model while varying the percentage of features included in the process based on their levels of importance:
 
-![prediction_vs_percentage](/images/prediction_vs_percentage.png)
+<p align="center">
+  <img src="/images/prediction_vs_percentage.png">
+</p>
 
 It seems like the model with features chosen by Lasso consistently outperforms the one with features chosen by ENet. Furthermore, even with just 10% of the most important features included, the Lasso model still performs well. So, from this point forward I will use the Lasso model.
 
