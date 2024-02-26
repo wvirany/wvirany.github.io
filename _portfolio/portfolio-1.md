@@ -25,6 +25,8 @@ I begin by performing exploratory data analysis. First, I plot a histogram of th
 
 <p align="center">
   <img src="/images/histogram_healthy.png">
+</p>
+<p align="center">
   <img src="/images/histogram_ibd.png">
 </p>
 
@@ -47,7 +49,9 @@ $$
 
 The ROC curve corresponding to the base SVM estimator is shown:
 
-![roc_curve1](/images/roc_curve1.png)
+<p align="center">
+  <img src="/images/roc_curve1.png">
+</p>
 
 This figure shows the ROC curve for the base SVM estimator. Now, I want to perform feature selection on the dataset and see how the model performs on various subsets of the original features. So, I implement two different feature selection methods; Lasso and Elastic Net Regularization. Then, I assess each model's accuracy on different subsets of the features.
 
@@ -63,13 +67,18 @@ I want to determine which features to include in my model, so I will train/test 
 
 It seems like the model with features chosen by Lasso consistently outperforms the one with features chosen by ENet. Furthermore, even with just 10% of the most important features included, the Lasso model still performs well. So, from this point forward I will use the Lasso model.
 
-![lasso_coeffs](/images/lasso_coeffs.png)
+<p align="center">
+  <img src="/images/lasso_coeffs.png">
+</p>
+
 
 This figure demonstrates how the Lasso coefficients change as a function of the regularization parameter. The legend indicates the names of the features included in the model, which are bacterial species found in the gut microbiome. The optimal regularization parameter that is chosen by `LassoCV()` is shown as a vertical line at $\alpha = 10^{-3.5}$.
 
 Next, I implement an SVM on these Lasso coefficients. The following figure shows the resulting ROC curve:
 
-![roc_curve2](/images/roc_curve2.png)
+<p align="center">
+  <img src="/images/roc_curve2.png">
+</p>
 
 
 ## Random Forests
@@ -92,11 +101,16 @@ The next step is to construct a random forest and compare its accuracy to the SV
 
 The following shows the ROC curve for the Random Forest, along with the SVM estimators for comparison.
 
-![roc_curve3](/images/roc_curve3.png)
+
+<p align="center">
+  <img src="/images/roc_curve3.png">
+</p>
 
 The confusion matrices for each estimator are also shown:
 
-![confusion_matrices](/images/confusion_matrices.png)
+<p align="center">
+  <img src="/images/confusion_matrices.png">
+</p>
 
 Evidently, the RF tends to perform the best. This could be due to interactions between the features, which the RF accounts for by decorrelating the trees. Moreover, the RF accounts for the imbalance between the classes. The IBD class has about 3 times as many samples as the healthy class. There also seems to be a certain amount of variability on each run. So, I run each model 20 times and average the AUC, F1, and precision scores.
 
