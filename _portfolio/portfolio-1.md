@@ -5,6 +5,8 @@ collection: portfolio
 date: 2023-12-15
 ---
 
+{% include analytics.html %}
+
 #### Walter Virany
 
 ---

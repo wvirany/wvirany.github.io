@@ -8,6 +8,8 @@ date: 2023-11-16
 # location: "Boulder, CO"
 ---
 
+{% include analytics.html %}
+
 <!-- [![View the presentation here](/images/thumbnail.png)](https://www.youtube.com/watch?v=tXE_exIft0A) -->
 <a href="https://www.youtube.com/watch?v=tXE_exIft0A"><img src="/images/thumbnail.png" width="600"></a>
 
