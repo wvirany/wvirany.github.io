@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    Understanding the Neural Network Gaussian Process | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/posts/nngp/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.a6824bbee0d90d5af09fed9b70395ce7076b615e315037455d903314e96ef91b.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /home
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/posts" >
+                /posts
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/about" >
+                /about
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">Understanding the Neural Network Gaussian Process</h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+      
+      
+      <time datetime="2024-08-20T00:00:00&#43;00:00">August 20, 2024</time>
+      
+
+      
+      &nbsp; · &nbsp;
+      8 min read
+      
+    </p>
+
+  </div>
+
+  
+
+  
+  
+
+  <div class="single-tags">
+    
+    <span>
+      <a href="http://localhost:1313/tags/math/">#Math</a>
+    </span>
+    
+    
+  </div>
+
+  
+  
+
+  
+
+  
+
+  
+
+  <div class="single-content">
+    <p>Despite their overwhelming success in modern machine learning, deep neural networks remain poorly understood from a theoretical perspective. Classical statistical wisdom dictates that overparameterized models (i.e., models with more degrees of freedom than data samples) should overfit noisy data and thus generalize poorly. Yet, even in cases in which deep neural networks fit noisy training data almost perfectly, they still exhibit good generalizability. This contradiction has highlighted a serious gap between the theory and practice of deep learning, motivating the need for a more complete theoretical framework for deep learning.</p>
+<p>An interesting result in the theoretical study of deep learning is the Neural Network Gaussian Process (NNGP), which shows the equivalence between neural networks and Gaussian processes (GPs). Indeed, \cite{neal1996priors} first showed that the distribution over functions represented by neural networks with a single hidden layer converges to a GP in the limit as the number of hidden units is taken to infinity<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>. More recently, \cite{lee2018deep} extended this work to the case of arbitrary depth.</p>
+<p>In this blog, I briefly explain some of the background mathematics necessary in the development of the NNGP. Then, I show that an infinitely wide neural network of any depth is Gaussian process. Previous</p>
+<p>I aim to clarify mathematical arguments by detailing a thorough notation.</p>
+<h4 id="notation">Notation</h4>
+<p>Consider an $L$-Layer neural network, with each layer $l$ consisting of $n_l$ hidden units. Let $\mathbf{x} = (x_1, \dots, x_{n_0})$ denote the input of the network. Then, the forward pass is defined by the following series of computations:</p>
+<p>$$
+\begin{align*}
+\text{Input:} \ \ A_j^{(0)} &amp;= x_j \\
+\text{Pre-activation:} \ \ Z_j^{(l+1)} &amp;= b_j^{(l)} + \sum_{i=0}^{n_l}w_{ji}^{(l)}A_i^{(l)} \\
+\text{Post-activation:} \ \ A_j^{(l+1)} &amp;= h \left( Z_j^{(l+1)} \right) \\
+\text{Output:} \ \ f_j(\mathbf{x}; \theta) &amp;= b_j^{(L)} + \sum_{i=0}^{n_L}w_{ji}^{(L)}A_i^{(L)}
+\end{align*}
+$$</p>
+<p>Here,</p>
+<ul>
+<li>$Z_j^{(l)}$ denotes the $j$th hidden unit in layer $l$ before the activation function,</li>
+<li>$A_j^{(l)}$ denotes the $j$th hidden unit in layer $l$ after the activation function,</li>
+<li>$h(\cdot)$ is some nonlinear activation function,</li>
+<li>and $w_{ji}^{(l)}, b_j^{(l)}$ denote the weights and biases at layer $l$, respectively.</li>
+</ul>
+<p>Often, we write the $f_j(\mathbf{x}; \theta)$ as $f_j(\mathbf{x})$, where it is implied that the output function is parameterized by the vector $\theta$. Similarly, each hidden unit is itself a function of the input <strong>x</strong>, so we can write, e.g., $A_j^{(l)} = A_j^{(l)}(\mathbf{x})$. It is also sometimes convenient to talk about computations involving entire layers instead of individual hidden units. As such, it is common to remove the subscript and denote an entire layer by, e.g., $A^{(l)}$, whereas the corresponding hidden units are denoted $A_j^{(l)}$.</p>
+<p>For the sake of clarity, I will consider the case in which there is only one output unit. Thus, the function represented by the neural network can be written as $f(\mathbf{x})$, where I have removed the subscript $j$. The more general case is a fairly straightforward extension, in which each output unit $f_j(\mathbf{x})$ is itself a GP. The nuances arise in how the output unit is processed; e.g., a classification task in which the prediction is decided by taking the unit with the largest value, corresponding to a probability distribution under the softmax function.</p>
+<p>Finally, if a function $f(x)$ is a GP with mean function $m(x)$ and covariance function $k(x, x^{\prime})$, I will denote this by $f(x) \sim \mathcal{GP}(m, k)$.</p>
+<h4 id="single-layer-neural-networks-as-gaussian-processes">Single-Layer Neural Networks as Gaussian Processes</h4>
+<p>First, we assume the weight and bias parameters are drawn i.i.d. from a Normal distribution with $\mu_b = \mu_w = 0, \sigma_b^2 = 1$, and $\sigma_w^2 = 1/n_l$. Following the notation previously introduced, we begin with the computation of the pre-activation units in the first layer:</p>
+<p>$$
+Z_j^{(1)} = b_j^{(0)} + \sum_{i=1}^{n_0}w_{ji}^{(0)}x_i.
+$$</p>
+<p>Since each $w_{ji}, b_j$ is i.i.d. Normal, then $Z_j^{(1)}$ is i.i.d. Normal<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> with mean</p>
+<p>$$
+\begin{align*}
+\mathbb{E} \left[ Z_j^{(1)} \right] &amp;= \mathbb{E} \left[ b_j^{(0)} + \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i \right] \\
+&amp;= \mathbb{E} \left[ b_j^{(0)} \right] + \sum_{i=1}^{n_0} x_i \mathbb{E} \left[ w_{ji}^{(0)} \right] = 0,
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve used the fact that the mean of each $w_{ji}, b_j$ is zero. Then, the distribution of the pre-activation units in the first layer can be wholly described by the covariance:</p>
+<p>$$
+\begin{align*}
+&amp; \mathbb{E} \left[ Z_j^{(1)}(\mathbf{x}) \, Z_j^{(1)}(\mathbf{x}^{\prime}) \right] = \mathbb{E} \left[ \left( b_j^{(0)} + \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i \right) \left( b_j^{(0)} + \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i^{\prime} \right) \right] \\
+&amp;= \mathbb{E} \left[ b_j^{(0)} \right]^2 + \mathbb{E} \left[ b_j^{(0)} \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i \right] + \mathbb{E} \left[ b_j^{(0)} \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i^{\prime} \right] + \sum_{i=1}^{n_0} \sum_{k=1}^{n_0} x_i , x_k^{\prime} \mathbb{E} \left[ w_{ji}^{(0)} \right] \\
+&amp;= \sigma_b^2 + \mathbb{E} \left[ b_j^{(0)} \right] \mathbb{E} \left[ w_{ji}^{(0)} \right] \sum_{i=1}^{n_0} (x_i + x_i&rsquo;) + \sigma_w^2 \sum_{i=1}^{n_0} \sum_{k=1}^{n_0} x_i , x_k^{\prime}.
+\end{align*}
+$$</p>
+<p>The second term is achieved as a result of the fact that the parameters are i.i.d., and since $\mu_b = \mu_w = 0$, it vanishes. Then, since $\sigma_b^2 = 1$ and $\sigma_w^2 = 1/n_l$, this becomes</p>
+<p>$$
+\mathbb{E} \left[ Z_j^{(1)}(\mathbf{x}) \, Z_j^{(1)}(\mathbf{x}^\prime) \right] = 1 + \frac{1}{n_0} \, \mathbf{x}^\top \mathbf{x}^\prime.
+$$</p>
+<p>We can then compute the post-activation units via</p>
+<p>$$
+A_j^{(1)} = h \left( Z_j^{(1)} \right).
+$$</p>
+<p>The distribution of each $A_j^{(1)}$ for arbitrary activation functions is complicated, and in general it no longer follows a Gaussian distribution. However, we can say that each post-action unit is i.i.d. Then, we compute the output of the single-layer nueral network via another affine transformation:</p>
+<p>$$
+f(\mathbf{x}) = b^{(1)} + \sum_{i=1}^{n_1} w_i^{(1)} \, A_i^{(1)},
+$$</p>
+<p>and since each $A_i^{(1)}$ is i.i.d., then it follows from the Central Limit Theorem (CLT) that $f(\mathbf{x})$ takes a Normal distribution in the limit as $n_1 \to \infty$. Thus, for any finite set of inputs <strong>x</strong>, $f(\mathbf{x})$ will follow a multivariate Normal distribution; this is precisely the definition of a Gaussian process. It follows that</p>
+<p>$$
+f(\mathbf{x}) \sim \mathcal{GP}(m, k),
+$$</p>
+<p>where</p>
+<p>$$
+m(\mathbf{x}) = \mathbf{E} \left[ f(\mathbf{x}) \right] = 0,
+$$</p>
+<p>and</p>
+<p>$$
+\begin{align*}
+k(\mathbf{x}, \mathbf{x}^\prime) &amp;= \text{Cov}{\left( f(\mathbf{x}), f(\mathbf{x}&rsquo;) \right)} \\
+&amp;= \mathbb{E} \left[ \left( b^{(1)} + \sum_{i=1}^{n_1} w_{ji}^{(1)} A_i^{(1)}(\mathbf{x}) \right) \left( b^{(1)} + \sum_{i=1}^{n_1} w_{ji}^{(1)} A_i^{(1)} (\mathbf{x}&rsquo;) \right) \right] \\
+&amp;= \sigma_b^2 + \sigma_w^2 \mathbb{E} \left[ A^{(1)}(\mathbf{x}), A^{(1)}(\mathbf{x}&rsquo;) \right] \\
+&amp;= 1 + \frac{1}{n_1} C(\mathbf{x}, \mathbf{x}^\prime),
+\end{align*}
+$$</p>
+<p>where I have introduced the covariance function $C(\mathbf{x}, \mathbf{x}^\prime)$ as in \cite{neal1996priors}. This covariance function is often difficult to compute, and depends on the specified activation function. See <a href="#comments-on-the-covariance-function">Comments on the Covariance Function</a> for further discussion.</p>
+<h4 id="deep-neural-networks-as-gaussian-processes">Deep Neural Networks as Gaussian Processes</h4>
+<p>The case for neural networks with arbitrary depth can be extended via an argument of mathematical induction. First, the base case follows from the previous section. Then, we assume that $Z_j^{(l)} \sim \mathcal{GP}(0, k^{(l)})$<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> , and that each $Z_j^{(l)}$ are i.i.d. Hence, each $A_j^{(l)}$ are i.i.d. as well. Then, we can compute</p>
+<p>$$
+Z_j^{(l+1)} = b_j^{l} + \sum_{i=1}^{n_l}w_{ji}^{(l)}A_j^{(l)}.
+$$</p>
+<p>Once again, since each $A_j^{(l)}$ are i.i.d., then as $n_l \to \infty$, the CLT implies that $Z_j^{(l+1)}$ will take a Normal distribution. Thus, $Z_j^{(l+1)}$ is also a GP, and we have our result.</p>
+<p>Specifically, the mean function of the corresponding GP is given by $m(\mathbf(x)) = \mathbb{E} \left[ Z_j^{(l+1)} \right]$, and since the weights and biases have mean zero, then $m(\mathbf{x}) = 0$. Then, we have</p>
+<p>$$
+Z_j^{(l+1)} \sim \mathcal{GP}(0, k^{(l+1)}),
+$$</p>
+<p>where</p>
+<p>$$
+\begin{align*}
+k^{(l+1)}(\mathbf{x}, \mathbf{x}^\prime) &amp;= \mathbb{E} \left[ Z_j^{(l+1)} (\mathbf{x}) \, Z_j^{(l+1)}(\mathbf{x}^\prime) \right] \\
+&amp;= 1 + \frac{1}{n_l} \, C\left( A^{(l)}(\mathbf{x}) A^{(l)}(\mathbf{x}^\prime) \right).
+\end{align*}
+$$</p>
+<p>The covariance function of the corresponding GP at each layer is defined recursively, and I restrict discussion of the covariance function to the single-layer case. This is addressed in the following section.</p>
+<h4 id="comments-on-the-covariance-function">Comments on the Covariance Function</h4>
+<p>As was previously alluded to the computation of the covariance function is often difficult to evaluate, and depends on the specifica architecture and choice of activation functions in the neural network. Computin the covariance function involves integrating over the distributions of the weights and biases for each pair of training samples. For many architectures, this requires sophisticated numerical integration techniques, and is often not practical from a computational perspective. Furthermore, this becomes increasingly challenging with larger datasets.</p>
+<p>However, in the case of a single hidden layer, certain choices of activation functions do yield analytic covariance functions. \cite{williams1996computing} gives on such example; the &ldquo;error function&rdquo;, defined by</p>
+<p>$$
+\text{erf } x = \frac{2}{\sqrt{\pi}} \int_0^x e^{-t^2}dt.
+$$</p>
+<p>The error function is related to the cumulative distribution function for the Gaussian distribution. Furthermore, it closely resembles the tanh function, making it a reasonable choice for an activation function in a neural network. The corresponding covariance function is then given by</p>
+<p>$$
+\mathbb{E} \left[ \text{erf } (\mathbf{x}) \, \text{erf } (\mathbf{x}^\prime) \right] = \frac{2}{\sqrt{\pi}} \sin^{-1} \left( \frac{2\mathbf{x}^\top \Sigma \mathbf{x}^\prime}{\sqrt{ \left( 1 + 2\mathbf{x}^\top \Sigma \mathbf{x} \right)  \left( 1 + 2 \mathbf{x}^{\prime\top}\Sigma \mathbf{x}^\prime \right) } } \right),
+$$</p>
+<p>where $\Sigma$ denotes the covariance matrix of the input-to-hidden layer weights (\cite{williams1996computing}). Note that this covariance function is not stationary, i.e., it is not translation invariant, which is often a nice property in kernel functions for GP regression.</p>
+<h4 id="experiments">Experiments</h4>
+<p>In this section, I produce some empirical results to help visualize and understand the NNGP.</p>
+<p>
+
+
+
+
+
+
+
+
+
+
+<figure class="">
+
+    <div>
+        <img loading="lazy" alt="fig:bivariate_distributions" src=" ../../images/nngp/bivariate_distributions.png">
+    </div>
+
+    
+</figure></p>
+<h4 id="references">References</h4>
+<ol>
+<li><a href="https://distill.pub/2019/visual-exploration-gaussian-processes/">Visual exploration of Gaussian Processes</a></li>
+<li><a href="https://lilianweng.github.io/posts/2022-09-08-ntk/">Some math behind the NTK</a></li>
+</ol>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>This could benefit from more explanation of what is meant by &ldquo;distribution of functions represented by NNs&hellip;&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>This follows from the fact that the linear combination of i.i.d. Normal random variables is itself i.i.d. Normal.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>Note that the covariance function of the GP for the units in each layer depends on the activation functions in all the previous layers.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+
+  
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      <p>Powered by
+    <a href="https://gohugo.io/">Hugo</a>
+    and
+    <a href="https://github.com/tomfran/typo">tomfran/typo</a>
+</p>
+
+
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body);"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ]
+    });
+  });
+</script>
+
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+</html>
