@@ -35,7 +35,7 @@
 
 
 
-<link rel="stylesheet" href="/assets/combined.min.a6824bbee0d90d5af09fed9b70395ce7076b615e315037455d903314e96ef91b.css" media="all">
+<link rel="stylesheet" href="/assets/combined.min.821a84fcc511e870d09e6160ff2374c57cdac0ee2fdda0bd69349cf2b707eb6f.css" media="all">
 
 
 
@@ -249,7 +249,7 @@ $$</p>
 <p>The covariance function of the corresponding GP at each layer is defined recursively, and I restrict discussion of the covariance function to the single-layer case. This is addressed in the following section.</p>
 <h4 id="comments-on-the-covariance-function">Comments on the Covariance Function</h4>
 <p>As was previously alluded to the computation of the covariance function is often difficult to evaluate, and depends on the specific architecture and choice of activation functions in the neural network. Computing the covariance function involves integrating over the distributions of the weights and biases for each pair of training samples. For many architectures, this requires sophisticated numerical integration techniques, and is often not practical from a computational perspective. Furthermore, this becomes increasingly challenging with larger datasets.</p>
-<p>However, in the case of a single hidden layer, certain choices of activation functions do yield analytic covariance functions. \cite{williams1996computing} gives on such example; the &ldquo;error function&rdquo;, defined by</p>
+<p>However, in the case of a single hidden layer, certain choices of activation functions do yield analytic covariance functions. \cite{williams1996computing} gives such an example; the &ldquo;error function&rdquo;, defined by</p>
 <p>$$
 \text{erf } x = \frac{2}{\sqrt{\pi}} \int_0^x e^{-t^2}dt.
 $$</p>
@@ -260,25 +260,11 @@ $$</p>
 <p>where $\Sigma$ denotes the covariance matrix of the input-to-hidden layer weights (\cite{williams1996computing}). Note that this covariance function is not stationary, i.e., it is not translation invariant, which is often a nice property in kernel functions for GP regression.</p>
 <h4 id="experiments">Experiments</h4>
 <p>In this section, I produce some empirical results to help visualize and understand the NNGP.</p>
-<p>
-
-
-
-
-
-
-
-
-
-
-<figure class="">
-
-    <div>
-        <img loading="lazy" alt="fig:bivariate_distributions" src=" figures/bivariate_distributions.png">
-    </div>
-
-    
-</figure></p>
+<p>The following figure shows the distribution over network priors for an increasing number of hidden units (network priors being the function represented by the network at initialization, before training). It can be seen that as the size of the hidden layer increases, the distribution converges to a bivariate Normal distribution.</p>
+<figure>
+  <img src="figures/bivariate_distributions.png" alt="Bivariate Distributions" style="width:100%">
+  <figcaption>Figure 1: Convergence of priors to Gaussian processes for single-input networks</figcaption>
+</figure>
 <h4 id="references">References</h4>
 <ol>
 <li><a href="https://distill.pub/2019/visual-exploration-gaussian-processes/">Visual exploration of Gaussian Processes</a></li>
