@@ -35,7 +35,7 @@
 
 
 
-<link rel="stylesheet" href="/assets/combined.min.068bbdd09296f2bb47a5cfc05199e834829f57e0add895e76ca0b160b0305d5d.css" media="all">
+<link rel="stylesheet" href="/assets/combined.min.29e36b2ad2cf7cc7a14f932645b423ea93ce85fdf6f5709b0182d2eeea49a0ec.css" media="all">
 
 
 
@@ -327,17 +327,10 @@ img {
 
 </script>
 
+
 <script>
   
   function updateFigureNumbers() {
-      const figures = document.querySelectorAll('.figure');
-      figures.forEach((figure, index) => {
-          const caption = figure.querySelector('.figure-caption');
-          if (caption) {
-              caption.textContent = caption.textContent.replace(/Figure \d+:/, `Figure ${index + 1}:`);
-          }
-          figure.id = `fig${index + 1}`;
-      });
 
       const figRefs = document.querySelectorAll('.fig-ref');
       figRefs.forEach(ref => {
