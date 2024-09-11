@@ -142,7 +142,7 @@
   <div class="single-content">
     <p>Despite their overwhelming success in modern machine learning, deep neural networks remain poorly understood from a theoretical perspective. Classical statistical wisdom dictates that overparameterized models (i.e., models with more degrees of freedom than data samples) should overfit noisy data and thus generalize poorly. Yet, even in cases in which deep neural networks fit noisy training data almost perfectly, they still exhibit good generalizability. This contradiction has highlighted a serious gap between the theory and practice of deep learning, motivating the need for a more complete theoretical framework.</p>
 <p>An interesting result in the theoretical study of deep learning is the Neural Network Gaussian Process (NNGP), which shows the equivalence between neural networks and Gaussian processes (GPs). Indeed, \cite{neal1996priors} first showed that the prior distribution of functions represented by neural networks with a single hidden layer converges to a GP in the limit as the number of hidden units is taken to infinity<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>. More recently, \cite{lee2018deep} extended this work to the case of deep neural networks.</p>
-<p>In this blog post, I explain the NNGP, reviewing both the work of \cite{neal1996priors} and \cite{lee2018deep}. I aim to clarify the mathematical argumments which lead to their results in a detailed and step-by-step fashion. Then, I show some coding experiments which further support the results.</p>
+<p>In this blog post, I explain the NNGP, reviewing both the work of \cite{neal1996priors} and \cite{lee2018deep}. I aim to clarify the mathematical argumments which lead to their results in a detailed and step-by-step fashion. Then, I show some empirical results which further exemplify the NNGP.</p>
 <h3 id="gaussian-processes">Gaussian Processes</h3>
 <p>Informally, a GP is defined as a collection of random variables such that any finite collection of which take a multivariate Normal distribution. GPs can be thought of as an infinite-dimensional generalization of the multivariate Normal distribution, i.e., it is a distribution over functions with a continuous domain.</p>
 <p>In machine learning, most supervised learning techniques take a parametric modeling approach, in which the task is to estimate the parameters of a function class given observations from the distribution<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> . GPs, on the other hand, take a non-parametric Bayesian approach, in which minimal assumptions are made about the underlying distribution of data. This permits a more flexible approach for characterizing said distribution, whether it be by regression, clustering, or otherwise.</p>
@@ -249,10 +249,16 @@ $$</p>
 <h3 id="experiments">Experiments</h3>
 <p>Figure 1 shows the distribution over network priors for an increasing number of hidden units (network priors being the function represented by the network at initialization, before training). Each point represents a neural network prior (i.e., no training) with a single hidden layer, a single input, and a single output, with 1, 3, and 10 tanh hidden units, respectively from left to right. The parameters were drawn from a Normal distribution with $\sigma_b^{(0)} = \sigma_w^{(0)} =5$, $\sigma_b^{(1)} = 0.1$, and $\sigma_w^{(1)} = 1/\sqrt{N}$, where $N$ is the number of units in the hidden layer. The horizontal axis is the output of the network when the input is -0.2; the vertical axis is the output of the network when the input is 0.4.</p>
 <figure>
-  <img src="figures/bivariate_distributions.png" alt="Bivariate Distributions" style="width:100%">
+  <img src="figures/bivariate_distributions.png" alt="Bivariate Distributions" style="width:100%; ">
   <figcaption>Figure 1: Convergence of priors to Gaussian processes for single-input networks. Results reproduced from \cite{neal1996priors}.</figcaption>
 </figure>
 <p>Recalling the definition of a GP, if $f \sim \mathcal{GP}$, then $f(-0.2)$ and $f(0.4)$ take a joint bivariate Normal distribution. It can be seen that as the size of the hidden layer increases, the distribution of priors converges to a bivariate Normal distribution.</p>
+<p>Figure 2 shows the training process of an ensemble of 50 neural networks. Each pink line represents a single neural network in the ensemble, and the dark red line shows the mean of the ensemble. The shaded blue region shows an interval of two standard deviations about the mean.</p>
+<figure>
+  <img src="figures/nn_ensemble.gif" alt="NN Ensemble" style="width:100%">
+  <figcaption>Figure 2: Ensemble of neural networks is a Gaussian process</figcaption>
+</figure>
+<p>At initialization, the ensemble is a zero-mean Gaussian process.</p>
 <p>All of the code used to make these plots can be found at <a href="https://github.com/wvirany/NNGP">github.com/wvirany/NNGP</a>.</p>
 <h3 id="conclusion">Conclusion</h3>
 <h3 id="references">References</h3>
@@ -267,7 +273,7 @@ $$</p>
 <p>Here, &ldquo;the prior distribution of functions represented by neural networks&rdquo; refers to the fact that a neural network represents a function, and at initialization, the parameters which characterize that function are each drawn from a distribution. Hence, the function itself is drawn from a joint distribution of all its parameters.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:2">
-<p>For example, this correspondings to solving the least squares regression problem, which gives the intercept and slope parameters of the line which best fits some set of observations.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>For example, this correspondings to solving the least squares regression problem, in which the function class consists of all affine functions, and the parameters are the slope and intercept of the line which best fits some set of observations.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:3">
 <p>As we will see later, it is necessary to define the variance of the weight parameters as $\sigma_w^2 = 1/n_l$ so that when we take the number of hidden units to infinity, the sum over all these units will converge.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
