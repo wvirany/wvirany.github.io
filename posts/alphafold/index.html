@@ -35,7 +35,7 @@
 
 
 
-<link rel="stylesheet" href="/assets/combined.min.821a84fcc511e870d09e6160ff2374c57cdac0ee2fdda0bd69349cf2b707eb6f.css" media="all">
+<link rel="stylesheet" href="/assets/combined.min.f2f437bc3a78a57f4a4cdeadc29f4b1f35352f94cb2dcfb22c81fea7cebd85ea.css" media="all">
 
 
 
@@ -120,7 +120,7 @@
       
       
       
-      <time datetime="2023-10-03T00:00:00&#43;00:00">October 3, 2023</time>
+      <time datetime="2024-09-03T00:00:00&#43;00:00">September 3, 2024</time>
       
 
       
@@ -134,36 +134,55 @@
   
 
   
-  
-
-  <div class="single-tags">
-    
-    <span>
-      <a href="http://localhost:1313/tags/biology/">#Biology</a>
-    </span>
-    
-    
-    <span>
-      <a href="http://localhost:1313/tags/from-scratch/">#From Scratch</a>
-    </span>
-    
-    
-  </div>
-
-  
-  
-
-  
 
   
 
   
 
   <div class="single-content">
-    <p>post</p>
-<p>this is a post</p>
-<h2 id="post">Post?</h2>
+    
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Figure Referencing System</title>
+    <style>
+        .figure {
+            text-align: center;
+            margin-bottom: 1em;
+        }
+        .figure img {
+            max-width: 100%;
+            height: auto;
+        }
+        .figure-caption {
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
 
+<h1>Sample Blog Post with Figure Referencing</h1>
+
+<p>This is a sample paragraph that references <a href="#fig1" class="fig-ref">Figure 1</a>. You can click on the reference to jump to the figure.</p>
+
+<p></p>
+
+<div id="fig1" class="figure">
+    <img src="/api/placeholder/400/300" alt="Sample Figure">
+    <p class="figure-caption">Figure 1: This is a sample figure caption.</p>
+</div>
+
+<p>Here's another paragraph referencing <a href="#fig2" class="fig-ref">Figure 2</a>.</p>
+
+<div id="fig2" class="figure">
+    <img src="/api/placeholder/400/300" alt="Another Sample Figure">
+    <p class="figure-caption">Figure 2: This is another sample figure caption.</p>
+</div>
+
+</body>
+</html>
     
   </div>
 
@@ -179,18 +198,18 @@
 
         <div class="single-pagination-prev">
             
-        </div>
-
-        <div class="single-pagination-next">
-            
-            <div class="single-pagination-container-next">
+            <div class="single-pagination-container-prev">
+                <div class="single-pagination-text">←</div>
                 <div class="single-pagination-text">
                     <a href="/posts/nngp/">
                         Understanding the Neural Network Gaussian Process
                     </a>
                 </div>
-                <div class="single-pagination-text">→</div>
             </div>
+            
+        </div>
+
+        <div class="single-pagination-next">
             
         </div>
 
@@ -277,5 +296,34 @@
   setTheme();
 
 </script>
+
+<script>
+  
+  function updateFigureNumbers() {
+      const figures = document.querySelectorAll('.figure');
+      figures.forEach((figure, index) => {
+          const caption = figure.querySelector('.figure-caption');
+          if (caption) {
+              caption.textContent = caption.textContent.replace(/Figure \d+:/, `Figure ${index + 1}:`);
+          }
+          figure.id = `fig${index + 1}`;
+      });
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
 
 </html>

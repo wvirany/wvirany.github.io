@@ -37,7 +37,7 @@
 
 
 
-<link rel="stylesheet" href="/assets/combined.min.8550cbc92ad425bdbe3bdc73727c03665f5b99e43671c8dc6ebf79577498aa1c.css" media="all">
+<link rel="stylesheet" href="/assets/combined.min.29e36b2ad2cf7cc7a14f932645b423ea93ce85fdf6f5709b0182d2eeea49a0ec.css" media="all">
 
 
 
@@ -201,5 +201,27 @@
   setTheme();
 
 </script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
 
 </html>
