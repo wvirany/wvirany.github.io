@@ -35,7 +35,7 @@
 
 
 
-<link rel="stylesheet" href="/assets/combined.min.21c8c428eaa5526b0eeb8711e7d5b7ae76e1e4e2157c1f7fd51a4b910fa9523b.css" media="all">
+<link rel="stylesheet" href="/assets/combined.min.c5b19f349890ba8c8308e8d948f1754211fca49303531d62bb79927877c7df0e.css" media="all">
 
 
 
@@ -138,7 +138,7 @@
 <p>In this blog post, I explain the NNGP, reviewing the works of both <a href="https://doi.org/10.1007/978-1-4612-0745-0_2">Neal [1996]</a> and <a href="https://arxiv.org/pdf/1711.00165">Lee et al. [2018]</a>. I aim to clarify the mathematical argumments which lead to their results in a detailed and step-by-step fashion. Then, I show some empirical results which further exemplify the NNGP.</p>
 <h3 id="gaussian-processes">Gaussian Processes</h3>
 <p>Informally, a GP is defined as a collection of random variables such that any finite collection of which take a multivariate Normal distribution. GPs can be thought of as an infinite-dimensional generalization of the multivariate Normal distribution, i.e., it is a distribution over functions with a continuous domain.</p>
-<p>In machine learning, most supervised learning techniques take a parametric modeling approach, in which the task is to estimate the parameters of a function class given observations from the distribution<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> . GPs, on the other hand, take a non-parametric Bayesian approach, in which minimal assumptions are made about the underlying distribution of data. This permits a more flexible model for characterizing said distribution, whether it be by regression, clustering, or otherwise.</p>
+<p>In machine learning, most supervised learning techniques take a parametric modeling approach, in which the task is to estimate the parameters of a function class given observations from the distribution<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup>. GPs, on the other hand, take a non-parametric Bayesian approach, in which minimal assumptions are made about the underlying distribution of data. This permits a more flexible model for characterizing said distribution, whether it be by regression, clustering, or otherwise.</p>
 <p>For a more thorough explanation of GPs, I highly recommend <a href="https://distill.pub/2019/visual-exploration-gaussian-processes/">this blog post</a>.</p>
 <h3 id="notation">Notation</h3>
 <p>Consider an $L$-Layer neural network, with each layer $l$ consisting of $n_l$ hidden units. Let $\mathbf{x} = (x_1, \dots, x_{n_0})$ denote the input of the network. Then, the forward pass is defined by the following series of computations:</p>
@@ -162,11 +162,11 @@ $$</p>
 <p>For the sake of clarity, I will consider the case in which there is only one output unit. Thus, the function represented by the neural network can be written as $f(\mathbf{x})$, where I have removed the subscript $j$. The more general case is a fairly straightforward extension, in which each output unit $f_j(\mathbf{x})$ is itself a GP. The nuances arise in how the output unit is processed; e.g., a classification task in which the prediction is decided by taking the unit with the largest value, corresponding to a probability distribution under the softmax function.</p>
 <p>Finally, if a function $f(x)$ is a GP with mean function $m(x)$ and covariance function $k(x, x^{\prime})$, I will denote this by $f(x) \sim \mathcal{GP}(m, k)$.</p>
 <h3 id="single-layer-neural-networks-as-gaussian-processes">Single-Layer Neural Networks as Gaussian Processes</h3>
-<p>First, we assume the weight and bias parameters are drawn i.i.d. from a Normal distribution, with $\mu_b = \mu_w = 0, \sigma_b^2 = 1$, and $\sigma_w^2 = 1/n_l$ <sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> . Following the notation previously introduced, we begin with the computation of the pre-activation units in the first layer:</p>
+<p>First, we assume the weight and bias parameters are drawn i.i.d. from a Normal distribution, with $\mu_b = \mu_w = 0, \sigma_b^2 = 1$, and $\sigma_w^2 = 1/n_l$<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup>. Following the notation previously introduced, we begin with the computation of the pre-activation units in the first layer:</p>
 <p>$$
 Z_j^{(1)} = b_j^{(0)} + \sum_{i=1}^{n_0}w_{ji}^{(0)}x_i.
 $$</p>
-<p>Since each $w_{ji}, b_j$ is i.i.d. Normal, then $Z_j^{(1)}$ is i.i.d. Normal<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> with mean</p>
+<p>Since each $w_{ji}, b_j$ is i.i.d. Normal, then $Z_j^{(1)}$ is i.i.d. Normal<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> with mean</p>
 <p>$$
 \begin{align*}
 \mathbb{E} \left[ Z_j^{(1)} \right] &amp;= \mathbb{E} \left[ b_j^{(0)} + \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i \right] \\
@@ -178,7 +178,7 @@ $$</p>
 \begin{align*}
 &amp; \mathbb{E} \left[ Z_j^{(1)}(\mathbf{x}) \, Z_j^{(1)}(\mathbf{x}^{\prime}) \right] = \mathbb{E} \left[ \left( b_j^{(0)} + \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i \right) \left( b_j^{(0)} + \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i^{\prime} \right) \right] \\
 &amp;= \mathbb{E} \left[ b_j^{(0)} \right]^2 + \mathbb{E} \left[ b_j^{(0)} \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i \right] + \mathbb{E} \left[ b_j^{(0)} \sum_{i=1}^{n_0} w_{ji}^{(0)} x_i^{\prime} \right] + \sum_{i=1}^{n_0} \sum_{k=1}^{n_0} x_i , x_k^{\prime} \mathbb{E} \left[ w_{ji}^{(0)} \right] \\
-&amp;= \sigma_b^2 + \mathbb{E} \left[ b_j^{(0)} \right] \mathbb{E} \left[ w_{ji}^{(0)} \right] \sum_{i=1}^{n_0} (x_i + x_i&rsquo;) + \sigma_w^2 \sum_{i=1}^{n_0} \sum_{k=1}^{n_0} x_i , x_k^{\prime}.
+&amp;= \sigma_b^2 + \mathbb{E} \left[ b_j^{(0)} \right] \mathbb{E} \left[ w_{ji}^{(0)} \right] \sum_{i=1}^{n_0} (x_i + x_i^\prime) + \sigma_w^2 \sum_{i=1}^{n_0} \sum_{k=1}^{n_0} x_i , x_k^{\prime}.
 \end{align*}
 $$</p>
 <p>The second term is achieved as a result of the fact that the parameters are i.i.d., and since $\mu_b = \mu_w = 0$, it vanishes. Then, since $\sigma_b^2 = 1$ and $\sigma_w^2 = 1/n_l$, this becomes</p>
@@ -204,9 +204,9 @@ $$</p>
 <p>and</p>
 <p>$$
 \begin{align*}
-k(\mathbf{x}, \mathbf{x}^\prime) &amp;= \text{Cov}{\left( f(\mathbf{x}), f(\mathbf{x}&rsquo;) \right)} \\
-&amp;= \mathbb{E} \left[ \left( b^{(1)} + \sum_{i=1}^{n_1} w_{ji}^{(1)} A_i^{(1)}(\mathbf{x}) \right) \left( b^{(1)} + \sum_{i=1}^{n_1} w_{ji}^{(1)} A_i^{(1)} (\mathbf{x}&rsquo;) \right) \right] \\
-&amp;= \sigma_b^2 + \sigma_w^2 \mathbb{E} \left[ A^{(1)}(\mathbf{x}), A^{(1)}(\mathbf{x}&rsquo;) \right] \\
+k(\mathbf{x}, \mathbf{x}^\prime) &amp;= \text{Cov}{\left( f(\mathbf{x}), f(\mathbf{x}^\prime) \right)} \\
+&amp;= \mathbb{E} \left[ \left( b^{(1)} + \sum_{i=1}^{n_1} w_{ji}^{(1)} A_i^{(1)}(\mathbf{x}) \right) \left( b^{(1)} + \sum_{i=1}^{n_1} w_{ji}^{(1)} A_i^{(1)} (\mathbf{x}^\prime) \right) \right] \\
+&amp;= \sigma_b^2 + \sigma_w^2 \mathbb{E} \left[ A^{(1)}(\mathbf{x}), A^{(1)}(\mathbf{x}^\prime) \right] \\
 &amp;= 1 + \frac{1}{n_1} C(\mathbf{x}, \mathbf{x}^\prime),
 \end{align*}
 $$</p>
