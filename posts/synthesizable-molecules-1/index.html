@@ -228,6 +228,11 @@ We start by defining <code>Molecule</code> and <code>Reaction</code> classes:</p
 </span></span><span style="display:flex;"><span>        <span style="color:#008000"># Return the reactions specified by the given indices</span>
 </span></span><span style="display:flex;"><span>        <span style="color:#00f">return</span> [self.reactions[i] <span style="color:#00f">for</span> i <span style="color:#00f">in</span> indices] 
 </span></span></code></pre></div><h3 id="postfix-notation-of-synthesis">Postfix Notation of Synthesis</h3>
+<p>For a guide to reactions in RDKit, I recommend these:</p>
+<ol>
+<li><a href="https://github.com/rdkit/rdkit-tutorials/blob/master/notebooks/003_SMARTS_ReactionsExamples.ipynb">https://github.com/rdkit/rdkit-tutorials/blob/master/notebooks/003_SMARTS_ReactionsExamples.ipynb</a></li>
+<li><a href="https://www.rdkit.org/docs/GettingStartedInPython.html#chemical-reactions">https://www.rdkit.org/docs/GettingStartedInPython.html#chemical-reactions</a></li>
+</ol>
 <h3 id="representing-molecules-as-graphs">Representing Molecules as Graphs</h3>
 <p>The transformer architecture which we will develop later encodes molecular graph representations.
 Here, I show a simple example of how we represent molecules as graphs.</p>
@@ -342,17 +347,17 @@ Let&rsquo;s see how this encoder layer works <sup id="fnref:3"><a href="#fn:3" 
 </span></span><span style="display:flex;"><span>        x = self.norm2(x)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>        <span style="color:#00f">return</span> x
-</span></span></code></pre></div><p>This is just a conventional encoder layer as defined in [Vaswani et al., <a href="https://arxiv.org/pdf/1706.03762">2017</a>, with a multi-head self-attention mechanism, followed by an MLP, with layer normalization and residual connections in between. This just takes our embedding vectors as input, and returns vectors of the same shape:</p>
+</span></span></code></pre></div><p>This is just a conventional encoder layer as defined in <a href="https://arxiv.org/pdf/1706.03762">Vaswani et al., [2017]</a>, with a multi-head self-attention mechanism, followed by an MLP, with layer normalization and residual connections in between. This just takes our embedding vectors as input, and returns vectors of the same shape:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>d_model = 8
 </span></span><span style="display:flex;"><span>encoder_layer = EncoderLayer(d_model=d_model, nhead=2)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>output = layer(atoms)
-</span></span></code></pre></div><p>where we used the <code>atoms</code> tensor from the previous example. Now, the output is the same shape as the original embedded representation:</p>
+</span></span></code></pre></div><p>Here, we used the <code>atoms</code> tensor from the previous example. Now, the output is the same shape as the original embedded representation:</p>
 <pre tabindex="0"><code>Output shape: torch.Size([3, 8])
 </code></pre><p>All that&rsquo;s left is to stack these encoder layers in a sequence.
 We put this together in the following <code>GraphEncoder</code> class:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">class</span> <span style="color:#2b91af">GraphEncoder</span>(nn.Module):
-</span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> __init__(self, num_atom_classes=100, num_bond_classes, dim=8, n_layers):
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> __init__(self, num_atom_classes=100, num_bond_classes=5, dim=8, n_layers=2, n_heads=2):
 </span></span><span style="display:flex;"><span>        super().__init__()
 </span></span><span style="display:flex;"><span>        self.atom_emb = nn.Embedding(num_atom_classes, dim, padding_idx=0)
 </span></span><span style="display:flex;"><span>        self.bond_emb = nn.Embedding(num_bond_classes, dim, padding_idx=0)
@@ -363,7 +368,7 @@ We put this together in the following <code>GraphEncoder</code> class:</p>
 </span></span><span style="display:flex;"><span>            nhead=n_heads,
 </span></span><span style="display:flex;"><span>            batch_first=<span style="color:#00f">True</span>
 </span></span><span style="display:flex;"><span>        )
-</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Stack encoder layers in sequence of n_layers</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Stack encoder layers in sequence</span>
 </span></span><span style="display:flex;"><span>        self.transformer = nn.TransformerEncoder(
 </span></span><span style="display:flex;"><span>            encoder_layer,
 </span></span><span style="display:flex;"><span>            num_layers=n_layers
