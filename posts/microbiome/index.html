@@ -691,11 +691,9 @@ The classifier will be a voting classifier consisting of several models: XGBoost
 </span></span><span style="display:flex;"><span>                            })
 </span></span></code></pre></div><p>Next, I&rsquo;m going to train two instances of this classifier: one trained on the top 100 features, and one trained on the top 20 features.</p>
 <p>The pipeline for each of the classifiers is defined as follows:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>models = [lgbm, xgb, cat, rf_vote]
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span><span style="color:#008000"># Pipeline for model trained on top k features</span>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#008000"># Pipeline for model trained on top k features</span>
 </span></span><span style="display:flex;"><span>vote = VotingClassifier(
-</span></span><span style="display:flex;"><span>    estimators=[(<span style="color:#a31515">&#39;lgbm&#39;</span>, lgbm), (<span style="color:#a31515">&#39;xgb&#39;</span>, xgb), (<span style="color:#a31515">&#39;cat&#39;</span>, cat), (<span style="color:#a31515">&#39;rf&#39;</span>, rf)],
+</span></span><span style="display:flex;"><span>    estimators=[(<span style="color:#a31515">&#39;lgbm&#39;</span>, lgbm), (<span style="color:#a31515">&#39;xgb&#39;</span>, xgb), (<span style="color:#a31515">&#39;cat&#39;</span>, cat), (<span style="color:#a31515">&#39;rf&#39;</span>, rf_vote)],
 </span></span><span style="display:flex;"><span>    voting=<span style="color:#a31515">&#39;soft&#39;</span>,
 </span></span><span style="display:flex;"><span>    weights = [2, 1, 1, .5]
 </span></span><span style="display:flex;"><span>)
@@ -707,7 +705,7 @@ The classifier will be a voting classifier consisting of several models: XGBoost
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span><span style="color:#008000"># Pipeline for model trained on 20 features</span>
 </span></span><span style="display:flex;"><span>vote_20 = VotingClassifier(
-</span></span><span style="display:flex;"><span>    estimators=[(<span style="color:#a31515">&#39;lgbm&#39;</span>, lgbm), (<span style="color:#a31515">&#39;xgb&#39;</span>, xgb), (<span style="color:#a31515">&#39;cat&#39;</span>, cat), (<span style="color:#a31515">&#39;rf&#39;</span>, rf)],
+</span></span><span style="display:flex;"><span>    estimators=[(<span style="color:#a31515">&#39;lgbm&#39;</span>, lgbm), (<span style="color:#a31515">&#39;xgb&#39;</span>, xgb), (<span style="color:#a31515">&#39;cat&#39;</span>, cat), (<span style="color:#a31515">&#39;rf&#39;</span>, rf_vote)],
 </span></span><span style="display:flex;"><span>    voting=<span style="color:#a31515">&#39;soft&#39;</span>,
 </span></span><span style="display:flex;"><span>    weights = [2, 1, 1, .5]
 </span></span><span style="display:flex;"><span>)
