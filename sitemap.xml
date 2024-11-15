@@ -14,12 +14,12 @@
     <loc>http://localhost:1313/posts/microbiome/</loc>
     <lastmod>2023-12-14T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/why/</loc>
-  </url><url>
     <loc>http://localhost:1313/about/</loc>
   </url><url>
     <loc>http://localhost:1313/g-xxxxxxxxx/</loc>
   </url><url>
     <loc>http://localhost:1313/tags/</loc>
+  </url><url>
+    <loc>http://localhost:1313/why/</loc>
   </url>
 </urlset>
