@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Vq-Vae on Walter Virany</title>
+    <link>http://localhost:1313/tags/vq-vae/</link>
+    <description>Recent content in Vq-Vae on Walter Virany</description>
+    <generator>Hugo</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 09 Dec 2024 00:00:00 +0000</lastBuildDate>
+    <atom:link href="http://localhost:1313/tags/vq-vae/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Learning Representations of Proteins</title>
+      <link>http://localhost:1313/posts/vq-vae/</link>
+      <pubDate>Mon, 09 Dec 2024 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/vq-vae/</guid>
+      <description>In this blog, I build a VQ-VAE for for protein structure tokenization which learns meaningful representations of proteins.&#xA;Variational Autoencoders First, I&amp;rsquo;ll start with an overview of Variational Autoencoders (VAE), as the VQ-VAE is a natural extension.&#xA;A VAE consists of two main components: an encoder and a decoder network. The encoder network projects samples into a low-dimensional latent space1, which usually takes the form of a standard Gaussian, whereas the decoder network reconstructs data samples from these low-dimensional representations.</description>
+    </item>
+  </channel>
+</rss>
