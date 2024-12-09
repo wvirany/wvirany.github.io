@@ -22,5 +22,12 @@
       <guid>http://localhost:1313/posts/microbiome/</guid>
       <description>The human microbiome is a data rich ecosystem, which is generally known to have strong associations with host phenotypes (i.e., the set of observable characteristics of an organism). Yet, the extents of these relationships are not yet deeply understood. Until recently, the computing capabilities necessary to thoroughly analyze human microbiome data were severely lacking. However, due to novel advancements in sequencing technologies and data analysis techniques, there now exist a plethora of data, along with robust statistical tools, which can be leveraged to gain valuable insights into the impact of the human microbiome on overall health.</description>
     </item>
+    <item>
+      <title></title>
+      <link>http://localhost:1313/posts/bayes_opt/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/bayes_opt/</guid>
+      <description>&#xD;Background Goal is to maximize some function $f$, i.e., find $$ \begin{align*} x^* \in \arg \max_{x \in \mathcal{X}} \end{align*} $$&#xA;$f$ need not be analytic (i.e., can&amp;rsquo;t write it down), nor computable - we just need some access to information at specified points </description>
+    </item>
   </channel>
 </rss>
