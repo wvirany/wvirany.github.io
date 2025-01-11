@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+     | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/resources/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.c5b19f349890ba8c8308e8d948f1754211fca49303531d62bb79927877c7df0e.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+    
+    
+    
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /home
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/about" >
+                /about
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/why" >
+                /why?
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title"></h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div class="single-content">
+    <p>Some useful resources roughly organized by topic</p>
+<h2 id="machine-learning-blogs">Machine Learning Blogs</h2>
+<h3 id="bayesian-optimization">Bayesian Optimization</h3>
+<ul>
+<li><a href="https://krasserm.github.io/2018/03/21/bayesian-optimization/">Bayesian Optimization Tutorial, Martin Krasser</a></li>
+</ul>
+<h3 id="gaussian-processes">Gaussian Processes</h3>
+<ul>
+<li>
+<p><a href="https://krasserm.github.io/2018/03/19/gaussian-processes/">Gaussian Process Regression Tutorial, Martin Krasser</a></p>
+</li>
+<li>
+<p><a href="https://krasserm.github.io/2020/12/12/gaussian-processes-sparse/">Sparse Gaussian Processes, Martin Krasser</a></p>
+</li>
+</ul>
+<h2 id="cheminformatics-tools">Cheminformatics Tools</h2>
+<ul>
+<li>
+<p><a href="https://greglandrum.github.io/rdkit-blog/posts/2023-01-18-fingerprint-generator-tutorial.html#additional-information-explaining-bits">RDKit FingerprintGenerator Tutorial</a></p>
+</li>
+<li>
+<p><a href="https://docs.datamol.io/stable/index.html">datamol</a>
+A useful RDKit wrapper for handling molecules</p>
+</li>
+</ul>
+<h2 id="textbooks">Textbooks</h2>
+<ul>
+<li>
+<p><a href="http://gaussianprocess.org/gpml/chapters/RW.pdf">Gaussian Processes for Machine Learning, Rasmussen &amp; Williams</a></p>
+</li>
+<li>
+<p><a href="https://bayesoptbook.com/">Bayesian Optimization Book, Garnett</a></p>
+</li>
+</ul>
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
+
+</html>

@@ -23,11 +23,18 @@
       <description>The human microbiome is a data rich ecosystem, which is generally known to have strong associations with host phenotypes (i.e., the set of observable characteristics of an organism). Yet, the extents of these relationships are not yet deeply understood. Until recently, the computing capabilities necessary to thoroughly analyze human microbiome data were severely lacking. However, due to novel advancements in sequencing technologies and data analysis techniques, there now exist a plethora of data, along with robust statistical tools, which can be leveraged to gain valuable insights into the impact of the human microbiome on overall health.</description>
     </item>
     <item>
+      <title></title>
+      <link>http://localhost:1313/resources/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/resources/</guid>
+      <description>Some useful resources roughly organized by topic&#xA;Machine Learning Blogs Bayesian Optimization Bayesian Optimization Tutorial, Martin Krasser Gaussian Processes Gaussian Process Regression Tutorial, Martin Krasser&#xA;Sparse Gaussian Processes, Martin Krasser&#xA;Cheminformatics Tools RDKit FingerprintGenerator Tutorial&#xA;datamol A useful RDKit wrapper for handling molecules&#xA;Textbooks Gaussian Processes for Machine Learning, Rasmussen &amp;amp; Williams&#xA;Bayesian Optimization Book, Garnett</description>
+    </item>
+    <item>
       <title>About</title>
       <link>http://localhost:1313/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/about/</guid>
-      <description>I recently graduated from the University of Colorado with a B.S. in applied mathematics as well as minors in computer science and physics.&#xD;My interests lie broadly in machine learning, statistics, and optimization, with applications in biology and the life sciences.&#xD;Updates&#xD;15 Oct 2024&#xA;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Starting a research internship at Mila with Prof. Jian Tang 23 Jun 2024&#xA;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Participating in RIPS at IPAM for Summer 2024&#xA;9 May 2024</description>
+      <description>I recently graduated from the University of Colorado with a B.S. in applied mathematics as well as minors in computer science and physics.&#xD;My interests lie broadly in machine learning, statistics, and optimization, with applications in biology and the life sciences.&#xD;Updates&#xD;10 Jan 2025&#xA;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Presented at JMM 2025&#xA;15 Oct 2024&#xA;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Starting a research internship at Mila with Prof. Jian Tang 23 Jun 2024&#xA;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;&amp;nbsp;Participating in RIPS at IPAM for Summer 2024</description>
     </item>
     <item>
       <title>Why the blog?</title>
