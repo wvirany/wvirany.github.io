@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    Some math behind the Gaussian distribution | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/posts/gaussian/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.c5b19f349890ba8c8308e8d948f1754211fca49303531d62bb79927877c7df0e.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+    
+    
+    
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /blog
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/me" >
+                /me
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/why" >
+                /why?
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">Some math behind the Gaussian distribution</h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+      
+      
+      <time datetime="2025-03-03T00:00:00&#43;00:00">March 3, 2025</time>
+      
+
+      
+      &nbsp; · &nbsp;
+      5 min read
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div class="single-content">
+    <style>
+  details {
+    border: 1px solid black;
+    border-radius: 8px;
+    padding: 0.5em 0.5em 0;
+    margin-bottom: 1em;
+  }
+  
+  summary {
+    font-weight: bold;
+    margin: -0.5em -0.5em 0;
+    padding: 0.5em;
+    cursor: pointer;
+    border-bottom: 1px solid #aaa;
+    border-radius: 8px 8px 0 0;
+  }
+  
+  details[open] summary {
+    border-bottom: 1px solid #aaa;
+  }
+  
+  details[open] {
+    padding: 0.5em;
+  }
+  
+  .example-content {
+    margin-top: 1em;
+  }
+</style>
+<p>The Gaussian distribution is</p>
+<p>but, despite its ubiquity in ML, I have frequently found myself in a state somewhere between <em>discomfort</em> and <em>panic</em> each time I am faced with the task of manipulating it.</p>
+<p>In this blog, I begin by reasoning about the shape and behavior of the Gaussian distribution in multiple dimensions. I then derive some useful formulas, such as conditioning, marginalization, and Bayes&rsquo; rule with Gaussians. I aim to provide thoroughness in the math, taking particular care to clearly articulate the concepts which gave me trouble upon a first, second, or sometimes third reading. Along the way, I also provide some examples; some in math, some in code.</p>
+<h2 id="properties-of-the-gaussian-distribution">Properties of the Gaussian distribution</h2>
+<p>In this section we&rsquo;ll start by considering some basic properties of the Gaussian distribution. First, we&rsquo;ll show that surfaces on which the likelihood is constant form ellipsoids. Then, we&rsquo;ll conclude that the multivariate Gaussian distribution is indeed normalized, making it a valid probability distribution. Finally, we&rsquo;ll consider the first- and second-order moments of the multivariate Gaussian distribution in order to provide an interpretation of its parameters.</p>
+<p>We write the Gaussian distribution for a random vector $\x \in \R^d$ as</p>
+<p>$$
+\normal(\x \mid \mu, \Sigma) = \frac{1}{(2\pi)^{d/2} \lvert \Sigma \rvert^{1/2}}\exp\left( -\frac{1}{2} (\x - \mu)\T\Sigma^{-1}(\x - \mu)\right),
+$$</p>
+<p>where $\bmu \in \R^d$ is the mean vector and $\Sigma \in \R^{d\times d}$ is the covariance matrix. The quadratic form in the exponent is known as the <em>Mahalanobis distance</em>, defined</p>
+<p>$$
+\begin{equation}
+\Delta^2 = (\x - \mu)\T\Sigma^{-1}(\x-\bmu).
+\end{equation}
+$$</p>
+<p>This is often nicer to work with when manipulating the Gaussian, as opposed to the exponential function.</p>
+<p>Since the covariance matrix $\Sigma$ is real and symmetric, we can perform <a href="#eigenvalue-decomposition">eigenvalue decomposition</a> to write it in the form</p>
+<p>$$
+\Sigma = \sum_{i=1}^d\lambda_i\u_i\u_i\T,
+$$</p>
+<p>where $\{\u_i\}_{i=1}^d$ are eigenvectors of $\Sigma$, and $\{\lambda_i\}_{i=1}^d$ are the corresponding eigenvalues. Note that we can choose the eigenvectors to be orthonormal (see ), i.e., <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>
+$$
+\u_i\T\u_j = \delta_{ij}.
+$$
+Moreover, we can easily write the inverse of the covariance matrix as
+$$
+\Sigma\inv = \sum_{i=1}^d\frac{1}{\lambda_i}\u_i\u_i\T,
+$$</p>
+<p>Substituting this into $(1)$, we get</p>
+<p>$$
+\begin{align*}
+\Delta^2 &amp;= \sum_{i=1}^d \frac{1}{\lambda_i}(\x - \bmu)\T\u_i\u_i\T(\x - \bmu) \\
+&amp;= \sum_{i=1}^d\frac{y_i^2}{\lambda_i},
+\end{align*}
+$$</p>
+<p>where we&rsquo;ve introduced
+$$
+y_i = \u_i\T(\x - \bmu),
+$$
+or
+$$
+\y = \U(\x - \bmu),
+$$
+where $\U$ is the matrix whose rows are given by $\u_i\T$. Note that $\U$ is an orthogonal matrix, so $\U\U\T = \I,$ and thus $\U\T = \U\inv$. The set $\{y_i\}$ can then be seen as a transformed coordinate system, shifted by $\bmu$ and rotated by $\U$.<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></p>
+<p>All of the dependence of the Gaussian on $\x$ is determined by $\Delta^2$. Thus, it is constant on surfaces for which $\Delta^2$ is constant. Then, let
+$$
+\Delta^2 = \sum_{i=1}^d\frac{y_i^2}{\lambda_i} = r
+$$
+for some constant $r$. This defines the equation of an ellipsoid in $d$ dimensions. For example, if $d=2,$ we have the equation
+$$
+\frac{y_1^2}{\lambda_1} + \frac{y_2^2}{\lambda_2} = r,
+$$
+which gives a 2d ellipse centered at the origin with semi-major and semi-minor axes given by $\sqrt{\lambda_1r}$ and $\sqrt{\lambda_2r}$.</p>
+<details>
+<p>  <summary>Example</summary></p>
+</details>
+<p>Next, our goal is to show that the multivariate Gaussian distribution is normalized. Let&rsquo;s consider the Gaussian in the new coordinate system ${y_i}$. To transform from $\x$-space to $\y$-space, we use the <a href="#change-of-variables">change of variables formula</a>, given by
+$$
+\begin{align*}
+p_y(\y) &amp;= p_x(\x)\lvert \J \rvert \
+&amp;= p_x(g(\y))\lvert \J \rvert,
+\end{align*}
+$$
+where $\x = g(\y)$ defines the transformation. Here, we have the Jacobian $\J$, whose elements are given by
+$$
+J_{ij} = \frac{\partial x_i}{\partial y_j}.
+$$
+The relationship between $\x$ and $\y$ is given by
+$$
+\y = \U(\x - \bmu),
+$$
+or
+$$
+\x = \U\T\y + \bmu.
+$$
+Thus, the derivative of $\x$ with respect to $\y$ is given by $\U\T$, hence the Jacobian is given by
+$$
+\J = \U\T,
+$$
+or
+$$
+J_{ij} = U_{ji}.
+$$Then, to find the determinant of the Jacobian, we have
+$$
+\begin{align*}
+\lvert \J \rvert ^2&amp;= \lvert \U\T \rvert ^2 \\
+&amp;= \lvert \U\T \rvert \lvert \U \rvert \\
+&amp;= \lvert \U\T\U \rvert \\
+&amp;= \lvert \I \rvert \\
+&amp;= 1.
+\end{align*}
+$$
+Thus, $\lvert \J \rvert = 1$, making our transformation
+$$
+p_y(\y) = p_x(g(\y)).
+$$
+Then, the Gaussian in terms of $\y$ is given by
+$$
+\begin{align*}
+p_y(\y) &amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\exp\left( -\frac{1}{2} (\x - \bmu)\T\Sigma\inv(\x - \bmu) \right).
+\end{align*}
+$$
+First, it&rsquo;s useful to show that
+$$
+\begin{align*}
+\lvert \Sigma \rvert &amp;= \lvert \U\T\Lambda\U \rvert \\
+&amp;= \lvert \U\T \rvert \lvert \Lambda \rvert \lvert \U \rvert \\
+&amp;= \lvert \Lambda \rvert \\
+&amp;= \prod_{i=1}^d \lambda_i,
+\end{align*}
+$$
+hence
+$$
+\frac{1}{\lvert \Sigma \rvert^{1/2}} = \prod_{i=1}^d \frac{1}{\sqrt{\lambda_i}}.
+$$
+Examining at the term in the exponent, we have
+$$
+\begin{align*}
+(\x - \bmu)\T\Sigma\inv(\x - \bmu)  &amp;= (\U\T\y)\T \Sigma\inv(\U\T\y) \\
+&amp;= \y\T\U (\U\T\Lambda\U)\inv \U\T\y \\
+&amp;= \y\T\U \U\inv\Lambda (\U\T)\inv \U\T\y \\
+&amp;= \y\T\Lambda\y.
+\end{align*}
+$$
+Then,
+$$
+\begin{align*}
+p_y(\y) &amp;= \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert ^{1/2}} \exp \left( -\frac{1}{2} \y\T\Lambda\y \right) \\
+&amp;= \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert ^{1/2}} \exp \left( -\frac{1}{2} \sum_{i=1}^d \frac{y_i^2}{\lambda_i} \right).
+\end{align*}
+$$
+Using our expression for the determinant of the covariance matrix, and noting exponent of a sum becomes a product of exponents, we have
+$$
+p_y(\y) = \prod_{i=1}^d \frac{1}{\sqrt{2\pi\lambda_i}} \exp \left( -\frac{y_i^2}{2\lambda_i} \right).
+$$
+Then,
+$$
+\begin{align*}
+\int_\y p_y(\y) d\y &amp;= \prod_{i=1}^d \int_{y_i}  \frac{1}{\sqrt{2\pi\lambda_i}} \exp \left( -\frac{y_i^2}{2\lambda_i} \right) dy_i.
+\end{align*}
+$$
+We see that each element of the product is just a univariate Gaussian over $y_i$ with variance $\lambda_i$, each of which integrates to 1, showing that $p_y(\y)$, and thus $p_x(\x)$ is indeed normalized.</p>
+<p>Finally, we will examine the first and second moments of the Gaussian.</p>
+<h2 id="appendix">Appendix</h2>
+<h3 id="eigenvalue-decomposition">Eigenvalue decomposition</h3>
+<h3 id="change-of-variables">Change of variables</h3>
+<h3 id="the-schur-complement">The Schur complement</h3>
+<h3 id="completing-the-square">Completing the square</h3>
+<h3 id="short-proofs">Short proofs</h3>
+<ol>
+<li>Show that if a matrix $\A$ is real and symmetric, then its eigenvalues are real, and the eigenvectors can be chosen to form an orthonormal set.</li>
+<li>Show that the inverse of a symmetric matrix is symmetric. We&rsquo;ll use this to argue that the precision matrix $\Lambda$ is symmetric.</li>
+</ol>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>Here I&rsquo;ve used the Kronecker delta for notational simplicity:
+$$
+\delta_{ij} = \begin{cases}
+1 &amp;\ i=j, \\
+0 &amp;\ i\neq j.
+\end{cases}
+$$&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>Note that, since $\U$ is an orthogonal matrix, a linear transformation defined by $\U$ preserves the length of the vector which it transforms, and thus is either a rotation, reflection, or a combination of both.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body);"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      macros: {
+        "\\R": "\\mathbb{R}",
+        "\\C": "\\mathbb{C}",
+        "\\Z": "\\mathbb{Z}",
+        "\\N": "\\mathbb{N}",
+        "\\Q": "\\mathbb{Q}",
+        "\\EE": "\\mathbb{E}",
+        "\\x": "\\mathbf{x}",
+        "\\X": "\\mathbf{X}",
+        "\\y": "\\mathbf{y}",
+        "\\z": "\\mathbf{z}",
+        "\\u": "\\mathbf{u}",
+        "\\U": "\\mathbf{U}",
+        "\\I": "\\mathbf{I}",
+        "\\A": "\\mathbf{A}",
+        "\\J": "\\mathbf{J}",
+        "\\bmu": "\\boldsymbol{\\mu}",
+        "\\T": "^{\\top}",
+        "\\inv": "^{-1}",
+        "\\normal": "\\mathcal{N}",
+        "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
+        "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
+      }
+    });
+  });
+</script>
+
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
+
+</html>

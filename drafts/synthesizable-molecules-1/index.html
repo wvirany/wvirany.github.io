@@ -72,14 +72,14 @@
       
         <p class="small ">
             <a href="/" >
-                /home
+                /blog
             </a>
         </p>
         
       
         <p class="small ">
-            <a href="/about" >
-                /about
+            <a href="/me" >
+                /me
             </a>
         </p>
         
@@ -539,7 +539,22 @@ We&rsquo;ll simplify this detail; instead by accounting for bond information by 
       delimiters: [
         { left: "$$", right: "$$", display: true },
         { left: "$", right: "$", display: false }
-      ]
+      ],
+      macros: {
+        "\\R": "\\mathbb{R}",
+        "\\C": "\\mathbb{C}",
+        "\\Z": "\\mathbb{Z}",
+        "\\N": "\\mathbb{N}",
+        "\\Q": "\\mathbb{Q}",
+        "\\EE": "\\mathbb{E}",
+        "\\x": "\\mathbf{x}",
+        "\\y": "\\mathbf{y}",
+        "\\z": "\\mathbf{z}",
+        "\\X": "\\mathbf{X}",
+        "\normal": "\\mathcal{N}",
+        "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
+        "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
+      }
     });
   });
 </script>
