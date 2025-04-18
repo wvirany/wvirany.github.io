@@ -412,7 +412,7 @@ $$</p>
   src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
 
 <script defer
-  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
   onload="renderMathInElement(document.body);"></script>
 
 <script>
@@ -420,22 +420,54 @@ $$</p>
     renderMathInElement(document.body, {
       delimiters: [
         { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false }
+        { left: "$", right: "$", display: false },
+        { left: "\[", right: "\]", display: true}
       ],
+      trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
       macros: {
+        "\\eqref": "\\href{###1}{(\\text{#1})}",
+        "\\ref": "\\href{###1}{\\text{#1}}",
+        "\\label": "\\htmlId{#1}{}",
         "\\R": "\\mathbb{R}",
+        "\\bR": "\\mathbf{R}",
         "\\C": "\\mathbb{C}",
         "\\Z": "\\mathbb{Z}",
         "\\N": "\\mathbb{N}",
         "\\Q": "\\mathbb{Q}",
-        "\\EE": "\\mathbb{E}",
+        "\\E": "\\mathbb{E}",
+        "\\cov":"\\operatorname{cov}",
         "\\x": "\\mathbf{x}",
+        "\\X": "\\mathbf{X}",
+        "\\w": "\\mathbf{w}",
         "\\y": "\\mathbf{y}",
         "\\z": "\\mathbf{z}",
-        "\\X": "\\mathbf{X}",
-        "\normal": "\\mathcal{N}",
+        "\\u": "\\mathbf{u}",
+        "\\U": "\\mathbf{U}",
+        "\\I": "\\mathbf{I}",
+        "\\A": "\\mathbf{A}",
+        "\\a": "\\mathbf{a}",
+        "\\B": "\\mathbf{B}",
+        "\\b": "\\mathbf{b}",
+        "\\D": "\\mathbf{D}",
+        "\\M": "\\mathbf{M}",
+        "\\m": "\\mathbf{m}",
+        "\\bC": "\\mathbf{C}",
+        "\\J": "\\mathbf{J}",
+        "\\L": "\\mathbf{L}",
+        "\\bS": "\\mathbf{S}",
+        "\\bmu": "\\boldsymbol{\\mu}",
+        "\\T": "^{\\top}",
+        "\\inv": "^{-1}",
+        "\\Norm": "\\mathcal{N}",
+        "\\nll": "\\text{NLL}",
         "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
         "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
+        "\\diag": "\\operatorname{diag}",
+        "\\tr": "\\operatorname{tr}",
+        "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
+        "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
+        "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\ml": "_\\text{ML}",
       }
     });
   });

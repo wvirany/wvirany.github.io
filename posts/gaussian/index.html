@@ -128,7 +128,7 @@
 
       
       &nbsp; · &nbsp;
-      5 min read
+      34 min read
       
     </p>
 
@@ -139,16 +139,74 @@
   
 
   
+  <aside class="toc">
+    <p><strong>Table of contents</strong></p>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#properties-of-the-gaussian">Properties of the Gaussian</a>
+      <ul>
+        <li><a href="#normalization">Normalization</a></li>
+        <li><a href="#moments-of-the-gaussian">Moments of the Gaussian</a></li>
+      </ul>
+    </li>
+    <li><a href="#conditioning">Conditioning</a></li>
+    <li><a href="#marginalization">Marginalization</a></li>
+    <li><a href="#bayes-rule-for-linear-gaussian-systems">Bayes&rsquo; rule for linear Gaussian systems</a></li>
+    <li><a href="#maximum-likelihood-estimation">Maximum likelihood estimation</a></li>
+    <li><a href="#bayesian-inference">Bayesian inference</a>
+      <ul>
+        <li><a href="#unknown-mean-known-variance-univariate-case">Unknown mean, known variance (univariate case)</a></li>
+        <li><a href="#unknown-mean-known-variance-multivariate-case">Unknown mean, known variance (multivariate case)</a></li>
+        <li><a href="#known-mean-unknown-variance-univariate-case">Known mean, unknown variance (univariate case)</a></li>
+        <li><a href="#known-mean-unknown-variance-multivariate-case">Known mean, unknown variance (multivariate case)</a></li>
+        <li><a href="#unknown-mean-unknown-variance-univariate-case">Unknown mean, unknown variance (univariate case)</a></li>
+        <li><a href="#unknown-mean-unknown-variance-multivariate-case">Unknown mean, unknown variance (multivariate case)</a></li>
+      </ul>
+    </li>
+    <li><a href="#references-and-further-reading">References and further reading</a></li>
+    <li><a href="#appendix">Appendix</a>
+      <ul>
+        <li><a href="#eigenvalue-decomposition">Eigenvalue decomposition</a></li>
+        <li><a href="#change-of-variables">Change of variables</a></li>
+        <li><a href="#sum-and-product-rules-of-probability">Sum and product rules of probability</a></li>
+        <li><a href="#the-schur-complement">The Schur complement</a></li>
+        <li><a href="#completing-the-square">Completing the square</a></li>
+        <li><a href="#matrix-derivatives">Matrix derivatives</a></li>
+        <li><a href="#short-proofs">Short proofs</a></li>
+      </ul>
+    </li>
+  </ul>
+</nav>
+  </aside>
+  
 
   
 
   <div class="single-content">
-    <style>
+    <!-- #### TO DO:
+- Fix formatting
+- Fix equation numbers
+- Examples
+- Fill in appendix, proofs
+- Discussion of Mahalanobis distance, Z-score, reconcile with example 1
+- Discussion of conjugate priors, what they are and why we want to use them (because it makes finding an analytical form of the posterior easy)
+- Comment about our frequent strategy of removing constants from sums in the exponent because they just become multiplicative scalars, which we account for add the end by normalizing
+- Interpreting the moments!
+- Double-check all results
+- Tops of partials cut off (e.g., jacobian, matrix derivative rules)
+- Conditioning: Add the other forms of the conditional params?
+- Add all the results at the top for quick reference
+- In "moments": show the formula for the second moment of a univariate Gaussian, and reference it properly (whether it's a footnote or appendix)
+- Sum and product rule of probability in appendix + references to them
+- Proper way to reference derivative rules for MLE section
+ -->
+<style>
   details {
     border: 1px solid black;
     border-radius: 8px;
-    padding: 0.5em 0.5em 0;
-    margin-bottom: 1em;
+    padding: 0.5em 0.5em 0em;
+    margin-bottom: 2em;
+    margin-top: 2em;
   }
   
   summary {
@@ -162,169 +220,927 @@
   
   details[open] summary {
     border-bottom: 1px solid #aaa;
+    margin-bottom: 0;
   }
   
-  details[open] {
-    padding: 0.5em;
-  }
-  
-  .example-content {
-    margin-top: 1em;
+  details p {
+    padding-top: 0.1em;
   }
 </style>
-<p>The Gaussian distribution is</p>
-<p>but, despite its ubiquity in ML, I have frequently found myself in a state somewhere between <em>discomfort</em> and <em>panic</em> each time I am faced with the task of manipulating it.</p>
-<p>In this blog, I begin by reasoning about the shape and behavior of the Gaussian distribution in multiple dimensions. I then derive some useful formulas, such as conditioning, marginalization, and Bayes&rsquo; rule with Gaussians. I aim to provide thoroughness in the math, taking particular care to clearly articulate the concepts which gave me trouble upon a first, second, or sometimes third reading. Along the way, I also provide some examples; some in math, some in code.</p>
-<h2 id="properties-of-the-gaussian-distribution">Properties of the Gaussian distribution</h2>
-<p>In this section we&rsquo;ll start by considering some basic properties of the Gaussian distribution. First, we&rsquo;ll show that surfaces on which the likelihood is constant form ellipsoids. Then, we&rsquo;ll conclude that the multivariate Gaussian distribution is indeed normalized, making it a valid probability distribution. Finally, we&rsquo;ll consider the first- and second-order moments of the multivariate Gaussian distribution in order to provide an interpretation of its parameters.</p>
+<p>Despite its ubiquity, I have frequently found myself in a state somewhere between <em>discomfort</em> and <em>panic</em> each time I am faced with the task of manipulating the Gaussian distribution, particularly in multiple dimensions. So, I&rsquo;ve taken the opportunity to spend some time with the Gaussian in an attempt to overcome this aversion.</p>
+<p>In this blog, I work through detailed derivations of key results involving the Gaussian which are important foundations for many topics in machine learning. I&rsquo;ll focus on the multivariate Gaussian distribution, beginning by reasoning about its shape and properties in high dimensions. Then, I derive some useful formulas, such as conditioning, marginalization, and Bayes&rsquo; rule. Finally, I show two methods for estimating the parameters of a Gaussian from data; maximum likelihood estimation and Bayesian inference. I also include several examples along the way; some in math, some in code, and some in both!</p>
+<h2 id="properties-of-the-gaussian">Properties of the Gaussian</h2>
+<p>In this section, I&rsquo;ll start by considering some basic properties of the Gaussian distribution. First, I&rsquo;ll show that surfaces on which the likelihood is constant form ellipsoids. Then, we&rsquo;ll see that the multivariate Gaussian distribution is indeed normalized, making it a valid probability distribution. Finally, we&rsquo;ll consider the first- and second-order moments of the multivariate Gaussian distribution in order to provide an interpretation of its parameters.</p>
 <p>We write the Gaussian distribution for a random vector $\x \in \R^d$ as</p>
 <p>$$
-\normal(\x \mid \mu, \Sigma) = \frac{1}{(2\pi)^{d/2} \lvert \Sigma \rvert^{1/2}}\exp\left( -\frac{1}{2} (\x - \mu)\T\Sigma^{-1}(\x - \mu)\right),
+\begin{equation*}
+\Norm(\x \mid \bmu, \Sigma) = \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert^{1/2}}\exp\left( -\frac{1}{2} (\x - \bmu)\T\Sigma\inv(\x - \bmu)\right),
+\end{equation*}
 $$</p>
-<p>where $\bmu \in \R^d$ is the mean vector and $\Sigma \in \R^{d\times d}$ is the covariance matrix. The quadratic form in the exponent is known as the <em>Mahalanobis distance</em>, defined</p>
+<p>where $\bmu \in \R^d$ is the mean vector and $\Sigma \in \R^{d\times d}$ is the covariance matrix. It&rsquo;s often nicer to work with the quadratic form in the exponent, which we define</p>
 <p>$$
-\begin{equation}
-\Delta^2 = (\x - \mu)\T\Sigma^{-1}(\x-\bmu).
+\begin{equation}\label{eq:mahalanobis}
+\Delta^2 = (\x - \bmu)\T\Sigma\inv(\x-\bmu).
 \end{equation}
 $$</p>
-<p>This is often nicer to work with when manipulating the Gaussian, as opposed to the exponential function.</p>
+<p>$\Delta$ is called the <em>Mahalanobis distance</em>, and is analagous to the &ldquo;z-score&rdquo; of a univariate Gaussian random variable $X$:</p>
+<p>$$
+\begin{equation*}
+Z = \frac{X - \mu}{\sigma}.
+\end{equation*}
+$$</p>
+<p>The z-score measures the number of standard deviations a random variable X is from the mean. It&rsquo;s also interesting to note that  and reduces to the Euclidean distance when $\Sigma$ is the identity matrix.</p>
 <p>Since the covariance matrix $\Sigma$ is real and symmetric, we can perform <a href="#eigenvalue-decomposition">eigenvalue decomposition</a> to write it in the form</p>
 <p>$$
-\Sigma = \sum_{i=1}^d\lambda_i\u_i\u_i\T,
+\begin{align*}
+\Sigma &amp;=  \U\Lambda\U\T \\
+&amp;=\sum_{i=1}^d\lambda_i\u_i\u_i\T,
+\end{align*}
 $$</p>
-<p>where $\{\u_i\}_{i=1}^d$ are eigenvectors of $\Sigma$, and $\{\lambda_i\}_{i=1}^d$ are the corresponding eigenvalues. Note that we can choose the eigenvectors to be orthonormal (see ), i.e., <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>
-$$
+<p>Here, $\U$ is the matrix whose rows are given by $\u_i\T$, the eigenvectors of $\Sigma$, and $\Lambda = \diag(\lambda_1, \lambda_2, \ldots, \lambda_d)$ contains the corresponding eigenvalues. Note that we can choose the eigenvectors to be orthonormal (see ), i.e., <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<p>$$
+\begin{equation*}
 \u_i\T\u_j = \delta_{ij}.
-$$
-Moreover, we can easily write the inverse of the covariance matrix as
-$$
-\Sigma\inv = \sum_{i=1}^d\frac{1}{\lambda_i}\u_i\u_i\T,
+\end{equation*}
 $$</p>
-<p>Substituting this into $(1)$, we get</p>
+<p>Thus, $\U$ is an orthogonal matrix, so $\U\U\T = \I$, and thus $\U\T = \U\inv.$ Moreover, we can easily write the inverse of the covariance matrix as</p>
+<p>$$
+\begin{equation*}
+\Sigma\inv = \sum_{i=1}^d\frac{1}{\lambda_i}\u_i\u_i\T.
+\end{equation*}
+$$</p>
+<p>Substituting this into $\eqref{eq:mahalanobis}$, we get</p>
 <p>$$
 \begin{align*}
-\Delta^2 &amp;= \sum_{i=1}^d \frac{1}{\lambda_i}(\x - \bmu)\T\u_i\u_i\T(\x - \bmu) \\
+\Delta^2 &amp;= \sum_{i=1}^d \frac{1}{\lambda_i}(\x - \bmu)\T\u_i\u_i\T(\x - \bmu) \\[1pt]
 &amp;= \sum_{i=1}^d\frac{y_i^2}{\lambda_i},
 \end{align*}
 $$</p>
-<p>where we&rsquo;ve introduced
-$$
+<p>where I&rsquo;ve introduced</p>
+<p>$$
+\begin{equation*}
 y_i = \u_i\T(\x - \bmu),
-$$
-or
-$$
+\end{equation*}
+$$</p>
+<p>The set $\{y_i\}$ can then be seen as a transformed coordinate system, shifted by $\bmu$ and rotated by $\u_i.$<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> Alternatively, we can write this as a vector:</p>
+<p>$$
+\begin{equation}\label{eq:ytransform}
 \y = \U(\x - \bmu),
-$$
-where $\U$ is the matrix whose rows are given by $\u_i\T$. Note that $\U$ is an orthogonal matrix, so $\U\U\T = \I,$ and thus $\U\T = \U\inv$. The set $\{y_i\}$ can then be seen as a transformed coordinate system, shifted by $\bmu$ and rotated by $\U$.<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></p>
-<p>All of the dependence of the Gaussian on $\x$ is determined by $\Delta^2$. Thus, it is constant on surfaces for which $\Delta^2$ is constant. Then, let
-$$
+\end{equation}
+$$</p>
+<p>Now, all of the dependence of the Gaussian on $\x$ is determined by $\Delta^2.$ Thus, the Gaussian is constant on surfaces for which $\Delta^2$ is constant. Then, let</p>
+<p>$$
+\begin{equation*}
 \Delta^2 = \sum_{i=1}^d\frac{y_i^2}{\lambda_i} = r
-$$
-for some constant $r$. This defines the equation of an ellipsoid in $d$ dimensions. For example, if $d=2,$ we have the equation
-$$
-\frac{y_1^2}{\lambda_1} + \frac{y_2^2}{\lambda_2} = r,
-$$
-which gives a 2d ellipse centered at the origin with semi-major and semi-minor axes given by $\sqrt{\lambda_1r}$ and $\sqrt{\lambda_2r}$.</p>
+\end{equation*}
+$$</p>
+<p>for some constant $r.$ This defines the equation of an ellipsoid in $d$ dimensions.</p>
 <details>
-<p>  <summary>Example</summary></p>
+  <summary>Example: Level sets of the Gaussian</summary>
+  <p>
+  In the case of the Gaussian distribution, we often like to talk about the probability that an observation will fall within some range of values. For example, we might like to use the fact that the probability a random variable falls within one standard deviation from the mean is approximately $0.683.$
+<p>As an example, I&rsquo;ll consider the analagous case for a bivariate Gaussian, in which we would like to find the ellipses corresponding to the probabilities that a point falls within one, two, or three standard deviations from the mean.</p>
+<p>First consider a univariate Gaussian random variable $X \sim \Norm(\mu, \sigma^2).$ The probability that $\X$ is within one standard deviation from the mean is given by</p>
+<p>$$
+\begin{align*}
+P(\lvert X - \mu \rvert \leq \sigma) &amp;= P(-\sigma \leq X - \mu \leq \sigma) \\
+&amp;= P(-1 \leq \frac{X - \mu}{\sigma} \leq 1) \\
+&amp;= P(-1 \leq Z \leq 1),
+\end{align*}
+$$</p>
+<p>where $Z = \frac{X - \mu}{\sigma}$ is a standard Normal random variable. Then, this probability is given by</p>
+<p>$$
+\begin{align*}
+P(-1 \leq Z \leq 1) &amp;= P(Z \leq 1) - P(Z \leq -1) \\
+&amp;= \Phi(1) - \Phi(-1)
+\end{align*}
+$$</p>
+<p>where $\Phi(\cdot)$ is the cumulative distribution function of $Z$, for which the functional values are usually determined from a <a href="https://engineering.purdue.edu/ChanGroup/ECE302/files/normal_cdf.pdf">table</a>, or when in doubt we can make the computers think for us:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#00f">from</span> scipy.stats <span style="color:#00f">import</span> norm
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(<span style="color:#a31515">f</span><span style="color:#a31515">&#34;</span><span style="color:#a31515">{</span>norm.cdf(1) - norm.cdf(-1)<span style="color:#a31515">:</span><span style="color:#a31515">.3f</span><span style="color:#a31515">}</span><span style="color:#a31515">&#34;</span>)
+</span></span></code></pre></div><pre tabindex="0"><code>0.683
+</code></pre><p>We can do this in a similar fashion to find the probabilities that $X$ falls within $2\sigma$ or $3\sigma$ from the mean, for which the values are approximately $0.954$ and $0.997$, respectively.</p>
+<p>In the univariate case, the quantity $\lvert X - \mu \rvert / \sigma$ measures the number of standard deviations $X$ is from the mean. The Mahalanobis is analgous to this in the multivariate case. However, it&rsquo;s important to note that, in multiple dimensions, the number of standard deviations a random vector $\x$ is from the mean depends on the <em>direction</em> $\x$ is with respect to the mean. For example, a Gaussian will in general have different variances along different dimensions, and thus, depending on the direction, $\x$</p>
+<p>Thus, we seek to find some constant $k$ for which</p>
+<p>$$
+\begin{equation*}
+P(\Delta^2 \leq k^2) = 0.683.
+\end{equation*}
+$$</p>
+<p>To do so, we note that $\Delta^2$ follows a chi-squared distribution. To see this, recall the expression for $\Delta^2$:</p>
+<p>$$
+\begin{align*}
+\Delta^2 &amp;= (\x - \bmu)\T\U\T\Lambda\inv\U(\x - \bmu) \\
+&amp;= \y\T\Lambda\inv\y.
+\end{align*}
+$$</p>
+<p>Then, $\y$ is a random vector with zero mean and diagonal covariance $\Lambda.$ Since it has diagonal covariance, the elements of $\y$ are uncorrelated. In general, uncorrelated does not imply independence; however, <a href="#1">in the case of the Gaussian, it does</a>. Then, consider yet another transformation:</p>
+<p>$$
+\begin{equation*}
+\z = \Lambda^{-1/2}\y,
+\end{equation*}
+$$</p>
+<p>where $\Lambda^{-1/2} = \diag(\lambda_1^{-1/2}, \ldots, \lambda_d^{-1/2}).$ Now, the elements of $\z$ have been standardized, so $\z$ is a vector of standard Normal random variables. Then, we have</p>
+<p>$$
+\begin{align*}
+\Delta^2 &amp;= \z\T\z \\
+&amp;= z_1^2 + z_2^2 + \cdots + z_d^2.
+\end{align*}
+$$</p>
+<p>Since each $z_i$ is an independent standard Normal, the sum $\Delta^2$ takes a chi-squared distribution with $d$ degrees of freedom. Then, consider the cumulative distribution function of a chi-squared random variable with $d=2$:</p>
+<p>$$
+\begin{equation*}
+F_{\chi^2_2} (x) = P(\chi^2 \leq x).
+\end{equatioon*}
+$$</p>
+<p>In this case, we know $F_{\chi^2_2} (x) = 0.683$, and we wish to find x. To do so, we can make use of the inverse cumulative distribution function, otherwise known as the <em>quantile function</em>:</p>
+<p>$$
+\begin{equation*}
+k = F_{\chi^2_2}\inv (p) = Q(p).
+\end{equation*}
+$$</p>
+<p>We can evaluate this in several ways, but the cumulative distribution function of $\chi^2_2$ takes a nice form, so we&rsquo;ll do it by hand:</p>
+<p>$$
+\begin{equation*}
+F_{\chi^2_2}(x) = 1 - e^{-x/2} = p
+\end{equation*}
+$$</p>
+<p>Hence,</p>
+<p>$$
+\begin{align*}
+Q(p) &amp;= \log \frac{1}{(1 - p)^2} \\
+Q(0.683) &amp;\approx 2.30.
+\end{align*}
+$$</p>
+<p>Thus, the value for $k$ for which</p>
+<p>$$
+\begin{equation*}
+P(\Delta^2 \leq k) = 0.683
+\end{equation*}
+$$</p>
+<p>is approximately 2.30. Thus, the equation for the corresponding ellipse will be given by</p>
+<p>$$
+\begin{equation*}
+\frac{y_1^2}{\lambda_1} + \frac{y_2^2}{\lambda_2} = 2.30
+\end{equation*}
+$$</p>
+  </p>
 </details>
-<p>Next, our goal is to show that the multivariate Gaussian distribution is normalized. Let&rsquo;s consider the Gaussian in the new coordinate system ${y_i}$. To transform from $\x$-space to $\y$-space, we use the <a href="#change-of-variables">change of variables formula</a>, given by
-$$
+<h3 id="normalization">Normalization</h3>
+<p>Now, our goal is to show that the multivariate Gaussian distribution is normalized. Let&rsquo;s consider the Gaussian in the new coordinate system $\{y_i\}.$ Rearranging $\eqref{eq:ytransform}$, we can write the transformation as</p>
+<p>$$
+\begin{equation*}
+\x = g(\y) = \U\T\y + \bmu.
+\end{equation*}
+$$</p>
+<p>Then, to transform from $\x$-space to $\y$-space, we use the <a href="#change-of-variables">change of variables formula</a>, given by</p>
+<p>$$
 \begin{align*}
-p_y(\y) &amp;= p_x(\x)\lvert \J \rvert \
-&amp;= p_x(g(\y))\lvert \J \rvert,
+p_y(\y) &amp;= p_x(\x)\lvert \J \rvert \\[2pt]
+&amp;= p_x(g(\y))\lvert \J \rvert.
 \end{align*}
-$$
-where $\x = g(\y)$ defines the transformation. Here, we have the Jacobian $\J$, whose elements are given by
-$$
+$$</p>
+<p>Here, $\J$ is the Jacobian whose elements are given by</p>
+<p>$$
+\begin{equation*}
 J_{ij} = \frac{\partial x_i}{\partial y_j}.
-$$
-The relationship between $\x$ and $\y$ is given by
-$$
-\y = \U(\x - \bmu),
-$$
-or
-$$
-\x = \U\T\y + \bmu.
-$$
-Thus, the derivative of $\x$ with respect to $\y$ is given by $\U\T$, hence the Jacobian is given by
-$$
-\J = \U\T,
-$$
-or
-$$
+\end{equation*}
+$$</p>
+<p>The derivative of $\x$ with respect to $\y$ is $\U\T$, hence the elements of $\J$ are</p>
+<p>$$
 J_{ij} = U_{ji}.
-$$Then, to find the determinant of the Jacobian, we have
-$$
-\begin{align*}
-\lvert \J \rvert ^2&amp;= \lvert \U\T \rvert ^2 \\
-&amp;= \lvert \U\T \rvert \lvert \U \rvert \\
-&amp;= \lvert \U\T\U \rvert \\
-&amp;= \lvert \I \rvert \\
-&amp;= 1.
-\end{align*}
-$$
-Thus, $\lvert \J \rvert = 1$, making our transformation
-$$
+$$</p>
+<p>Then, to find the determinant of the Jacobian, we have</p>
+<p>$$
+\lvert \J \rvert ^2 = \lvert \U\T \rvert ^2 = \lvert \U\T \rvert \lvert \U \rvert = \lvert \U\T\U \rvert = \lvert \I \rvert = \mathbf{1}.
+$$</p>
+<p>Thus, $\lvert \J \rvert = \mathbf{1}$, making our transformation</p>
+<p>$$
 p_y(\y) = p_x(g(\y)).
-$$
-Then, the Gaussian in terms of $\y$ is given by
-$$
+$$</p>
+<p>Then, we can write the Gaussian in terms of $\y$ as</p>
+<p>$$
 \begin{align*}
 p_y(\y) &amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\exp\left( -\frac{1}{2} (\x - \bmu)\T\Sigma\inv(\x - \bmu) \right).
 \end{align*}
-$$
-First, it&rsquo;s useful to show that
-$$
+$$</p>
+<p>Examining the term in the exponent, we have</p>
+<p>$$
 \begin{align*}
-\lvert \Sigma \rvert &amp;= \lvert \U\T\Lambda\U \rvert \\
-&amp;= \lvert \U\T \rvert \lvert \Lambda \rvert \lvert \U \rvert \\
-&amp;= \lvert \Lambda \rvert \\
-&amp;= \prod_{i=1}^d \lambda_i,
-\end{align*}
-$$
-hence
-$$
-\frac{1}{\lvert \Sigma \rvert^{1/2}} = \prod_{i=1}^d \frac{1}{\sqrt{\lambda_i}}.
-$$
-Examining at the term in the exponent, we have
-$$
-\begin{align*}
-(\x - \bmu)\T\Sigma\inv(\x - \bmu)  &amp;= (\U\T\y)\T \Sigma\inv(\U\T\y) \\
-&amp;= \y\T\U (\U\T\Lambda\U)\inv \U\T\y \\
-&amp;= \y\T\U \U\inv\Lambda (\U\T)\inv \U\T\y \\
+(\x - \bmu)\T\Sigma\inv(\x - \bmu)  &amp;= (\U\T\y)\T \Sigma\inv(\U\T\y) \\[1pt]
+&amp;= \y\T\U (\U\T\Lambda\U)\inv \U\T\y \\[1pt]
+&amp;= \y\T\U \U\inv\Lambda (\U\T)\inv \U\T\y \\[1pt]
 &amp;= \y\T\Lambda\y.
 \end{align*}
-$$
-Then,
-$$
+$$</p>
+<p>So,</p>
+<p>$$
 \begin{align*}
-p_y(\y) &amp;= \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert ^{1/2}} \exp \left( -\frac{1}{2} \y\T\Lambda\y \right) \\
+p_y(\y) &amp;= \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert ^{1/2}} \exp \left( -\frac{1}{2} \y\T\Lambda\y \right) \nonumber \\[1pt]
 &amp;= \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert ^{1/2}} \exp \left( -\frac{1}{2} \sum_{i=1}^d \frac{y_i^2}{\lambda_i} \right).
 \end{align*}
-$$
-Using our expression for the determinant of the covariance matrix, and noting exponent of a sum becomes a product of exponents, we have
-$$
+$$</p>
+<p>Then, it&rsquo;s useful to show that</p>
+<p>$$
+\begin{align*}
+\lvert \Sigma \rvert &amp;= \lvert \U\Lambda\U\T \rvert = \lvert \U \rvert \lvert \Lambda \rvert \lvert \U\T \rvert = \lvert \Lambda \rvert = \prod_{i=1}^d \lambda_i,
+\end{align*}
+$$</p>
+<p>hence</p>
+<p>$$
+\frac{1}{\lvert \Sigma \rvert^{1/2}} = \prod_{i=1}^d \frac{1}{\sqrt{\lambda_i}}.
+$$</p>
+<p>Thus, noting that the exponent of a sum becomes a product of exponents, we have</p>
+<p>$$
 p_y(\y) = \prod_{i=1}^d \frac{1}{\sqrt{2\pi\lambda_i}} \exp \left( -\frac{y_i^2}{2\lambda_i} \right).
-$$
-Then,
-$$
+$$</p>
+<p>Then,</p>
+<p>$$
 \begin{align*}
 \int_\y p_y(\y) d\y &amp;= \prod_{i=1}^d \int_{y_i}  \frac{1}{\sqrt{2\pi\lambda_i}} \exp \left( -\frac{y_i^2}{2\lambda_i} \right) dy_i.
 \end{align*}
-$$
-We see that each element of the product is just a univariate Gaussian over $y_i$ with variance $\lambda_i$, each of which integrates to 1, showing that $p_y(\y)$, and thus $p_x(\x)$ is indeed normalized.</p>
-<p>Finally, we will examine the first and second moments of the Gaussian.</p>
+$$</p>
+<p>We see that each element of the product is just a univariate Gaussian over $y_i$ with mean $0$ and variance $\lambda_i$, each of which integrates to 1. This shows that $p_y(\y)$ and thus $p_x(\x)$ is indeed normalized.</p>
+<h3 id="moments-of-the-gaussian">Moments of the Gaussian</h3>
+<p>Finally, we will examine the first and second moments of the Gaussian. The first moment is given by</p>
+<p>$$
+\begin{align*}
+\E[\x] &amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2} (\x - \bmu)\T\Sigma\inv(\x - \bmu) \right) \x \, d\x \\[3pt]
+&amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2} \z\T\Sigma\inv\z \right) (\z + \bmu ) \, d\z,
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve introduced the change of variables $\z = \x - \bmu.$ We can split this up as</p>
+<p>$$
+\frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}} \left[ \int\exp\left( -\frac{1}{2} \z\T\Sigma\inv\z \right) \z \, d\z + \int\exp\left( -\frac{1}{2} \z\T\Sigma\inv\z \right) \bmu \, d\z\right].
+$$</p>
+<p>Inspecting the first term, we see that $\exp(-\frac{1}{2}\z\T\Sigma\inv\z)$ is an even function in $\z$, and $\z$ is odd. Then, the product is an odd function, so the integral over a symmetric domain (in this case all of $\R^d$) is zero. The second term is just $\bmu$ times a Gaussian, which will integrate to 1 when multiplied by the normalization constant. Thus, we have the (perhaps unsurprising) result:</p>
+<p>Now, in the univariate case, the second moment is given by $\E[x^2].$ In the multivariate case, there are $d^2$ second moments, each given by $\E[x_i, x_j]$ for $i, j \in [d].$ We can group these together to form the matrix $\E[\x\x\T].$ We write this as</p>
+<p>$$
+\begin{align}
+\E[\x\x\T] &amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}(\x - \bmu)\T\Sigma\inv (\x-\bmu) \right) \x\x\T d\x \nonumber \\[3pt]
+&amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}\z\T\Sigma\inv \z \right) (\z + \bmu)(\z + \bmu)\T d\z \nonumber \\[3pt]
+&amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}\z\T\Sigma\inv \z \right) (\z\z\T + 2\z\T\bmu + \bmu\bmu\T)  d\z.
+\end{align}
+$$</p>
+<p>By the same arguments as before, the term involving $\z\T\bmu$ will vanish due to symmetry, and the term involving $\bmu\bmu\T$ will integrate to $\bmu\bmu\T$ due to normalization. Then, we are left with the term involving $\z\z\T.$ Using the eigenvalue decomposition of $\Sigma$, we can write</p>
+<p align=center>
+$\y = \U\z, \quad$ or $\quad \z = \U\T\y.$
+</p>
+<p>Recall that $\U$ is the matrix whose rows are given by the eigenvectors of $\Sigma.$ So, $\U\T$ is the matrix whose <em>columns</em> are given by the eigenvectors. Thus,</p>
+<p>$$
+\begin{align*}
+\z &amp;= \begin{bmatrix}
+\u_1 &amp; \u_2 &amp; \cdots &amp; \u_d
+\end{bmatrix}
+\begin{bmatrix}
+y_1 \\
+y_2 \\
+\vdots \\
+y_d
+\end{bmatrix} \\[3pt]
+&amp;= \begin{bmatrix}
+u_{11} &amp; u_{21} &amp; \cdots &amp; u_{d1} \\
+u_{12} &amp; u_{22} &amp; \cdots &amp; u_{d2} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+u_{1d} &amp; u_{2d} &amp; \cdots &amp; u_{dd} \\
+\end{bmatrix}
+\begin{bmatrix}
+y_1 \\
+y_2 \\
+\vdots \\
+y_d
+\end{bmatrix} \\[3pt]
+&amp;= \begin{bmatrix}
+u_{11}y_1 + u_{21}y_2 + \cdots + u_{d1}y_d \\
+u_{12}y_1 + u_{22}y_2 + \cdots + u_{d2}y_d \\
+\vdots \\
+u_{1d}y_1 + u_{2d}y_2 + \cdots + u_{dd}y_d \\
+\end{bmatrix} = \sum_{i=1}^d y_i\u_i,
+\end{align*}
+$$</p>
+<p>where $u_{ij}$ is the $j$th element of $\u_i.$ Then, using this expression for $\z$, and recalling the form for $p_y(\y)$ in $(3)$, we can write the first term of $(4)$ as</p>
+<p>$$
+\begin{align}
+&amp;\quad\,\, \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}} \int \exp \left( - \sum_{k=1}^d \frac{y_k^2}{2\lambda_k} \right) \sum_{i=1}^d\sum_{j=1}^d y_i y_j \u_i\u_j\T d\y \nonumber \\[2pt]
+&amp;= \frac{1}{(2\pi)^{d/2}\lvert\Sigma\rvert^{1/2}} \sum_{i=1}^d\sum_{j=1}^d \u_i\u_j\T  \int \exp \left( - \sum_{k=1}^d \frac{y_k^2}{2\lambda_k} \right) y_i y_j d\y.
+\end{align}
+$$</p>
+<p>Now, the integral takes the form</p>
+<p>$$
+\begin{align*}
+\int \exp \left( - \sum_{k=1}^d y_k^2\right) y_i y_j d\y.
+\end{align*}
+$$</p>
+<p>When $i\neq j$, we can expand this as the product</p>
+<p>$$
+\begin{gather*}
+\prod_{k=1}^d \int \exp(-y_k^2) y_i y_j d\y \\[2pt] = \int \! \exp(-y_1^2) dy_1 \cdots \! \int \exp(-y_i^2) y_i dy_i \cdots \int \! \exp(-y_j^2) y_j dy_j \cdots \int \! \exp(-y_d^2) dy_d.
+\end{gather*}
+$$</p>
+<p>In this case, due to our symmetry arguments, the terms involving $y_i$ and $y_j$ vanish, and hence the integral vanishes when $i\neq j.$ If $i=j$, then the second term in $(5)$ can be written as</p>
+<p>$$
+\sum_{i=1}^d \u_i\u_i\T \prod_{k=1}^d \int \frac{1}{\sqrt{2\pi\lambda_k}} \exp \left( - \frac{y_k^2}{2\lambda_k} \right) y_i^2 dy_k.
+$$</p>
+<p>where we brought the normalization constant inside the product. The terms in the product for which $i \neq k$ are just univariate Gaussian, and hence normalize to $1.$ Thus, the only term left in the product is</p>
+<p>$$
+\int \frac{1}{\sqrt{2\pi\lambda_k}} \exp \left( - \frac{y_i^2}{2\lambda_i} \right) y_i^2 dy_i,
+$$</p>
+<p>which is just the expression for the second moment of a univariate Gaussian with mean $0$ and variance $\lambda_i.$ In general, the second moment of a univariate Gaussian $\Norm(x \mid \mu, \sigma^2)$ is $\mu^2 + \sigma^2.$ Thus, we are left with</p>
+<p>$$
+\begin{align}
+\E[\x\x\T] &amp;= \bmu\bmu\T + \sum_{i=1}^d \u_i\u_i\T \lambda_i \nonumber \\[1pt]
+&amp;= \bmu\bmu\T + \Sigma.
+\end{align}
+$$</p>
+<p>So, we have that the first and second moments of the Gaussian are given by $\E[\x] = \bmu$ and $\E[\x\x\T] = \bmu\bmu\T + \Sigma$, respectively.</p>
+<h2 id="conditioning">Conditioning</h2>
+<p>Now, suppose we have some random vector $\z \in \R^d$, specified by a Gaussian distribution:</p>
+<p>$$
+\z \sim \Norm(\z \mid \bmu, \Sigma).
+$$</p>
+<p>Then, suppose we partition $\z$ into two constituent vectors $\x \in \R^m$ and $\y \in \R^{d-m}$:</p>
+<p>$$
+\z = \begin{pmatrix}
+\x \\
+\y
+\end{pmatrix},
+$$</p>
+<p>and our goal is to find an expression for the conditional distribution $p(\x \mid \y).$ The parameters specifying the joint distribution can likewise be partitioned as follows:</p>
+<p>$$
+\bmu\ = \begin{pmatrix}
+\bmu_x \\
+\bmu_y
+\end{pmatrix}, \quad
+\Sigma = \begin{pmatrix}
+\Sigma_{xx} &amp; \Sigma_{xy} \\
+\Sigma_{yx} &amp; \Sigma_{yy}
+\end{pmatrix}.
+$$</p>
+<p>Note that since $\Sigma$ is symmetric, we have $\Sigma_{xx} = \Sigma_{xx}\T, \Sigma_{yy} = \Sigma_{yy}\T$, and $\Sigma_{xy} = \Sigma_{yx}\T.$ It&rsquo;s also useful to define the precision matrix $\Lambda = \Sigma\inv$, and its partitioned form: <sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup></p>
+<p>$$
+\Lambda = \begin{pmatrix}
+\Lambda_{xx} &amp; \Lambda_{xy} \\
+\Lambda_{yx} &amp; \Lambda_{yy}
+\end{pmatrix}.
+$$</p>
+<p>Since the inverse of a symmetric matrix is itself symmetric, we have that $\Lambda = \Lambda\T$, hence the same properties hold as the covariance matrix regarding the symmetry between constituent parts of the partitioned matrix. However, it&rsquo;s important to note that the partitioned matrices of the precision matrix are not simply the inverses of the corresponding elements of the covariance matrix. Instead, we&rsquo;ll shortly see how to take the inverse of a partitioned matrix.</p>
+<p>Now, one way to find an expression for the conditional $p(\x \mid \y)$ would be to simply use the <a href="#sum-and-product-rules-of-probability">product rule of probability</a>:</p>
+<p>$$
+\begin{align*}
+p(\x, \y) &amp;= p(\x \mid \y) \, p(\y) \\[3pt]
+\Rightarrow \quad p(\x \mid \y) &amp;= \frac{p(\x, \y)}{p(\y)}.
+\end{align*}
+$$</p>
+<p>However, normalizing the resulting expression can be cumbersome. Instead, let&rsquo;s consider the quadratic form in the exponent of the joint distribution:</p>
+<p>$$
+\begin{align}
+&amp; -\frac{1}{2}(\z - \bmu)\T\Sigma\inv (\z - \bmu) \nonumber \\[10pt]
+&amp;= -\frac{1}{2} \begin{pmatrix}
+\x - \bmu_x \\
+\y - \bmu_y
+\end{pmatrix}\T
+\begin{pmatrix}
+\Lambda_{xx} &amp; \Lambda_{xy} \\
+\Lambda_{yx} &amp; \Lambda_{yy}
+\end{pmatrix}
+\begin{pmatrix}
+\x - \bmu_x \\
+\y - \bmu_y
+\end{pmatrix} \nonumber \\[15pt]
+&amp;= -\frac{1}{2} (\x - \bmu_x)\T\Lambda_{xx} (\x - \bmu_x) - \frac{1}{2}(\x - \bmu_x)\T \Lambda_{xy} (\y - \bmu_y) \nonumber \\
+&amp;\qquad - \frac{1}{2}(\y-\bmu_y)\T\Lambda_{yx} (\x - \bmu_x) - \frac{1}{2} (\y - \bmu_y)\T \Lambda_{yy} (\y - \bmu_y) \nonumber \\[10pt]
+&amp;= -\frac{1}{2} (\x - \bmu_x)\T\Lambda_{xx} (\x - \bmu_x) - (\x-\bmu_x)\T\Lambda_{xy} (\y - \bmu_y) \nonumber \\
+&amp;\qquad - \frac{1}{2} (\y - \bmu_y)\T \Lambda_{yy} (\y - \bmu_y).
+\end{align}
+$$</p>
+<p>In the last line, I use the fact that <sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup></p>
+<p>$$
+(\x - \bmu_x)\T\Lambda_{xy}  (y - \bmu_y) = (\y - \bmu_y)\T\Lambda_{yx}  (\x - \bmu_x).
+$$</p>
+<p>I&rsquo;ll repeatedly use this fact in the following calculations to combine cross terms.</p>
+<p>Evaluating the conditional $p(\x \mid \y)$ involves fixing $\y$ and treating this as a function of $\x.$ Then, since the expression in $(6)$ is a quadratic function of $\x$, the resulting distribution $p(\x \mid \y)$ will also take the form of a Gaussian. So, our goal is to find the mean $\bmu_{x\mid y}$ and covariance $\Sigma_{x\mid y}$ which specify this distribution. To do so, note that in general, we can write the exponent of a Gaussian as</p>
+<p>$$
+\begin{equation}
+-\frac{1}{2}(\z - \bmu)\T \Sigma\inv (\z - \bmu) = -\frac{1}{2}\z\T\Sigma\inv\z + \z\T\Sigma\inv\bmu\ + c,
+\end{equation}
+$$</p>
+<p>where $c$ denotes all the terms independent of $\z.$ Thus, if we can rewrite $(6)$ in this form, we can identify the coefficients of the quadratic and linear terms in $\x$ as the mean and covariance of $p(\x \mid \y).$ This may not seem clear at first, but I think going through the process will illuminate things.</p>
+<p>Expanding $(6)$ gives</p>
+<p>$$
+-\frac{1}{2} \x\T\Lambda_{xx} \x + \x\T\Lambda_{xx} \bmu_x - \x\T\Lambda_{xy} \y + \x\T\Lambda_{xy} \bmu_y + c,
+$$</p>
+<p>where $c$ again denotes all terms which do not depend on $\x.$ Equating this to the general form as in the right-hand side of $(7)$, we have</p>
+<p>$$
+-\frac{1}{2} \x\T\Lambda_{xx} \x + \x\T\Lambda_{xx} \bmu_x - \x\T\Lambda_{xy} \y + \x\T\Lambda_{xy} \bmu_y = -\frac{1}{2}\x\T\Sigma_{x\mid y}\inv \x + \x\T\Sigma_{x\mid y}\inv \bmu_{x \mid y}.
+$$</p>
+<p>Immediately, we can equate the quadratic terms to see that</p>
+<p>$$
+\begin{equation}
+\Sigma_{x\mid y}\inv = \Lambda_{xx}.
+\end{equation}
+$$</p>
+<p>Then, collecting the linear terms, we have</p>
+<p>$$
+\x\T\Lambda_{xx} \bmu_x - \x\T\Lambda_{xy} \y + \x\T \Lambda_{xy} \bmu_y = \x\T\left( \Lambda_{xx} \bmu_x - \Lambda_{xy}(\y - \bmu_y) \right).
+$$</p>
+<p>Thus, we have</p>
+<p>$$
+\Sigma_{x\mid y}\inv \bmu_{x\mid y} = \Lambda_{xx} \bmu_x - \Lambda_{xy} (\y - \bmu_y),
+$$</p>
+<p>or, using $(8)$:</p>
+<p>$$
+\begin{equation}
+\bmu_{x\mid y} = \bmu_x - \Lambda_{xx}\inv\Lambda_{xy} (\y - \bmu_y).
+\end{equation}
+$$</p>
+<p>Here, we&rsquo;ve expressed the quantities $\bmu_{x\mid y}$ and $\Sigma_{x\mid y}$ in terms of $\Lambda.$ Instead, we can express them in terms of $\Sigma.$ To do so, we&rsquo;ll use the matrix inversion identity:</p>
+<p>$$
+\begin{pmatrix}
+\A &amp; \B \\
+\bC &amp; \D
+\end{pmatrix}\inv = \begin{pmatrix}
+\M &amp; -\M\B\D\inv \\
+-\D\inv\bC\M &amp; \D\inv + \D\inv\bC\M\B\D
+\end{pmatrix},
+$$</p>
+<p>where $\M$ is the <a href="#the-schur-complement">Schur complement</a>, defined</p>
+<p>$$
+\M = (\A - \B\D\inv\bC)\inv.
+$$</p>
+<p>Then, since</p>
+<p>$$
+\begin{pmatrix}
+\Lambda_{xx} &amp; \Lambda_{xy} \\
+\Lambda_{yx} &amp; \Lambda_{yy}
+\end{pmatrix}\inv =
+\begin{pmatrix}
+\Sigma_{xx} &amp; \Sigma_{xy} \\
+\Sigma_{yx} &amp; \Sigma_{yy}
+\end{pmatrix},
+$$</p>
+<p>we have</p>
+<p>$$
+\begin{align*}
+\Lambda_{xx} &amp;= (\Sigma_{xx} - \Sigma_{xy}\Sigma_{yy}\inv\Sigma_{yx})\inv, \\[4pt]
+\Lambda_{xy} &amp;= - (\Sigma_{xx} - \Sigma_{xy}\Sigma_{yy}\inv\Sigma_{yx})\inv \Sigma_{xy} \Sigma_{yy}\inv.
+\end{align*}
+$$</p>
+<p>Plugging these expressions into $(8)$ and $(9)$ gives</p>
+<p>$$
+\Sigma_{x\mid y} = \Sigma_{xx} - \Sigma_{xy}\Sigma_{yy}\inv\Sigma_{yx}
+$$</p>
+<p>and</p>
+<p>$$
+\begin{align*}
+\bmu_{x\mid y} &amp;= \bmu_x + (\Sigma_{xx} - \Sigma_{xy}\Sigma_{yy}\inv\Sigma_{yx}) (\Sigma_{xx} - \Sigma_{xy}\Sigma_{yy}\inv\Sigma_{yx})\inv \Sigma_{xy} \Sigma_{yy}\inv (\y - \bmu_y) \\[2pt]
+&amp;= \bmu_x - \Sigma_{xy}\Sigma_{yy}\inv (\y - \bmu_y).
+\end{align*}
+$$</p>
+<p>Thus, $p(\x \mid \y)$ is the Gaussian distribution given by the following parameters:</p>
+<p>$$
+\begin{align}
+\quad \bmu_{x\mid y} &amp;= \bmu_x - \Sigma_{xy}\Sigma_{yy}\inv(\y - \bmu_y) \quad \\[2pt]
+\quad \Sigma_{x\mid y} &amp;= \Sigma_{xx} - \Sigma_{xy}\Sigma_{yy}\inv\Sigma_{yx}. \quad
+\end{align}
+$$</p>
+<h2 id="marginalization">Marginalization</h2>
+<p>Now, given the joint distribution $p(\x, \y)$ as above, suppose we wish to find the marginal distribution</p>
+<p>$$
+\begin{equation}
+p(\x) = \int p(\x, \y) d\y.
+\end{equation}
+$$</p>
+<p>Our goal, then, is to integrate out $\y$ to obtain a function of $\x.$ Then, we can normalize the resulting function of $\x$ to obtain a valid probability distribution. To do so, let&rsquo;s again consider the quadratic form in the exponent given by $(6).$ First, we collect all terms which depend on $\y$:</p>
+<p>$$
+\begin{align}
+&amp;\quad \,\, - (\x - \bmu_x)\T\Lambda_{xy} (\y - \bmu_y) - \frac{1}{2} (\y - \bmu_y)\T\Lambda_{yy} (\y - \bmu_y) \nonumber \\[2pt]
+&amp;= -\frac{1}{2} \y\T \Lambda_{yy} \y + \y\T\Lambda_{yy} \bmu_y - \y\T \Lambda_{yx} (\x - \bmu_x) \nonumber \\[2pt]
+&amp;= -\frac{1}{2}\y\T \Lambda_{yy} \y + \y\T \m,
+\end{align}
+$$</p>
+<p>where I&rsquo;ve introduced</p>
+<p>$$
+\m = \Lambda_{yy} \bmu_y - \Lambda_{yx} (\x - \bmu_x).
+$$</p>
+<p>By <a href="#completing-the-square">completing the square</a>, we can write $(13)$ as</p>
+<p>$$
+-\frac{1}{2} (\y - \Lambda_{yy}\inv\m)\T \Lambda_{yy} (\y - \Lambda_{yy}\inv\m) + \frac{1}{2}\m\T\Lambda_{yy}\inv \m.
+$$</p>
+<p>Note that $\m$ does not depend on $\y$; however, it does depend on $\x.$ Now, we&rsquo;re able to factor the integral in $(11)$ as</p>
+<p>$$
+\exp\big( g(\x) \big)\int \exp \left\{ -\frac{1}{2} (\y - \Lambda_{yy}\inv\m)\T \Lambda_{yy} (\y - \Lambda_{yy}\inv\m) \right\} d\y,
+$$</p>
+<p>where $g(\x)$ contains all the remaining terms which do not depend on $\y.$ This integral is now easy to compute, since it is just an unnormalized Gaussian and will evaluate to the reciprocal of the corresponding normalization factor. Thus, the marginal distribution $p(\x)$ will have the exponential form given by $g(\x)$, and we can perform the same analysis by inspection to retrieve the values for the corresponding parameters $\bmu_x$ and $\Sigma_x.$</p>
+<p>To acquire an expression for $g(\x)$, we consider all the remaining terms:</p>
+<p>$$
+\begin{align*}
+g(\x) &amp;= -\frac{1}{2} (\x - \bmu_x)\T\Lambda_{xx} (\x - \bmu_x) + \x\T\Lambda_{xy} \bmu_y + \frac{1}{2}\m\T \Lambda_{yy}\inv \m \\[3pt]
+&amp;= -\frac{1}{2} \x\T\Lambda_{xx} \x + \x\T \left( \Lambda_{xx} \bmu_x + \Lambda_{xy} \bmu_y \right) \\
+&amp;\quad + \frac{1}{2} \bigg[ \big( \Lambda_{yy} \bmu_y - \Lambda_{yx}(\x-\bmu_x) \big)\T \Lambda_{yy}\inv \big( \Lambda_{yy} \bmu_y - \Lambda_{yx}(\x-\bmu_x) \big) \bigg].
+\end{align*}
+$$</p>
+<p>Then, expanding this and dropping all constant terms with respect to $\x$, we have</p>
+<p>$$
+\begin{align*}
+g(\x) &amp;= -\frac{1}{2}\x\T \left( \Lambda_{xx} + \Lambda_{xy}\Lambda_{yy}\inv\Lambda_{yx} \right) \x + \x\T\left( \Lambda_{xx} + \Lambda_{xy}\Lambda_{yy}\inv\Lambda_{yx} \right) \bmu_x \\[2pt]
+&amp;= -\frac{1}{2}\x\T \Sigma_{xx}\inv \x + \x\T\Sigma_{xx}\inv\bmu_x,
+\end{align*}
+$$</p>
+<p>where we have</p>
+<p>$$
+\Sigma_{xx} = \left( \Lambda_{xx} + \Lambda_{xy}\Lambda_{yy}\inv\Lambda_{yx} \right)\inv
+$$</p>
+<p>from the matrix inversion formula. Comparing this to our general form in $(7)$, we have the following expressions for the mean and covariance of the marginal $p(\x)$:</p>
+<p>$$
+\begin{align}
+\E[\x] &amp;= \bmu_x \\
+\cov[\x] &amp;= \Sigma_{xx}.
+\end{align}
+$$</p>
+<p>That is, the mean and covariance of the marginal distribution are found by simply taking the &ldquo;slices&rdquo; of the partitioned matrices from the joint distribution which correspond to the marginal variable.</p>
+<details>
+  <summary>Example: Conditioning vs. marginalization</summary>
+  <p>
+  Let's consider a bivariate Gaussian distribution and see what happens when we condition vs. marginalize.
+  </p>
+</details>
+<h2 id="bayes-rule-for-linear-gaussian-systems">Bayes&rsquo; rule for linear Gaussian systems</h2>
+<p>Another useful result is Bayes&rsquo; rule for linear Gaussian systems.<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup> In the previous sections, we had a random vector which specified a joint Gaussian distribution over $d$ random variables, and we wanted to find expressions for the marginal and conditional distributions of subsets of these random variables. Instead, suppose we are given a marginal distribution $p(\x)$ and a conditional distribution $p(\y \mid \x)$ and we wish to know the marginal distribution $p(\y)$ and the conditional $p(\x \mid \y).$ This can be seen as an application of Bayes&rsquo; theorem.</p>
+<p>Specifically, consider the two random vectors $\x$ and $\y$ given by</p>
+<p>$$
+\begin{align*}
+p(\x) &amp;= \Norm(\x \mid \bmu, \Lambda\inv), \\[2pt]
+p(\y \mid \x) &amp;= \Norm(\y \mid \A\x+\b, \L\inv),
+\end{align*}
+$$</p>
+<p>and suppose we want to know $p(\x \mid \y).$ First let&rsquo;s express $\x$ and $\y$ in terms of their joint distribution. As before, let</p>
+<p>$$
+\z = \begin{pmatrix}
+\x \\
+\y
+\end{pmatrix}.
+$$</p>
+<p>Then, by the product rule of probability, we have</p>
+<p>$$
+p(\z) = p(\y \mid \x) \, p(\x).
+$$</p>
+<p>It&rsquo;s nice to express this in terms of the log of the joint distribution:</p>
+<p>$$
+\begin{align}
+\log p(\z) &amp;= \log p(\y \mid \x) + \log p(\x) \nonumber \\
+&amp;= -\frac{1}{2} \bigg[ \left( \y - \A\x-\b \right)\T\L\left( \y - \A\x - \b \right) \nonumber \\
+&amp; \quad\qquad + (\x - \bmu)\T\Lambda(\x - \bmu) \bigg] + c
+\end{align}
+$$</p>
+<p>We see that the exponent of the joint distribution is quadratic in terms of $\x$ and $\y$, so $p(\z)$ will be a Gaussian. Then, let&rsquo;s again collect the quadratic and linear terms to find the parameters of the joint distribution. First, expanding $(16)$, we have</p>
+<p>$$
+\begin{align*}
+&amp; -\frac{1}{2} \y\T\L\y + \y\T\L\A\x - \frac{1}{2}\x\T\A\T\L\A\x + \y\T\L\b - \x\T\A\T\L\b \\
+&amp;- \frac{1}{2}\x\T\Lambda\x + \x\T\Lambda\bmu\ + c.
+\end{align*}
+$$</p>
+<p>We see that the quadratic terms are given by</p>
+<p>$$
+\begin{align*}
+&amp; -\frac{1}{2}\x\T\Lambda\x - \frac{1}{2}\y\T\L\y - \frac{1}{2}\x\T\A\T\L\A\x + \y\T\L\A\x \\[3pt]
+&amp;= -\frac{1}{2}\x\T \left( \Lambda + \A\T\L\A \right) \x + \y\T\L\A\x - \frac{1}{2}\y\T\L\y \\[3pt]
+&amp;= -\frac{1}{2}
+\begin{pmatrix}
+\x \\
+\y
+\end{pmatrix}\T
+\begin{pmatrix}
+\Lambda + \A\T\L\A &amp; -\A\T\L \\
+-\L\A &amp; \L
+\end{pmatrix}
+\begin{pmatrix}
+\x \\
+\y
+\end{pmatrix} \\[3pt]
+&amp;= -\frac{1}{2} \z\T\mathbf{R}\z,
+\end{align*}
+$$</p>
+<p>where</p>
+<p>$$
+\mathbf{R} = \begin{pmatrix}
+\Lambda + \A\T\L\A &amp; -\A\T\L \\
+-\L\A &amp; \L
+\end{pmatrix}.
+$$</p>
+<p>Thus, $\mathbf{R}$ is the precision matrix of the joint distribution $p(\z)$, and hence the covariance matrix $\Sigma_z$ can be found by the matrix inversion formula:</p>
+<p>$$
+\Sigma_z = \mathbf{R}\inv = \begin{pmatrix}
+\Lambda\inv &amp; \Lambda\inv\A\T \\
+\A\Lambda\inv &amp; \L\inv + \A\Lambda\inv\A\T
+\end{pmatrix}.
+$$</p>
+<p>Similarly, we can collect the linear terms to identify the mean:</p>
+<p>$$
+\begin{align*}
+\x\T\Lambda\bmu + \y\T\L\b - \x\T\A\T\L\b &amp;= \x\T \left( \Lambda\bmu - \A\T\L \right) \b + \y\T\L\b \\[3pt]
+&amp;= \begin{pmatrix}
+\x \\
+\y
+\end{pmatrix}\T
+\begin{pmatrix}
+\Lambda\bmu\ - \A\T\L\b \\
+\L\b
+\end{pmatrix}.
+\end{align*}
+$$</p>
+<p>Again comparing this to $(7)$ we have that</p>
+<p>$$
+\Sigma_z\inv\bmu_z =
+\begin{pmatrix}
+\Lambda\bmu\ - \A\T\L\b \\
+\L\b
+\end{pmatrix}.
+$$</p>
+<p>Then, the mean is given by</p>
+<p>$$
+\begin{align*}
+\bmu_z &amp;= \Sigma_z \begin{pmatrix}
+\Lambda\bmu\ - \A\T\L\b \\
+\L\b
+\end{pmatrix} \\[3pt]
+&amp;= \begin{pmatrix}
+\Lambda\inv &amp; \Lambda\inv\A\T \\
+\A\Lambda\inv &amp; \L\inv + \A\Lambda\inv\A\T
+\end{pmatrix}
+\begin{pmatrix}
+\Lambda\bmu\ - \A\T\L\b \\
+\L\b
+\end{pmatrix} \\[3pt]
+&amp;= \begin{pmatrix}
+\bmu\ \\
+\A\bmu\ + \b
+\end{pmatrix}
+\end{align*}
+$$</p>
+<p>Now, we can obtain the parameters of the marginal distribution $p(\y)$ using $(14)$ and $(15)$:</p>
+<p>$$
+\begin{align*}
+\bmu_y = \A\bmu + \b, \\
+\Sigma_y = \L\inv + \A\Lambda\inv\A\T.
+\end{align*}
+$$</p>
+<p>Similarly, we can use our previously derived rules to get an expression for the conditional distribution $p(\x \mid \y)$. In this case, it will be easier to use our expressions for the conditional parameters in terms of the precision matrix. From $(8)$, the conditional covariance is</p>
+<p>$$
+\begin{align*}
+\Sigma_{x\mid y} &amp;= \bR_{xx}\inv \\
+&amp;= \left( \Lambda + \A\T\L\A \right)\inv,
+\end{align*}
+$$</p>
+<p>and, using $(9)$, the conditional mean is given by</p>
+<p>$$
+\begin{align*}
+\bmu_{x\mid y} &amp;= \bmu - \bR_{xx} \inv \bR_{xy}(\y - \bmu_y) \\
+&amp;= \bmu + (\Lambda + \A\T\L\A)\inv \A\T\L (\y - \A\bmu - \b) \\
+&amp;= \bmu + (\Lambda + \A\T\L\A)\inv \bigg[ \A\T\L (\y - \b) + \Lambda\bmu \bigg].
+\end{align*}
+$$</p>
+<h2 id="maximum-likelihood-estimation">Maximum likelihood estimation</h2>
+<p>In practice, we rarely know the true underlying distribution from which data is generated. The goal of maximum likelihood estimation (MLE) is to estimate the true values of the parameters of a distribution from an observed set of data. Suppose we have $n$ i.i.d. samples from a Gaussian distribution $\X = (\x_1, \x_2 \ldots, \x_n)$, and we would like to estimate the mean and covariance of the underlying distribution. This is done by maximizing the likelihood function</p>
+<p>$$
+\begin{align*}
+p(\X \mid \bmu, \Sigma) &amp;= p(\x_1, \ldots, \x_n \mid \bmu, \Sigma) \\
+&amp;= \prod_{i=1}^n p(\x_i \mid \bmu, \Sigma),
+\end{align*}
+$$</p>
+<p>where we can factorize the joint distribution as a product due to the assumption of independence. It can instead be easier to work with the log-likelihood, as it&rsquo;s easier to optimize a sum of functions as opposed to a product.<sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup> Furthermore, we often choose to minimize the negative log-likelihood (NLL), as opposed to maximizing the log-likelihood, as this is often treated as a sort of loss function, and many modern optimization frameworks for machine learning are designed to minimize a loss objective. So, we express the NLL as</p>
+<p>$$
+-\log p(\X \mid \bmu, \Sigma) = - \sum_{i=1}^n \log p(\x_i \mid \bmu, \Sigma)
+$$</p>
+<p>Now, since each sample $\x_i$ takes a Gaussian, the expression for the likelihood of a single sample is given by</p>
+<p>$$
+p(\x_i \mid \bmu, \Sigma) = \frac{1}{(2\pi)^{d/2} \lvert \Sigma \rvert^{1/2}} \exp \left( -\frac{1}{2} (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \right),
+$$</p>
+<p>hence, the NLL is</p>
+<p>$$
+\begin{align*}
+\nll(\bmu, \Sigma) &amp;= - \sum_{i=1}^n \log \bigg[ \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert^{1/2}} \exp \left(-\frac{1}{2} (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \right) \bigg] \\
+&amp;= - \sum_{i=1}^n \log \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert^{1/2}} - \sum_{i=1}^n -\frac{1}{2} (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \\
+&amp;= \frac{nd}{2} \log 2\pi + \frac{n}{2} \lvert \Sigma \rvert + \frac{1}{2} \sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu).
+\end{align*}
+$$</p>
+<p>Then, our goal is to minimize this with respect to the parameters, treating the data as a fixed quantity. First, let&rsquo;s minimize the NLL with respect to $\bmu$:</p>
+<p>$$
+\begin{align*}
+\pbmu \nll(\bmu, \Sigma) &amp;= \frac{1}{2} \sum_{i=1}^n \pbmu (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu) \\
+&amp;= - \sum_{i=1}^n \Sigma\inv(\x_i - \bmu),
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve used the fact that</p>
+<p>$$
+\frac{\partial}{\partial\x} \bigg( \x\T\A\x \bigg) = 2\A\x.
+$$</p>
+<p>Then, setting this equal to zero and solving for $\bmu$:</p>
+<p>$$
+\begin{gather*}
+\sum_{i=1}^n \Sigma\inv (\x_i - \bmu) = 0 \\
+\Sigma\inv \sum_{i=1}^n \x_i = n\Sigma\inv\bmu \\
+\bmu = \frac{1}{n} \sum_{i=1}^n \x_i.
+\end{gather*}
+$$</p>
+<p>Thus, we see that the maximum likelihood estimator for $\bmu$ is just the average of the observed data:</p>
+<p>$$
+\bmu\ml = \frac{1}{n} \sum_{i=1}^n \x_i.
+$$</p>
+<p>Taking the derivative with respect to $\Sigma$ is a bit more involved. To do so, I&rsquo;ll make use of the following three rules, each of which I prove in the <a href="#matrix-derivatives">appendix</a>:</p>
+<p>$$
+\begin{gather*}
+\pbx \A\inv = - \A\inv \frac{\partial\A}{\partial\x} \A\inv \\[2pt]
+\frac{\partial}{\partial\A} \tr(\A\B) = \B\T \\[5pt]
+\frac{\partial}{\partial\A} \log \lvert \A \rvert = (\A\inv)\T.
+\end{gather*}
+$$</p>
+<p>Now, we take the derivative of the NLL with respect to $\Sigma$:</p>
+<p>$$
+\begin{equation}
+\pSigma \nll(\bmu, \Sigma) = \frac{n}{2} \pSigma \log \lvert \Sigma \rvert + \frac{1}{2} \pSigma \sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu).
+\end{equation}
+$$</p>
+<p>Using the third derivative rule, the first term can be written as</p>
+<p>$$
+\begin{align*}
+\frac{n}{2} \pSigma \log \lvert \Sigma \rvert &amp;= \frac{n}{2} \left( \Sigma\inv \right)\T \\
+&amp;= \frac{n}{2} \Sigma\inv,
+\end{align*}
+$$</p>
+<p>recalling that $\Sigma\inv$ is symmetric. Now, we will rewrite the second term using the following property of the trace:</p>
+<p>$$
+\tr \left( \a\b\T \right) = \b\T\a.
+$$</p>
+<p>That is, the trace of the outerproduct between two vectors $\a$ and $\b$ is just their inner product. Using this, we can write the sum in the second term as</p>
+<p>$$
+\begin{align*}
+\sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu) &amp;= \tr \left( \sum_{i=1}^n \Sigma\inv (\x_i - \bmu) (\x_i - \bmu)\T \right) \\
+&amp;= n \tr \left( \Sigma\inv \bS \right),
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve introduced the <em>scatter matrix</em>:</p>
+<p>$$
+\bS = \frac{1}{n} \sum_{i=1}^n (\x_i - \bmu)(\x_i - \bmu)\T.
+$$</p>
+<p>Then, the second term in $(17)$ can be written as</p>
+<p>$$
+\begin{align*}
+\frac{1}{2} \pSigma \sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu) &amp;= \frac{n}{2} \pSigma \tr(\Sigma\inv \bS) \\
+&amp;= \frac{n}{2} \tr \left( \frac{\partial\Sigma\inv}{\partial\Sigma} \bS \right) \\
+&amp;= - \frac{n}{2} \tr \left( \Sigma\inv \frac{\partial\Sigma}{\partial\Sigma} \Sigma\inv \bS \right) \\
+&amp;= - \frac{n}{2} \tr \left( \frac{\partial\Sigma}{\partial\Sigma} \Sigma\inv \bS \Sigma\inv \right) \\
+&amp;= - \frac{n}{2} \left( \Sigma\inv\bS\Sigma\inv \right)\T \\
+&amp;= - \frac{n}{2} \Sigma\inv\bS\Sigma\inv,
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve used the first derivative rule, along with the cyclic property of the trace and the fact that $\bS$ is symmetric.<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup> Then, substituting the derivatives on the right-hand side of $(17)$ and setting them equal to zero:</p>
+<p>$$
+\begin{gather*}
+\frac{n}{2}\Sigma\inv - \frac{n}{2} \Sigma\inv\bS\Sigma\inv = 0 \\
+\Sigma\inv = \Sigma\inv\bS\Sigma\inv \\
+\I = \bS \Sigma\inv \\
+\end{gather*}
+$$</p>
+<p>Hence, the maximum likelihood estimator for $\Sigma$ is given by</p>
+<p>$$
+\Sigma\ml = \frac{1}{n} \sum_{i=1}^n (\x_i - \bmu\ml)(\x_i - \bmu\ml)\T.
+$$</p>
+<p>It&rsquo;s important to note that the estimator we use for $\Sigma$ need be symmetric PSD. Otherwise, it would not be a valid covariance matrix. However, we see that $\bS$ is indeed symmetric PSD.</p>
+<p>Often when estimating parameters from data, we would like to know whether or not our estimators are <em>biased</em>. That is, do the estimators equal the true parameters in expectation? Let&rsquo;s first examine this for the mean:</p>
+<p>$$
+\begin{align*}
+\E[\bmu\ml] &amp;= \E \left[ \frac{1}{n} \sum_{i=}^n \x_i \right]
+= \frac{1}{n} \sum_{i=1}^n \E [\x_i]
+= \frac{n\bmu}{n}
+= \bmu.
+\end{align*}
+$$</p>
+<p>Thus, the maximum likelihood estimator for the mean is unbiased. Again, examining the expectation of $\Sigma\ml$ is more involved. To evaluate this, I&rsquo;ll use the fact that, for two observations $\x_i, \x_j$, we have</p>
+<p>$$
+\begin{equation}\label{eq:xixj}
+\E[\x_i\x_j] = \bmu\bmu\T + \delta_{ij}\Sigma.
+\end{equation}
+$$</p>
+<p>This follows from $(5)$, noting that the covariance between two independent samples will be zero. Then,</p>
+<p>$$
+\begin{align}
+\E[\Sigma\ml] &amp;= \frac{1}{n} \E \left[ \sum_{i=1}^n (\x_i - \bmu\ml)(\x_i - \bmu\ml)\T \right] \nonumber \\
+&amp;= \frac{1}{n} \E \left[ \sum_{i=1}^n \left( \x_i\x_i\T - \x_i\bmu\ml\T - \bmu\ml\x_i\T + \bmu\ml\bmu\ml\T \right) \right] \nonumber \\
+&amp;= \frac{1}{n} \bigg( \sum_{i=1}^n \E [\x_i\x_i\T] - \sum_{i=1}^n \E[\x_i \bmu\ml\T] - \sum_{i=1}^n \E [\bmu\ml\x_i\T] + \sum_{i=1}^n \E [\bmu\ml\bmu\ml\T]  \bigg). \nonumber \\
+\end{align}
+$$</p>
+<p>The first term is given by</p>
+<p>$$
+\frac{1}{n} \sum_{i=1}^n \bmu\bmu\T + \Sigma,
+$$</p>
+<p>from $\eqref{eq:xixj}$.</p>
+<h2 id="bayesian-inference">Bayesian inference</h2>
+<p>Using MLE to estimate the parameters of a distribution has a drawback: it gives <em>point estimates</em> of the parameters. Instead, suppose we want a range of values to choose from, each with a corresponding level of (un)certainty. This can be achieved using Bayesian inference, in which we find a probability distribution over the possible parameter values.</p>
+<p>In this section, I&rsquo;ll show how to estimate the parameters of the Gaussian using Bayesian inference. I&rsquo;ll cover several scenarios:</p>
+<ol>
+<li>Unknown mean, known variance</li>
+<li>Known mean, unknown variance</li>
+<li>Unknown mean, unknown variance</li>
+</ol>
+<p>The goal in each scenario will be to infer the unknown parameter(s). First, I&rsquo;ll show the univariate case of each scenario, then I&rsquo;ll extend them to the multivariate case.</p>
+<h3 id="unknown-mean-known-variance-univariate-case">Unknown mean, known variance (univariate case)</h3>
+<p>Similar to the MLE framework, suppose we have some dataset $\X = \{x_i\}_{i=1}^n$, in which $x_i \sim \Norm(x_i \mid \mu, \sigma^2)$, where $\sigma^2$ is known, and we wish to infer $\mu$. However, as opposed to the MLE framework, we wish to find a probability distribution over $\mu$ given the observed data.</p>
+<p>Using Bayes&rsquo; theorem, we have</p>
+<p>$$
+p(\mu \mid \X) = \frac{p(\X \mid \mu) p(\mu)}{p(\X)},
+$$</p>
+<p>where $p(\X \mid \mu)$ is the likelihood (which we saw in the MLE framework), $p(\mu)$ is the prior, and $p(\mu \mid \X)$ is the posterior. $p(\X)$ is a constant with respect to $\mu$, and normalizes the product in the numerator to ensure that $p(\mu \mid \X)$ is a valid probability distribution. Instead of computing it explicitly, we will find the functional form of the posterior, then normalize at the end.<sup id="fnref:8"><a href="#fn:8" class="footnote-ref" role="doc-noteref">8</a></sup> Then, disregarding normalization, we have</p>
+<p>$$
+p(\mu \mid \X) \propto p(\X\mid\mu) p(\mu).
+$$</p>
+<p>The likelihood takes the form</p>
+<p>$$
+\begin{align}
+p(\X \mid \mu) &amp;= \prod_{i=1}^n p(x_i \mid \mu) \nonumber \\
+&amp;= \prod_{i=1}^n \frac{1}{(2\pi\sigma^2)^{1/2}} \exp \left( -\frac{(x_i - \mu)^2}{2\sigma^2} \right) \nonumber \\
+&amp;= \frac{1}{(2\pi\sigma^2)^{n/2}} \exp \left( -\frac{1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2  \right) \nonumber.
+\end{align}
+$$</p>
+<p>Note that the likelihood function is not a valid probability distribution, since it is not normalized. However, we do see that it takes the form of an exponential of a quadratic function of $\mu$, hence it takes the form of a Gaussian distribution over $\mu$. Thus, if we choose the prior distribution to be a Gaussian as well, then the posterior will be the product of two Gaussians, which is itself a Gaussian. Thus, the <em>conjugate prior</em> of the Gaussian distribution is itself a Gaussian.<sup id="fnref:9"><a href="#fn:9" class="footnote-ref" role="doc-noteref">9</a></sup></p>
+<p>Then, let&rsquo;s choose the prior to be</p>
+<p>$$
+p(\mu) = \Norm(\mu \mid \mu_0, \sigma^2_0).
+$$</p>
+<p>The posterior then takes the form</p>
+<p>$$
+\begin{align}
+p(\mu \mid \X) &amp;\propto p(\X \mid \mu) p(\mu) \nonumber \\
+&amp;\propto \exp \left( -\frac{1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2 \right) \exp \left( -\frac{1}{2\sigma_0^2} (\mu - \mu_0)^2 \right) \nonumber \\
+&amp;\propto \exp\left(-\frac{1}{2} \sum_{i=1}^n \frac{(x_i - \mu)^2}{\sigma^2} + \frac{(\mu - \mu_0)^2}{n\sigma_0^2} \right) \nonumber
+\end{align}
+$$</p>
+<p>The sum inside the exponential is then</p>
+<p>$$
+\begin{align*}
+&amp;\quad \sum_{i=1}^n \frac{n\sigma_0^2 \left( x_i^2 - 2x_i\mu + \mu^2  \right) + \sigma^2 \left( \mu^2 - 2\mu\mu_0 + \mu_0^2 \right)}{n\sigma_0^2\sigma^2} \\
+&amp;= \frac{1}{n\sigma_0^2\sigma^2} \sum_{i=1}^n n\sigma_0^2x_i^2 - 2n\sigma_0^2x_i\mu + n\sigma_0^2\mu^2 + \sigma^2\mu^2 - 2\sigma^2\mu\mu_o + \sigma^2\mu_0^2 \\
+&amp;= \frac{1}{n\sigma_0^2\sigma^2} \bigg( n^2\sigma_0^2\mu^2 + n\sigma^2\mu^2 - 2n\sigma^2\mu\mu_0 + n\sigma^2\mu_0^2 - 2n\sigma_0^2\mu \sum_{i=1}^n x_i \\
+&amp;\qquad\qquad\qquad  + n\sigma_0^2\sum_{i=1}^n x_i^2 \bigg) \\[3pt]
+&amp;= \frac{1}{n\sigma_0^2\sigma^2} \left[ (n^2\sigma_0^2 + n\sigma^2)\mu^2 - 2n\left(\sigma^2\mu_0 + \sigma_0^2\sum_{i=1}^n x_i\right) \mu + c  \right]
+\end{align*}
+$$</p>
+<p>where $c$ denotes all the terms which are independent of $\mu$. Then, we can neglect these terms, since they can be factored out of the exponent and considered part of the normalization constant which we&rsquo;ll determine later. Thus, we are left with</p>
+<p>$$
+\frac{1}{n\sigma_0^2\sigma^2} \bigg[ (n^2\sigma_0^2 + n\sigma^2)\mu^2 - 2n\left(\sigma^2\mu_0 + n\sigma_0^2\mu\ml\right) \mu \bigg],
+$$</p>
+<p>recalling that $\mu\ml = \frac{1}{n}\sum_{i=1}^n x_i$. Then, completing the square and putting this expression back into the exponent, we have</p>
+<p>$$
+p(\mu \mid \X) \propto \exp \left( -\frac{1}{2} \frac{n\sigma_0^2 + \sigma^2}{\sigma_0^2\sigma^2} \left( \mu - \frac{n\sigma_0^2\mu\ml + \sigma^2\mu_0}{n\sigma_0^2 + \sigma^2} \right)^2 \right).
+$$</p>
+<p>As we predicted, this takes the form of a Gaussian:</p>
+<p>$$
+\mu \sim \Norm(\mu \mid \mu_n, \sigma^2_n),
+$$</p>
+<p>where</p>
+<p>$$
+\begin{align}
+\mu_n &amp;= \frac{\sigma^2}{n\sigma_0^2 + \sigma^2}\mu_0 + \frac{n\sigma_0^2}{n\sigma_0^2 + \sigma^2} \mu\ml \nonumber \\[8pt]
+&amp;= \frac{1}{\sigma_n^2} \left( \frac{1}{\sigma_0^2} \mu_0 + \frac{n}{\sigma^2} \mu\ml \right), \label{eq:mun} \\[10pt]
+\frac{1}{\sigma_n^2} &amp;= \frac{n\sigma_0^2 + \sigma^2}{\sigma_o^2\sigma^2} \nonumber \\[4pt]
+&amp;= \frac{n}{\sigma^2} + \frac{1}{\sigma_0^2}. \label{eq:sigman}
+\end{align}
+$$</p>
+<p>To recap, we started with some initial belief about the parameter $\mu$, which was represented by the prior $p(\mu)$. For example, the prior mean $\mu_0$ might reflect our belief of a reasonable value for $\mu$, and the prior variance $\sigma_0^2$ might reflect how certain we are in that belief. Then, after observing $n$ samples, we updated our expressions for these parameters using $\eqref{eq:mun}$ and $\eqref{eq:sigman}$.</p>
+<p>There are several interesting things to note about $\eqref{eq:mun}$ and $\eqref{eq:sigman}$. First, we see that the posterior mean $\mu_n$ is a weighted average between the prior mean $\mu_0$ and the mle $\mu\ml$. When $n=0$, we simply have the prior mean $\mu_n = \mu_0$. As $n \to \infty$, the posterior mean approaches the mle $\mu_n \to \mu\ml$.</p>
+<p>Furthermore, we have expressed the posterior variance in terms of the precision:</p>
+<p>$$
+\lambda_n = \frac{1}{\sigma_n^2}.
+$$</p>
+<p>We see that, as $n$ gets big, the precision grows, and hence the variance gets small. That is, with more observations, we become more certain in our estimation of the parameters. Moreover, it&rsquo;s interesting to note that the precision gets updated additively. For each observation of the data, we increase prior precision $1/\sigma_0^2$ by one increment of the data precision $1/\sigma^2$.</p>
+<p>Finally, it&rsquo;s interesting to note that as $n \to \infty$, not only does $\mu_n \to \mu\ml$, but $\sigma_n^2 \to 0$ as well. Thus, the posterior distribution in the limit of infinitely many observations is the delta function centered at $\mu\ml$. Thus, the maximum likelihood estimator is recovered in the Bayesian formulation.</p>
+<h3 id="unknown-mean-known-variance-multivariate-case">Unknown mean, known variance (multivariate case)</h3>
+<p>Here, I extend the previous results to the multivariate case.</p>
+<h3 id="known-mean-unknown-variance-univariate-case">Known mean, unknown variance (univariate case)</h3>
+<h3 id="known-mean-unknown-variance-multivariate-case">Known mean, unknown variance (multivariate case)</h3>
+<h3 id="unknown-mean-unknown-variance-univariate-case">Unknown mean, unknown variance (univariate case)</h3>
+<h3 id="unknown-mean-unknown-variance-multivariate-case">Unknown mean, unknown variance (multivariate case)</h3>
+<h2 id="references-and-further-reading">References and further reading</h2>
+<p>The content of this post largely follows section 2.3 of Bishop&rsquo;s <em>Pattern Recognition and Machine Learning</em>. However, the aim of this blog was to supplement this with detailed derivations, provide my own insights, and extend the discussion on certain points.</p>
+<p>The other resource I used was Murphy&rsquo;s <em>Probabilistic Machine Learning: An Introduction</em>, which I primarily referenced for discussions on many of the mathematical concepts which can be found detailed in the appendix below. Again, any material from this book which I&rsquo;ve included, I aimed to supplement and extend.</p>
+<p>Besides that, I made use of many helpful Math Stack Exchange posts, reddit discussions, and Wikipedia articles.</p>
 <h2 id="appendix">Appendix</h2>
 <h3 id="eigenvalue-decomposition">Eigenvalue decomposition</h3>
 <h3 id="change-of-variables">Change of variables</h3>
+<h3 id="sum-and-product-rules-of-probability">Sum and product rules of probability</h3>
 <h3 id="the-schur-complement">The Schur complement</h3>
 <h3 id="completing-the-square">Completing the square</h3>
-<h3 id="short-proofs">Short proofs</h3>
+<h3 id="matrix-derivatives">Matrix derivatives</h3>
 <ol>
-<li>Show that if a matrix $\A$ is real and symmetric, then its eigenvalues are real, and the eigenvectors can be chosen to form an orthonormal set.</li>
-<li>Show that the inverse of a symmetric matrix is symmetric. We&rsquo;ll use this to argue that the precision matrix $\Lambda$ is symmetric.</li>
+<li></li>
 </ol>
+<h3 id="short-proofs">Short proofs</h3>
+<h4 id="1">1.</h4>
+<p>Show that uncorrelated does not imply independent. However, in the case of a Gaussian, it does.</p>
+<h4 id="2">2.</h4>
+<p>Show that if a matrix $\A$ is real and symmetric, then its eigenvalues are real, and the eigenvectors can be chosen to form an orthonormal set.</p>
+<h4 id="3">3.</h4>
+<p>Show that the inverse of a symmetric matrix is symmetric. We&rsquo;ll use this to argue that the precision matrix $\Lambda$ is symmetric.</p>
 <div class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
@@ -338,7 +1154,28 @@ $$
 $$&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:2">
-<p>Note that, since $\U$ is an orthogonal matrix, a linear transformation defined by $\U$ preserves the length of the vector which it transforms, and thus is either a rotation, reflection, or a combination of both.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>Note that since $\U$ is an orthogonal matrix, a linear transformation defined by $\U$ preserves the length of the vector which it transforms, and thus is either a rotation, reflection, or a combination of both.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>Most literature notation uses $\Lambda$ for the precision matrix. Not that we have overdefined $\Lambda$, since it also refers to the matrix containing the eigenvalues of $\Sigma$ in our definition for the eigenvalue decomposition. However, for the rest of this blog, $\Lambda$ will refer to the precision matrix.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p>To see this, consider the product between two vectors $\a \in \R^m$ and $\b \in \R^n$ defined by $\a\T\A\b$ for some matrix $\A \in \R^{m \times n}.$ Then, since the resulting product is a scalar, we have $\a\T\A\b  = \b\T\A\T\a.$&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p>This rule is particularly useful for Bayesian approaches to machine learning in which we model observations of some underlying distribution with additive Gaussian noise. For example, consider the case of linear regression, where observations are related via the function $f(\x) = \w\T\x.$ We can model noisy predictions by adding a zero-mean Gaussian random variable: $y = f(\x) + \epsilon$, where $\epsilon \sim \Norm(0, \sigma^2).$ Then, the observations are themselves Gaussian with mean $f(\x)$ and variance $\sigma^2$: $p(y \mid \x, \w) = \Norm(y \mid \w\T\x, \sigma^2).$&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:6">
+<p>Note that since the logarithm is monotonic, the maximizer of $\log f(x)$ is equivalent to that of $f(x)$, so finding the parameters which maximize the log-likelihood is equivalent to find those which maximize the likelihood. Furthermore, we often choose to <em>minimize</em> the NLL as opposed to <em>maximizing</em> the log-likelihood, as this is often treated as a sort of loss function, and many modern optimization frameworks for machine learning are designed to minimize loss objectives.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:7">
+<p>$\bS$ is symmetric because it is formed by taking a sum of symmetric matrices. Each matrix in the sum is symmetric because it is the outer product of a vector with itself, which always forms a symmetric PSD matrix as long as the vectors are nonzero.&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:8">
+<p>This is a common strategy which we&rsquo;ve already seen in many of the previous derivations. Instead of carrying normalization constants throughout the procedure, we will find the form of the posterior distribution. Then, we can compute the normalization constant at the end. This will be easy if we find that the posterior takes the form of a known distribution, in which the normalization constant can be found by inspection.&#160;<a href="#fnref:8" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:9">
+<p>Given a parameter $\theta$ and a dataset $\mathcal{D}$, we call the prior distribution $p(\theta)$ a <em>conjugate prior</em> to the likelihood $p(\mathcal{D} \mid \theta)$ if the posterior $p(\theta \mid \mathcal{D})$ takes the same functional form as the prior. Since it is up to us to choose the prior distribution, it is often desirable to choose a conjugate prior, since it simplifies the computation of the posterior.&#160;<a href="#fnref:9" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </div>
@@ -374,7 +1211,7 @@ $$&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;
   src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
 
 <script defer
-  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/contrib/auto-render.min.js"
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
   onload="renderMathInElement(document.body);"></script>
 
 <script>
@@ -382,30 +1219,54 @@ $$&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;
     renderMathInElement(document.body, {
       delimiters: [
         { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false }
+        { left: "$", right: "$", display: false },
+        { left: "\[", right: "\]", display: true}
       ],
+      trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
       macros: {
+        "\\eqref": "\\href{###1}{(\\text{#1})}",
+        "\\ref": "\\href{###1}{\\text{#1}}",
+        "\\label": "\\htmlId{#1}{}",
         "\\R": "\\mathbb{R}",
+        "\\bR": "\\mathbf{R}",
         "\\C": "\\mathbb{C}",
         "\\Z": "\\mathbb{Z}",
         "\\N": "\\mathbb{N}",
         "\\Q": "\\mathbb{Q}",
-        "\\EE": "\\mathbb{E}",
+        "\\E": "\\mathbb{E}",
+        "\\cov":"\\operatorname{cov}",
         "\\x": "\\mathbf{x}",
         "\\X": "\\mathbf{X}",
+        "\\w": "\\mathbf{w}",
         "\\y": "\\mathbf{y}",
         "\\z": "\\mathbf{z}",
         "\\u": "\\mathbf{u}",
         "\\U": "\\mathbf{U}",
         "\\I": "\\mathbf{I}",
         "\\A": "\\mathbf{A}",
+        "\\a": "\\mathbf{a}",
+        "\\B": "\\mathbf{B}",
+        "\\b": "\\mathbf{b}",
+        "\\D": "\\mathbf{D}",
+        "\\M": "\\mathbf{M}",
+        "\\m": "\\mathbf{m}",
+        "\\bC": "\\mathbf{C}",
         "\\J": "\\mathbf{J}",
+        "\\L": "\\mathbf{L}",
+        "\\bS": "\\mathbf{S}",
         "\\bmu": "\\boldsymbol{\\mu}",
         "\\T": "^{\\top}",
         "\\inv": "^{-1}",
-        "\\normal": "\\mathcal{N}",
+        "\\Norm": "\\mathcal{N}",
+        "\\nll": "\\text{NLL}",
         "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
         "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
+        "\\diag": "\\operatorname{diag}",
+        "\\tr": "\\operatorname{tr}",
+        "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
+        "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
+        "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\ml": "_\\text{ML}",
       }
     });
   });
