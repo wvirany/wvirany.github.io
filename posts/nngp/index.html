@@ -343,8 +343,7 @@ $$</p>
     renderMathInElement(document.body, {
       delimiters: [
         { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false },
-        { left: "\[", right: "\]", display: true}
+        { left: "$", right: "$", display: false }
       ],
       trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
       macros: {
