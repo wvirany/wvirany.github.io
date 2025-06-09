@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    A spelled-out introduction to Gaussian processes | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/posts/gp_intro/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.c5b19f349890ba8c8308e8d948f1754211fca49303531d62bb79927877c7df0e.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+    
+    
+    
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /blog
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/me" >
+                /me
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/why" >
+                /why?
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">A spelled-out introduction to Gaussian processes</h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+      
+      
+      <time datetime="2025-05-28T00:00:00&#43;00:00">May 28, 2025</time>
+      
+
+      
+      &nbsp; · &nbsp;
+      11 min read
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+  <aside class="toc">
+    <p><strong>Table of contents</strong></p>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#bayesian-linear-regression">Bayesian linear regression</a>
+      <ul>
+        <li><a href="#the-linear-model">The linear model</a></li>
+        <li><a href="#computing-the-parameters">Computing the parameters</a></li>
+        <li><a href="#making-predictions">Making predictions</a></li>
+        <li><a href="#bayesian-linear-regression-in-python">Bayesian linear regression in Python</a></li>
+      </ul>
+    </li>
+    <li><a href="#the-kernel-trick">The kernel trick</a>
+      <ul>
+        <li><a href="#comments-on-valid-kernel-functions">Comments on valid kernel functions</a></li>
+      </ul>
+    </li>
+    <li><a href="#gaussian-process-regression">Gaussian process regression</a>
+      <ul>
+        <li><a href="#exact-observations">Exact observations</a></li>
+        <li><a href="#noisy-observations">Noisy observations</a></li>
+        <li><a href="#gaussian-process-regression-in-python">Gaussian process regression in Python</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+  </ul>
+</nav>
+  </aside>
+  
+
+  
+
+  <div class="single-content">
+    <p>Gaussian processes (GPs) have confounded me since I was first introduced to them. Many introductions talk about the beauty of implicitly defining infinitely many basis functions, or performing Bayesian inference directly in the space of functions. These explanations can seem daunting at first, but in this blog I aim to build up to GPs from a basic linear model,</p>
+<p>spelled-out introduction.</p>
+<h2 id="bayesian-linear-regression">Bayesian linear regression</h2>
+<h3 id="the-linear-model">The linear model</h3>
+<p>To build the foundation for GPs, I&rsquo;ll start by considering a Bayesian treatment of linear regression. We&rsquo;ll see that this is in fact a basic example of a GP.</p>
+<p>Consider the linear model</p>
+<p>$$
+\begin{align*}
+f(\x; \w) = \x\T\w,
+\end{align*}
+$$</p>
+<p>where $\x \in \R^d$ is some input vector with $d$ features and $\w \in \R^d$ is the vector of parameters which specify the model. Note that we can incorporate an intercept term by always letting one element of $\x$ be constant, say $x_0 = 1$: <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup></p>
+<p>$$
+f(\x; \w) = w_0 + w_1x_1 + \cdots + w_{d-1}x_{d-1}.
+$$</p>
+<p>Moreover, we can define a feature transformation $\phi: \R^d \to \R^m$. This transforms our feature vectors as follows:</p>
+<p>$$
+\phi(\x) =
+\begin{bmatrix}
+\phi_0(\x) \\
+\phi_1(\x) \\
+\vdots \\
+\phi_{m-1}(\x)
+\end{bmatrix}.
+$$</p>
+<p>Again, by defining $\phi_0(\x) = 1$, we can implicitly incorporate a bias term. Now, we can redefine our model in terms of these basis functions:</p>
+<p>$$
+f(\x; \w) = \bphi\T\w,
+$$</p>
+<p>where $\bphi = \phi(\x)$, and now $\w \in \R^m$. If the basis functions ${\phi_i}$ are nonlinear in terms of $\x$, we can model nonlinear relationships between the features and targets while stil enjoying the benefits of a linear model, since $f$ is linear in terms of $w$.</p>
+<p>As a simple example, suppose we have a one-dimensional input $x$, and we wish to model the class of polynomials up to degree $m-1$. Then, we simply define $\phi_j(x) = x^j$, which gives the following model:</p>
+<p>$$
+\begin{align*}
+f(\x; \w) &amp;= \bphi\T\w \\
+&amp;= w_0\phi_0(x) + w_1\phi_1(x) + \dots + w_{m-1}\phi_{m-1}(x) \\
+&amp;= w_0 + w_1x + w_2x^2 + \dots + w_{m-1}x^{m-1}
+\end{align*}
+$$</p>
+<p>Now, we usually assume that a given observation $(\x, y)$ is corrupted by some noise, which we can model by adding a zero-mean Gaussian random variable to the functional outputs:</p>
+<p>$$
+y = f(\x; \w) + \epsilon,
+$$</p>
+<p>where $\epsilon \sim \Norm(0, \sigma^2)$. This gives rise to a probability distribution over $y$: <sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></p>
+<p>$$
+\begin{align*}
+p(y \mid \x, \w, \sigma^2) = \Norm(y \mid f(\x; \w), \sigma^2).
+\end{align*}
+$$</p>
+<p>Before moving forward, a quick note on notation: when referring to a general probability distribution $p$, we list the dependent variables on the LHS of the conditional and the given variables on the RHS, including hyperparameters like $\sigma^2$, in no particular order. For example, $p(y \mid \x, \w, \sigma^2) = p(y \mid \w, \sigma^2, \x)$. It&rsquo;s completely arbitrary what order the variables are in, so long as they fall on the correct side of the conditional, and often certain variables are omitted from the notation and are implicitly assumed. From this point, I will omit hyperparameters from the general expressions for distributions.</p>
+<p>However, when we refer to a specific distribution like the Gaussian, the positions of given variables have a specific meaning: the first position after the conditional is reserved for the mean, and the second position is reserved for the variance, hence $p(y \mid \x, \w) = \Norm(y \mid f(\x; \w), \sigma^2)$.</p>
+<h3 id="computing-the-parameters">Computing the parameters</h3>
+<p>Now, suppose we observe some iid dataset $\cD = (\X, \y)$, where $\X \in \R^{d\times n}$ is the matrix whose columns are the $n$ observed input vectors, and $\y = (y_1, y_2 ,\ldots, y_n)\T$ contains the correspondng target variables. Moreover, we can write the matrix containing our feature vectors as $\bPhi \in \R^{m\times n}$. Then, we have the following matrix equation:</p>
+<p>$$
+\y = \bPhi\T\w + \bepsilon,
+$$</p>
+<p>where $\bepsilon \sim \Norm(0, \sigma^2\I)$. As is often the case in supervised learning, we seek to find reasonable values for the parameters $\w$ in light of this observed data. In the frequentist approach to linear regression, we might model the likelihood function:</p>
+<p>$$
+\begin{align*}
+p(\cD \mid \w) &amp;= p(\y \mid \X, \w) \\
+&amp;= p(y_1, \dots, y_n \mid \x_1, \dots, \x_n, \w) \\
+\text{\scriptsize (from iid assumption)} \qquad &amp;= \prod_{i=1}^n p(y_i \mid \x, \w) \\
+&amp;= \prod_{i=1}^n \Norm(y_i \mid f(\x_i; \w), \sigma^2).
+\end{align*}
+$$</p>
+<p>Then, we would maximize this expression w.r.t $\w$, which would give a point estimate for the parameters.</p>
+<p>Instead, we will take a Bayesian treatment, which will allow us to compute a probability distribution over all possible values of of the parameters. To do so, we start by defining a prior on $\w$:</p>
+<p>$$
+p(\w) = \Norm \left( \w \mid 0, \bSigma \right).
+$$</p>
+<p>With no previous information about $\w$, it&rsquo;s reasonable to assume that all values of $\w$ are equally likely &mdash; this corresponds to a zero-mean Gaussian. Furthermore, we often assume the parameters are independent, so $\bSigma = \alpha\I$, for some constant $\alpha$. However, I&rsquo;ll continue with the general form for the prior covariance.</p>
+<p>Now, we&rsquo;d like to infer the values of $\w$ from the observed data by computing the posterior distribution $p(\w \mid \cD)$. To do so, we can model the joint distribution of $\y$ and $\w$, then use the <a href="../gaussian/#conditioning">rules for conditioning</a> on multivariate Guassian distributions. <sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup></p>
+<p>First, we note that $\y$ is the <a href="../gaussian/#sum-of-gaussians">sum of two Gaussians</a>; the transformed $\bPhi\T\w$, and $\bepsilon$. Thus, $\y$ will be Gaussian-distributed as follows:</p>
+<p>$$
+p(\y \mid \X) = \Norm \left( \y \mid 0, \bPhi\T\bSigma\bPhi + \sigma^2\I \right).
+$$</p>
+<p>Finally, we compute the covariance between $\y$ and $\w$:</p>
+<p>$$
+\cov(\y, \w) = \cov(\bPhi\T\w + \bepsilon, \w) = \bPhi\T\cov(\w, \w) = \bPhi\T\bSigma.
+$$</p>
+<p>Thus, the joint distribution is given by</p>
+<p>$$
+p(\y, \w \mid \X) = \Norm \left( \left. \begin{bmatrix}
+\y \\
+\w
+\end{bmatrix}\right\vert
+0, \begin{bmatrix}
+\bPhi\T\bSigma\bPhi + \sigma^2\I &amp; \bPhi\T\bSigma \\
+\bSigma\bPhi &amp; \bSigma
+\end{bmatrix}
+\right).
+$$</p>
+<p>Now, the conditional distribution $p(\w \mid \y, \X)$ is Gaussian with the following parameters:</p>
+<p>$$
+\begin{align*}
+\bmu_{\w\mid\cD} &amp;= \bSigma\bPhi \left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv\y, \\
+\bSigma_{\w\mid\cD} &amp;= \bSigma - \bSigma\bPhi\left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv \bPhi\T\bSigma.
+\end{align*}
+$$</p>
+<h3 id="making-predictions">Making predictions</h3>
+<p>Using our posterior parameter distribution $p(\w \mid \cD)$, we&rsquo;d like to now make predictions at new test points $\X_\ast$, i.e., we&rsquo;d like to compute the posterior predictive distribution $p(\y_\ast \mid \X_\ast, \cD)$. One way to do this is to average over all values of $\w$:</p>
+<p>$$
+p(\y_\ast \mid \X_\ast, \D) = \int p(\y_\ast \mid \X_\ast, \w) p(\w \mid \cD) d\w,
+$$</p>
+<p>where $p(\y_\ast \mid \X_\ast, \w)$ is just the likelihood and $p(\w\mid\cD)$ is the previously computed posterior parameter distribution. This integral is tractable, but takes a bit of work.<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> An easier way to compute the predictive distribution is to note that, under our model,</p>
+<p>$$
+\y_\ast = \bPhi_\ast\T\w + \bepsilon.
+$$</p>
+<p>Then, if we use the posterior distribution over $\w$ and once again use the rules for transforming Gaussians, we have the following result:</p>
+<p>$$
+p(\y_\ast \mid \X_\ast, \D) = \Norm \left( \y_\ast \mid \bPhi_\ast\T\bmu_{\w\mid\cD}, \bPhi_\ast\T\bSigma_{\w\mid\cD}\bPhi_\ast + \sigma^2\I \right).
+$$</p>
+<h3 id="bayesian-linear-regression-in-python">Bayesian linear regression in Python</h3>
+<h2 id="the-kernel-trick">The kernel trick</h2>
+<p>If we write out the mean and covariance for the posterior predictive distribution, we have</p>
+<p>$$
+\begin{align*}
+\bmu_{y_\ast \mid \cD} &amp;= \bPhi_\ast\T\bmu_{\w\mid\cD} \\
+&amp;= \bPhi_\ast\T\bSigma\bPhi \left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv\y,
+\end{align*}
+$$</p>
+<p>and</p>
+<p>$$
+\begin{align*}
+\bSigma_{\y_\ast \mid \cD} &amp;= \bPhi_\ast\T\bSigma_{\w\mid\cD}\bPhi_\ast + \sigma^2\I \\
+&amp;= \bPhi_\ast\T \left[ \bSigma - \bSigma\bPhi \left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv \bPhi\T\bSigma \right] \bPhi_\ast + \sigma^2\I \\
+&amp;= \bPhi_\ast\T\bSigma\bPhi_\ast - \bPhi_\ast\T\bSigma\bPhi \left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv \bPhi\T\bSigma\bPhi_\ast + \sigma^2\I.
+\end{align*}
+$$</p>
+<p>Thus, we see that all the dependence of the posterior predictive distribution on the features $\bPhi$ and $\bPhi_\ast$ is in the form of one of the following inner products:</p>
+<p>$$
+\bPhi\T\bSigma\bPhi, \quad \bPhi\T\bSigma\bPhi_\ast, \quad \bPhi_\ast\T\bSigma\bPhi, \quad \bPhi_\ast\T\bSigma\bPhi_\ast.
+$$</p>
+<p>In other words, all of the dependence on the features depends on an expression of the form</p>
+<p>$$
+k(\x, \x\p) = \phi(\x)\T\bSigma\phi(\x\p),
+$$</p>
+<p>where we&rsquo;ve defined a &ldquo;kernel function&rdquo; $k$. By noting that $\bSigma$ is positive definite, and hence has a matrix square root<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup>, we can rewrite this expression as</p>
+<p>$$
+k(\x, \x\p) = \psi(\x)\T\psi(\x\p),
+$$</p>
+<p>where $\psi(\x) = \Sigma^{1/2}\phi(\x)$. Then, the above expressions involving our features can be rewritten as the following Gram matrices: <sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup></p>
+<p>$$
+\begin{align*}
+\K &amp;= \bPhi\T\bSigma\bPhi, \quad \K_\ast = \bPhi\T\bSigma\bPhi_\ast, \quad \K_{\ast\ast} = \bPhi_\ast\T\bSigma\bPhi_\ast.
+\end{align*}
+$$</p>
+<p>Note that $K_\ast = (\bPhi_\ast\T\bSigma\bPhi)\T$, so we can represent each of the expressions in terms of these three Gram matrices. We can now rewrite the parameters of the predictive distribution as</p>
+<p>$$
+\begin{align*}
+\bmu_{\y_\ast \mid \cD} &amp;= \K_\ast\T \left( \K + \sigma^2\I \right)\inv\y, \\
+\bSigma_{\y_\ast \mid \cD} &amp;= \K_{\ast\ast} - \K_\ast\T \left( \K + \sigma^2\I \right)\inv \K_\ast + \sigma^2\I.
+\end{align*}
+$$</p>
+<p>To reiterate, we showed that, for <em>any</em> choice of feature map, we could express our result in terms of an inner product. Thus, we could achieve the same result by choosing a kernel function which can be represented by an inner product - then we never have to explicitly compute our feature vectors!</p>
+<p>The advantage of this is that perhaps the feature vectors we&rsquo;d like to work with are very high dimensional, and it might be cheaper to work in terms of the kernel function. As an example, suppose we have some</p>
+<p>As a concrete example<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup>, consider some vector $\x = (x_1, x_2, \dots, x_d) \in R^d$, and suppose we wish to express all the second-order polynomials in terms of the features of $\x$:</p>
+<p>$$
+\phi(\x) = \begin{bmatrix}
+x_1 \\
+x_2 \\
+\vdots \\
+x_d \\
+x_1^2 \\
+x_1x_2 \\
+\vdots \\
+x_d^2
+\end{bmatrix}.
+$$</p>
+<p>Noting that there are $d$ linear terms, ${d\choose2}$ cross terms, and $d$ squared terms, computing this requires $\mathcal{O}(d^2)$ operations:</p>
+<p>$$
+d + {d\choose 2} + d = 2d + \frac{d(d-1)}{2} \sim \mathcal{O}(d^2).
+$$</p>
+<p>Alternatively, we can write the inner product as</p>
+<p>$$
+\begin{align*}
+\phi(\x)\T\phi(\x\p) &amp;= \sum_{i=1}^dx_ix_i\p + \sum_{i=1}^dx_i^2x_i^{\prime\,2} + 2 \sum_{i=1}^d \sum_{j \neq i}^d x_ix_i\p x_jx_j\p \\
+&amp;= \sum_{i=1}^d x_ix_i\p + \left( \sum_{i=1}^d x_ix_i\p \right)^2 \\
+&amp;= \x\T\x\p + (\x\T\x\p)^2.
+\end{align*}
+$$</p>
+<p>Thus, we can define the kernel function $k(\x, \x\p) = \x\T\x\p + (\x\T\x\p)^2$ &mdash; we never have to compute $\phi(\x)$ directly, we can just plug $\x$ into the kernel function and make our predictions based on these values.</p>
+<h3 id="comments-on-valid-kernel-functions">Comments on valid kernel functions</h3>
+<p>A caveat to the approach descirbed above is that we must use a <em>valid</em> kernel. However, there are some fairly straightforward methods of obtaining these.</p>
+<p>There are several ways to check if a function is a valid kernel; one way is to show that, for any set of vectors $S$, the Gram matrix whose elements are given by $\K_{ij} = k(\x_i, \x_j)$ for each $\x_i, \x_j \in S$ is always positive-semidefinite. Another way is to show that $k$ can be represented as $k(\x, \x\p) = \psi(\x)\T\psi(\x\p)$, for some explicit feature map $\psi$, as we saw before.</p>
+<p>Moreover, once we have some valid kernel functions, we can use these as building blocks to construct new ones. For example, sums and products of valid kernels yield still valid kernels &mdash; we can use these properties to build rich classes of kernel functions. However, I will not focus my dicussion on these properties. For further discussion I like chapter 6 in <a href="#references">Bishop, 2006</a>.</p>
+<h2 id="gaussian-process-regression">Gaussian process regression</h2>
+<p>Now, let&rsquo;s return to the context of Bayesian linear regression. We previously derived the results for the predictive distribution</p>
+<h3 id="exact-observations">Exact observations</h3>
+<h3 id="noisy-observations">Noisy observations</h3>
+<h3 id="gaussian-process-regression-in-python">Gaussian process regression in Python</h3>
+<h2 id="references">References</h2>
+<ol>
+<li>
+<p>C. M. Bishop, <a href="https://www.microsoft.com/en-us/research/wp-content/uploads/2006/01/Bishop-Pattern-Recognition-and-Machine-Learning-2006.pdf"><em>Pattern Recognition and Machine Learning</em></a>, 2006.</p>
+</li>
+<li>
+<p>C. E. Rasmussen &amp; C. K. I. Williams, <a href="https://gaussianprocess.org/gpml/chapters/RW.pdf"><em>Gaussian Processes for Machine Learning</em></a>, 2006.</p>
+</li>
+<li>
+<p>Henry Chai&rsquo;s course, <a href="https://www.cs.cmu.edu/~hchai2/courses/10624/"><em>Bayesian Methods in Machine Learning</em></a>, 2025.</p>
+</li>
+</ol>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>For a given variable, I use bold-faced symbols to refer to vectors; e.g., $\x \in \R^d$, and I use regular symbols to denote scalar values; e.g., the components of $\x$ are $(x_0, x_1, \dots, x_{d-1})$.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>This can be computed by noting that $y = f + \epsilon$ is an <a href="../gaussian/#affine-transformation">affine transformation</a> of $\epsilon$. In general, given a Gaussian random variable $\x \sim \Norm(, \bSigma)$, the affine transformation $\y = \A\x + \b$ will also be Gaussian-dsitributed with $\y \sim \Norm(\A\bmu + \b, \A\bSigma\A\T)$.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>Alternatively, we could compute the posterior directly via Bayes&rsquo; rule:
+$$
+p(\w \mid \cD) = \frac{p(\cD\mid\w)p(\w)}{p(\cD)}
+$$&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p>This integral can be done explicitly by writing out the integrand as a product of Gaussians, then completing the square in the exponent in terms of $\w$. The integrand takes the form of a Gaussian distribution over $\w$, which can be easily computed by identifying it&rsquo;s normalization constant, and the resulting predictive distribution takes the form of a Gaussian in terms of the variables which are left over, i.e., those which were factored out of the integral.&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:5">
+<p>To see this, note that any $n\times n$ positive definite (PD) matrix has a valid eigenvalue decomposition (SVD). Thus, we can write $\bSigma = \U\Lambda\U\T$, where $\U\U\T = \I$, $\Lambda = \diag(\lambda_1, \dots, \lambda_n)$, and ${\lambda_i}$ are the eigenvalues of $\bSigma$ (also note that, since $\bSigma$ is PD, its eigenvalues are positive). Then, we define the matrix square root as $\bSigma^{1/2} = \U\Lambda^{1/2}\U\T$, where $\Lambda^{1/2}$ is, unsurprisingly, the matrix whose diagonal elements are given by the square roots of the eigenvalues.&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:6">
+<p>A Gram matrix is one whose elements are formed by the pairwise inner products for a set of vectors. In our case, the sets of vectors for our Gram matrices are $\{\psi(\x)\}$, for the input vectors in the train / test sets.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:7">
+<p>I got this example from Prof. Henry Chai&rsquo;s <a href="https://www.cs.cmu.edu/~hchai2/courses/10624/lectures/Lecture7_Slides.pdf">lecture slides</a> on the kernel trick.&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+<style>
+  .katex a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .katex a:hover {
+    text-decoration: none;
+  }
+</style>
+
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body);"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
+      macros: {
+        "\\eqref": "\\href{###1}{\\text{#1}}",
+        "\\ref": "\\href{###1}{\\text{#1}}",
+        "\\label": "\\htmlId{#1}{}",
+        "\\R": "\\mathbb{R}",
+        "\\bR": "\\mathbf{R}",
+        "\\C": "\\mathbb{C}",
+        "\\Z": "\\mathbb{Z}",
+        "\\N": "\\mathbb{N}",
+        "\\Q": "\\mathbb{Q}",
+        "\\E": "\\mathbb{E}",
+        "\\cD": "\\mathcal{D}",
+        "\\var": "\\operatorname{Var}",
+        "\\cov":"\\operatorname{cov}",
+        "\\x": "\\mathbf{x}",
+        "\\X": "\\mathbf{X}",
+        "\\w": "\\mathbf{w}",
+        "\\W": "\\mathbf{W}",
+        "\\y": "\\mathbf{y}",
+        "\\z": "\\mathbf{z}",
+        "\\Z": "\\mathbf{Z}",
+        "\\u": "\\mathbf{u}",
+        "\\U": "\\mathbf{U}",
+        "\\V": "\\mathbf{V}",
+        "\\I": "\\mathbf{I}",
+        "\\A": "\\mathbf{A}",
+        "\\a": "\\mathbf{a}",
+        "\\B": "\\mathbf{B}",
+        "\\b": "\\mathbf{b}",
+        "\\c": "\\mathbf{c}",
+        "\\D": "\\mathbf{D}",
+        "\\M": "\\mathbf{M}",
+        "\\m": "\\mathbf{m}",
+        "\\bC": "\\mathbf{C}",
+        "\\J": "\\mathbf{J}",
+        "\\K": "\\mathbf{K}",
+        "\\L": "\\mathbf{L}",
+        "\\bS": "\\mathbf{S}",
+        "\\bmu": "\\boldsymbol{\\mu}",
+        "\\bphi": "\\boldsymbol{\\phi}",
+        "\\bepsilon": "\\boldsymbol{\\epsilon}",
+        "\\bSigma": "\\boldsymbol{\\Sigma}",
+        "\\bLambda": "\\boldsymbol{\\Lambda}",
+        "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\zero": "\\mathbf{0}",
+        "\\one": "\\mathbf{1}",
+        "\\T": "^{\\top}",
+        "\\p": "^\\prime",
+        "\\inv": "^{-1}",
+        "\\ij": "_{ij}",
+        "\\Norm": "\\mathcal{N}",
+        "\\gam": "\\text{Gamma}",
+        "\\nll": "\\text{NLL}",
+        "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
+        "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
+        "\\diag": "\\operatorname{diag}",
+        "\\tr": "\\operatorname{tr}",
+        "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
+        "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
+        "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\px": "\\frac{\\partial}{\\partial x}",
+        "\\pbA": "\\frac{\\partial}{\\partial \\mathbf{A}}",
+        "\\ml": "_\\text{ML}",
+      }
+    });
+  });
+</script>
+
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
+
+</html>

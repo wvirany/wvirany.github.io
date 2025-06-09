@@ -524,6 +524,16 @@ We&rsquo;ll simplify this detail; instead by accounting for bond information by 
 
     <footer>
       
+<style>
+  .katex a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .katex a:hover {
+    text-decoration: none;
+  }
+</style>
+
 <link rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
 <script defer
@@ -538,12 +548,11 @@ We&rsquo;ll simplify this detail; instead by accounting for bond information by 
     renderMathInElement(document.body, {
       delimiters: [
         { left: "$$", right: "$$", display: true },
-        { left: "$", right: "$", display: false },
-        { left: "\[", right: "\]", display: true}
+        { left: "$", right: "$", display: false }
       ],
       trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
       macros: {
-        "\\eqref": "\\href{###1}{(\\text{#1})}",
+        "\\eqref": "\\href{###1}{\\text{#1}}",
         "\\ref": "\\href{###1}{\\text{#1}}",
         "\\label": "\\htmlId{#1}{}",
         "\\R": "\\mathbb{R}",
@@ -553,30 +562,47 @@ We&rsquo;ll simplify this detail; instead by accounting for bond information by 
         "\\N": "\\mathbb{N}",
         "\\Q": "\\mathbb{Q}",
         "\\E": "\\mathbb{E}",
+        "\\cD": "\\mathcal{D}",
+        "\\var": "\\operatorname{Var}",
         "\\cov":"\\operatorname{cov}",
         "\\x": "\\mathbf{x}",
         "\\X": "\\mathbf{X}",
         "\\w": "\\mathbf{w}",
+        "\\W": "\\mathbf{W}",
         "\\y": "\\mathbf{y}",
         "\\z": "\\mathbf{z}",
+        "\\Z": "\\mathbf{Z}",
         "\\u": "\\mathbf{u}",
         "\\U": "\\mathbf{U}",
+        "\\V": "\\mathbf{V}",
         "\\I": "\\mathbf{I}",
         "\\A": "\\mathbf{A}",
         "\\a": "\\mathbf{a}",
         "\\B": "\\mathbf{B}",
         "\\b": "\\mathbf{b}",
+        "\\c": "\\mathbf{c}",
         "\\D": "\\mathbf{D}",
         "\\M": "\\mathbf{M}",
         "\\m": "\\mathbf{m}",
         "\\bC": "\\mathbf{C}",
         "\\J": "\\mathbf{J}",
+        "\\K": "\\mathbf{K}",
         "\\L": "\\mathbf{L}",
         "\\bS": "\\mathbf{S}",
         "\\bmu": "\\boldsymbol{\\mu}",
+        "\\bphi": "\\boldsymbol{\\phi}",
+        "\\bepsilon": "\\boldsymbol{\\epsilon}",
+        "\\bSigma": "\\boldsymbol{\\Sigma}",
+        "\\bLambda": "\\boldsymbol{\\Lambda}",
+        "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\zero": "\\mathbf{0}",
+        "\\one": "\\mathbf{1}",
         "\\T": "^{\\top}",
+        "\\p": "^\\prime",
         "\\inv": "^{-1}",
+        "\\ij": "_{ij}",
         "\\Norm": "\\mathcal{N}",
+        "\\gam": "\\text{Gamma}",
         "\\nll": "\\text{NLL}",
         "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
         "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
@@ -585,6 +611,8 @@ We&rsquo;ll simplify this detail; instead by accounting for bond information by 
         "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
         "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
         "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\px": "\\frac{\\partial}{\\partial x}",
+        "\\pbA": "\\frac{\\partial}{\\partial \\mathbf{A}}",
         "\\ml": "_\\text{ML}",
       }
     });

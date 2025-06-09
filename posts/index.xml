@@ -6,8 +6,15 @@
     <description>Recent content in Posts on Walter Virany</description>
     <generator>Hugo</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 20 Aug 2024 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 05 Jun 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Some math behind the Gaussian distribution</title>
+      <link>http://localhost:1313/posts/gaussian/</link>
+      <pubDate>Thu, 05 Jun 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/gaussian/</guid>
+      <description>Despite its ubiquity, I have frequently found myself in a state somewhere between discomfort and panic each time I am faced with the task of manipulating the Gaussian distribution, particularly in multiple dimensions. So, I&amp;rsquo;ve taken the opportunity to work through some detailed derivations involving the Gaussian.&#xA;In this blog, I focus on the multivariate Gaussian distribution, beginning by reasoning about its shape and properties in high dimensions. Then, I derive some useful formulas such as conditioning, marginalization, and some transformations.</description>
+    </item>
     <item>
       <title>Understanding the Neural Network Gaussian Process</title>
       <link>http://localhost:1313/posts/nngp/</link>
@@ -20,7 +27,7 @@
       <link>http://localhost:1313/posts/microbiome/</link>
       <pubDate>Thu, 14 Dec 2023 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/microbiome/</guid>
-      <description>The human microbiome is a data rich ecosystem, which is generally known to have strong associations with host phenotypes (i.e., the set of observable characteristics of an organism). Yet, the extents of these relationships are not yet deeply understood. Until recently, the computing capabilities necessary to thoroughly analyze human microbiome data were severely lacking. However, due to novel advancements in sequencing technologies and data analysis techniques, there now exist a plethora of data, along with robust statistical tools, which can be leveraged to gain valuable insights into the impact of the human microbiome on overall health.</description>
+      <description>The human microbiome is a data rich ecosystem, which is generally known to have strong associations with host phenotypes (i.e., the set of observable characteristics of an organism). Yet, the extents of these relationships are not yet deeply understood. Until recently, the computing capabilities necessary to thoroughly analyze human microbiome data were severely lacking. However, due to novel advancements in sequencing technologies and data analysis techniques, there now exists a plethora of data, along with robust statistical tools, which can be leveraged to gain valuable insights into the impact of the human microbiome on overall health.</description>
     </item>
   </channel>
 </rss>

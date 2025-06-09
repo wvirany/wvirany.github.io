@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    MLE vs. Bayesian inference for the Gaussian distribution | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/drafts/bayes_inference/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.c5b19f349890ba8c8308e8d948f1754211fca49303531d62bb79927877c7df0e.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+    
+    
+    
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /blog
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/me" >
+                /me
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/why" >
+                /why?
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">MLE vs. Bayesian inference for the Gaussian distribution</h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+      
+      
+      <time datetime="2025-05-25T00:00:00&#43;00:00">May 25, 2025</time>
+      
+
+      
+      &nbsp; · &nbsp;
+      20 min read
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+  <aside class="toc">
+    <p><strong>Table of contents</strong></p>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#maximum-likelihood-estimation">Maximum likelihood estimation</a></li>
+    <li><a href="#bayesian-inference">Bayesian inference</a>
+      <ul>
+        <li><a href="#unknown-mean-known-variance-univariate-case">Unknown mean, known variance (univariate case)</a></li>
+        <li><a href="#unknown-mean-known-variance-multivariate-case">Unknown mean, known variance (multivariate case)</a></li>
+        <li><a href="#known-mean-unknown-variance-univariate-case">Known mean, unknown variance (univariate case)</a></li>
+        <li><a href="#known-mean-unknown-variance-multivariate-case">Known mean, unknown variance (multivariate case)</a></li>
+        <li><a href="#unknown-mean-unknown-variance-univariate-case">Unknown mean, unknown variance (univariate case)</a></li>
+        <li><a href="#unknown-mean-unknown-variance-multivariate-case">Unknown mean, unknown variance (multivariate case)</a></li>
+      </ul>
+    </li>
+    <li><a href="#appendix">Appendix</a>
+      <ul>
+        <li><a href="#matrix-derivatives">Matrix derivatives</a></li>
+      </ul>
+    </li>
+    <li><a href="#bayesian-linear-regression">Bayesian linear regression</a></li>
+  </ul>
+</nav>
+  </aside>
+  
+
+  
+
+  <div class="single-content">
+    <!-- #### TO DO:
+- Comment on how I'm trying to keep this self-contained?
+- FIX RESULT FOR LINEAR GAUSSIAN SYSTEM: conditional mean is wrong
+- Double-check results for Bayesian inference involving parameters of Gamma in normal-gamma distributions. See exercise 3.12 for procedure on how to derive this
+- Fix formatting
+- Coherence between appendix and main blog
+- Links to examples and include them in TOC?
+- Equation numbers for results from section on Bayes' rule for linear Gaussian systems
+- Change TOC: maybe use same style as example boxes
+- Fix equation numbers
+- Examples
+- Fill in appendix, proofs
+- Discussion of Mahalanobis distance, Z-score, reconcile with example 1
+- Discussion of conjugate priors, what they are and why we want to use them (because it makes finding an analytical form of the posterior easy)
+- Comment about our frequent strategy of removing constants from sums in the exponent because they just become multiplicative scalars, which we account for add the end by normalizing
+- Interpreting the moments!
+- Double-check all results
+- Tops of partials cut off (e.g., jacobian, matrix derivative rules) (and some fractions! e.g., see posteriors of univariate Gaussian)
+- Conditioning: Add the other forms of the conditional params?
+- Add all the results at the top for quick reference, or maybe just a nice TOC
+- In "moments": show the formula for the second moment of a univariate Gaussian, and reference it properly (whether it's a footnote or appendix)
+- Sum and product rule of probability in appendix + references to them
+- Proper way to reference derivative rules for MLE section
+ -->
+<p>In my <a href="../gaussian1/">previous post</a>, I developed several key results involving the Gaussian distribution. Now, I&rsquo;ll show two methods for estimating the parameters of a Gaussian distribution from data; maximum likelihood estimation (MLE) and Bayesian inference.</p>
+<h2 id="maximum-likelihood-estimation">Maximum likelihood estimation</h2>
+<p>In practice, we rarely know the true underlying distribution from which data is generated. The goal of maximum likelihood estimation (MLE) is to estimate the true parameters of a distribution from an observed set of data. Suppose we have $n$ i.i.d. samples from a Gaussian, $\X = (\x_1, \x_2 \ldots, \x_n)$, and we would like to estimate the mean and covariance. This is done by maximizing the likelihood function</p>
+<p>$$
+\begin{align*}
+p(\X \mid \bmu, \Sigma) &amp;= p(\x_1, \ldots, \x_n \mid \bmu, \Sigma) \\
+&amp;= \prod_{i=1}^n p(\x_i \mid \bmu, \Sigma),
+\end{align*}
+$$</p>
+<p>where we can factorize the joint distribution as a product due to the assumption of independence. It can instead be easier to work with the log-likelihood, as it&rsquo;s easier to optimize a sum of functions as opposed to a product.[^fn6] Furthermore, we often choose to minimize the negative log-likelihood (NLL), as opposed to maximizing the log-likelihood, as this is often treated as a sort of loss function, and many modern optimization frameworks for machine learning are designed to minimize a loss objective. So, we express the NLL as</p>
+<p>$$
+-\log p(\X \mid \bmu, \Sigma) = - \sum_{i=1}^n \log p(\x_i \mid \bmu, \Sigma)
+$$</p>
+<p>Now, since each sample $\x_i$ takes a Gaussian, the expression for the likelihood of a single sample is given by</p>
+<p>$$
+p(\x_i \mid \bmu, \Sigma) = \frac{1}{(2\pi)^{d/2} \lvert \Sigma \rvert^{1/2}} \exp \left( -\frac{1}{2} (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \right),
+$$</p>
+<p>hence, the NLL is</p>
+<p>$$
+\begin{align*}
+\nll(\bmu, \Sigma) &amp;= - \sum_{i=1}^n \log \bigg[ \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert^{1/2}} \exp \left(-\frac{1}{2} (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \right) \bigg] \\
+&amp;= - \sum_{i=1}^n \log \frac{1}{(2\pi)^{d/2}\lvert \Sigma \rvert^{1/2}} - \sum_{i=1}^n -\frac{1}{2} (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \\
+&amp;= \frac{nd}{2} \log 2\pi + \frac{n}{2} \lvert \Sigma \rvert + \frac{1}{2} \sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu).
+\end{align*}
+$$</p>
+<p>Then, our goal is to minimize this with respect to the parameters, treating the data as a fixed quantity. First, let&rsquo;s minimize the NLL with respect to $\bmu$:</p>
+<p>$$
+\begin{align*}
+\pbmu \nll(\bmu, \Sigma) &amp;= \frac{1}{2} \sum_{i=1}^n \pbmu (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu) \\
+&amp;= - \sum_{i=1}^n \Sigma\inv(\x_i - \bmu),
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve used the fact that</p>
+<p>$$
+\frac{\partial}{\partial\x} \bigg( \x\T\A\x \bigg) = 2\A\x.
+$$</p>
+<p>Then, setting this equal to zero and solving for $\bmu$:</p>
+<p>$$
+\begin{gather*}
+\sum_{i=1}^n \Sigma\inv (\x_i - \bmu) = 0 \\
+\Sigma\inv \sum_{i=1}^n \x_i = n\Sigma\inv\bmu \\
+\bmu = \frac{1}{n} \sum_{i=1}^n \x_i.
+\end{gather*}
+$$</p>
+<p>Thus, we see that the maximum likelihood estimator for $\bmu$ is just the average of the observed data:</p>
+<p>$$
+\bmu\ml = \frac{1}{n} \sum_{i=1}^n \x_i.
+$$</p>
+<p>Taking the derivative with respect to $\Sigma$ is a bit more involved. To do so, I&rsquo;ll make use of the following three rules, each of which I prove in the <a href="#matrix-derivatives">appendix</a>:</p>
+<p>$$
+\begin{gather}
+\pbx \A\inv = - \A\inv \frac{\partial\A}{\partial\x} \A\inv \label{eq:deriv1} \\[2pt]
+\frac{\partial}{\partial\A} \tr(\A\B) = \B\T \label{eq:deriv2} \\[5pt]
+\frac{\partial}{\partial\A} \log \lvert \A \rvert = (\A\inv)\T. \label{eq:deriv3}
+\end{gather}
+$$</p>
+<p>Now, we take the derivative of the NLL with respect to $\Sigma$:</p>
+<p>$$
+\begin{equation}
+\pSigma \nll(\bmu, \Sigma) = \frac{n}{2} \pSigma \log \lvert \Sigma \rvert + \frac{1}{2} \pSigma \sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu).
+\end{equation}
+$$</p>
+<p>Using the third derivative rule, the first term can be written as</p>
+<p>$$
+\begin{align*}
+\frac{n}{2} \pSigma \log \lvert \Sigma \rvert &amp;= \frac{n}{2} \left( \Sigma\inv \right)\T \\
+&amp;= \frac{n}{2} \Sigma\inv,
+\end{align*}
+$$</p>
+<p>recalling that $\Sigma\inv$ is symmetric. Now, we will rewrite the second term using the following property of the trace:</p>
+<p>$$
+\tr \left( \a\b\T \right) = \b\T\a.
+$$</p>
+<p>That is, the trace of the outerproduct between two vectors $\a$ and $\b$ is just their inner product. Using this, we can write the sum in the second term as</p>
+<p>$$
+\begin{align*}
+\sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu) &amp;= \tr \left( \sum_{i=1}^n \Sigma\inv (\x_i - \bmu) (\x_i - \bmu)\T \right) \\
+&amp;= n \tr \left( \Sigma\inv \bS \right),
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve introduced the <em>scatter matrix</em>:</p>
+<p>$$
+\bS = \frac{1}{n} \sum_{i=1}^n (\x_i - \bmu)(\x_i - \bmu)\T.
+$$</p>
+<p>Then, the second term in $(17)$ can be written as</p>
+<p>$$
+\begin{align*}
+\frac{1}{2} \pSigma \sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu) &amp;= \frac{n}{2} \pSigma \tr(\Sigma\inv \bS) \\
+&amp;= \frac{n}{2} \tr \left( \frac{\partial\Sigma\inv}{\partial\Sigma} \bS \right) \\
+&amp;= - \frac{n}{2} \tr \left( \Sigma\inv \frac{\partial\Sigma}{\partial\Sigma} \Sigma\inv \bS \right) \\
+&amp;= - \frac{n}{2} \tr \left( \frac{\partial\Sigma}{\partial\Sigma} \Sigma\inv \bS \Sigma\inv \right) \\
+&amp;= - \frac{n}{2} \left( \Sigma\inv\bS\Sigma\inv \right)\T \\
+&amp;= - \frac{n}{2} \Sigma\inv\bS\Sigma\inv,
+\end{align*}
+$$</p>
+<p>where I&rsquo;ve used the first derivative rule, along with the cyclic property of the trace and the fact that $\bS$ is symmetric.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup> Then, substituting the derivatives on the right-hand side of $(17)$ and setting them equal to zero:</p>
+<p>$$
+\begin{gather*}
+\frac{n}{2}\Sigma\inv - \frac{n}{2} \Sigma\inv\bS\Sigma\inv = 0 \\
+\Sigma\inv = \Sigma\inv\bS\Sigma\inv \\
+\I = \bS \Sigma\inv \\
+\end{gather*}
+$$</p>
+<p>Hence, the maximum likelihood estimator for $\Sigma$ is given by</p>
+<p>$$
+\Sigma\ml = \frac{1}{n} \sum_{i=1}^n (\x_i - \bmu\ml)(\x_i - \bmu\ml)\T.
+$$</p>
+<p>It&rsquo;s important to note that the estimator we use for $\Sigma$ need be symmetric PSD. Otherwise, it would not be a valid covariance matrix. However, we see that $\bS$ is indeed symmetric PSD.</p>
+<p>Often when estimating parameters from data, we would like to know whether or not our estimators are <em>biased</em>. That is, do the estimators equal the true parameters in expectation? Let&rsquo;s first examine this for the mean:</p>
+<p>$$
+\begin{align*}
+\E[\bmu\ml] &amp;= \E \left[ \frac{1}{n} \sum_{i=}^n \x_i \right]
+= \frac{1}{n} \sum_{i=1}^n \E [\x_i]
+= \frac{n\bmu}{n}
+= \bmu.
+\end{align*}
+$$</p>
+<p>Thus, the maximum likelihood estimator for the mean is unbiased. Again, examining the expectation of $\Sigma\ml$ is more involved. To evaluate this, I&rsquo;ll use the fact that, for two observations $\x_i, \x_j$, we have</p>
+<p>$$
+\begin{equation}\label{eq:xixj}
+\E[\x_i\x_j] = \bmu\bmu\T + \delta_{ij}\Sigma.
+\end{equation}
+$$</p>
+<p>This follows from $(5)$, noting that the covariance between two independent samples will be zero. Then,</p>
+<p>$$
+\begin{align}
+&amp;\E[\Sigma\ml] = \frac{1}{n} \E \left[ \sum_{i=1}^n (\x_i - \bmu\ml)(\x_i - \bmu\ml)\T \right] \nonumber \\
+&amp;= \frac{1}{n} \E \left[ \sum_{i=1}^n \left( \x_i\x_i\T - \x_i\bmu\ml\T - \bmu\ml\x_i\T + \bmu\ml\bmu\ml\T \right) \right] \nonumber \\
+&amp;= \frac{1}{n} \bigg( \sum_{i=1}^n \E [\x_i\x_i\T] - \sum_{i=1}^n \E[\x_i \bmu\ml\T] - \sum_{i=1}^n \E [\bmu\ml\x_i\T] + \sum_{i=1}^n \E [\bmu\ml\bmu\ml\T]  \bigg). \nonumber \\
+\end{align}
+$$</p>
+<p>The first term is given by</p>
+<p>$$
+\frac{1}{n} \sum_{i=1}^n \bmu\bmu\T + \Sigma,
+$$</p>
+<p>from $\eqref{eq:xixj}$.</p>
+<h2 id="bayesian-inference">Bayesian inference</h2>
+<p>Using MLE to estimate the parameters of a distribution has a drawback: it gives <em>point estimates</em> of the parameters. Instead, suppose we want a range of values to choose from, each with a corresponding level of (un)certainty. This can be achieved using Bayesian inference, in which we find a probability distribution over the possible parameter values.</p>
+<p>In this section, I&rsquo;ll show how to estimate the parameters of the Gaussian using Bayesian inference. I&rsquo;ll cover several scenarios:</p>
+<ol>
+<li>Unknown mean, known variance</li>
+<li>Known mean, unknown variance</li>
+<li>Unknown mean, unknown variance</li>
+</ol>
+<p>The goal in each scenario will be to infer the unknown parameter(s). First, I&rsquo;ll show the univariate case of each scenario, then I&rsquo;ll extend them to the multivariate case.</p>
+<h3 id="unknown-mean-known-variance-univariate-case">Unknown mean, known variance (univariate case)</h3>
+<p>Similar to the MLE framework, suppose we have some dataset $\X = \{x_i\}_{i=1}^n$, in which $x_i \sim \Norm(x_i \mid \mu, \sigma^2)$, where $\sigma^2$ is known, and we wish to infer $\mu$. However, as opposed to the MLE framework, we wish to find a probability distribution over $\mu$ given the observed data.</p>
+<p>Using Bayes&rsquo; theorem, we have</p>
+<p>$$
+p(\mu \mid \X) = \frac{p(\X \mid \mu) p(\mu)}{p(\X)},
+$$</p>
+<p>where $p(\X \mid \mu)$ is the likelihood (which we saw in the MLE framework), $p(\mu)$ is the prior, and $p(\mu \mid \X)$ is the posterior. $p(\X)$ is a constant with respect to $\mu$, and normalizes the product in the numerator to ensure that $p(\mu \mid \X)$ is a valid probability distribution. Instead of computing it explicitly, we will find the functional form of the posterior, then normalize at the end.<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> Then, disregarding normalization, we have</p>
+<p>$$
+p(\mu \mid \X) \propto p(\X\mid\mu) p(\mu).
+$$</p>
+<p>The likelihood takes the form</p>
+<p>$$
+\begin{align}
+p(\X \mid \mu) &amp;= \prod_{i=1}^n p(x_i \mid \mu) \nonumber \\
+&amp;= \prod_{i=1}^n \frac{1}{(2\pi\sigma^2)^{1/2}} \exp \left( -\frac{(x_i - \mu)^2}{2\sigma^2} \right) \nonumber \\
+&amp;= \frac{1}{(2\pi\sigma^2)^{n/2}} \exp \left( -\frac{1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2  \right) \nonumber.
+\end{align}
+$$</p>
+<p>Note that the likelihood function is not a valid probability distribution, since it is not normalized. However, we do see that it takes the form of an exponential of a quadratic function of $\mu$, hence it takes the form of a Gaussian distribution over $\mu$. Thus, if we choose the prior distribution to be a Gaussian as well, then the posterior will be the product of two Gaussians, which is itself a Gaussian. Thus, the <em>conjugate prior</em> of the Gaussian distribution is itself a Gaussian.<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup></p>
+<p>Then, let&rsquo;s choose the prior to be</p>
+<p>$$
+p(\mu) = \Norm(\mu \mid \mu_0, \sigma^2_0).
+$$</p>
+<p>The posterior then takes the form</p>
+<p>$$
+\begin{align}
+p(\mu \mid \X) &amp;\propto p(\X \mid \mu) p(\mu) \nonumber \\
+&amp;\propto \exp \left( -\frac{1}{2\sigma^2} \sum_{i=1}^n (x_i - \mu)^2 \right) \exp \left( -\frac{1}{2\sigma_0^2} (\mu - \mu_0)^2 \right) \nonumber \\
+&amp;\propto \exp\left(-\frac{1}{2} \sum_{i=1}^n \frac{(x_i - \mu)^2}{\sigma^2} + \frac{(\mu - \mu_0)^2}{n\sigma_0^2} \right). \nonumber
+\end{align}
+$$</p>
+<p>The sum inside the exponential is then</p>
+<p>$$
+\begin{align*}
+&amp;\sum_{i=1}^n \frac{n\sigma_0^2 \left( x_i^2 - 2x_i\mu + \mu^2  \right) + \sigma^2 \left( \mu^2 - 2\mu\mu_0 + \mu_0^2 \right)}{n\sigma_0^2\sigma^2} \\
+&amp;= \frac{1}{n\sigma_0^2\sigma^2} \sum_{i=1}^n n\sigma_0^2x_i^2 - 2n\sigma_0^2x_i\mu + n\sigma_0^2\mu^2 + \sigma^2\mu^2 - 2\sigma^2\mu\mu_0 + \sigma^2\mu_0^2 \\
+&amp;= \frac{1}{n\sigma_0^2\sigma^2} \bigg( n^2\sigma_0^2\mu^2 + n\sigma^2\mu^2 - 2n\sigma^2\mu\mu_0 + n\sigma^2\mu_0^2 - 2n\sigma_0^2\mu \sum_{i=1}^n x_i  + n\sigma_0^2\sum_{i=1}^n x_i^2 \bigg) \\[3pt]
+&amp;= \frac{1}{n\sigma_0^2\sigma^2} \left[ (n^2\sigma_0^2 + n\sigma^2)\mu^2 - 2n\left(\sigma^2\mu_0 + \sigma_0^2\sum_{i=1}^n x_i\right) \mu + c  \right],
+\end{align*}
+$$</p>
+<p>where $c$ denotes all the terms which are independent of $\mu$. Then, we can neglect these terms, since they can be factored out of the exponent and considered part of the normalization constant which we&rsquo;ll determine later. Thus, we are left with</p>
+<p>$$
+\frac{1}{n\sigma_0^2\sigma^2} \bigg[ (n^2\sigma_0^2 + n\sigma^2)\mu^2 - 2n\left(\sigma^2\mu_0 + n\sigma_0^2\mu\ml\right) \mu \bigg],
+$$</p>
+<p>recalling that $\mu\ml = \frac{1}{n}\sum_{i=1}^n x_i$. Then, completing the square and putting this expression back into the exponent, we have</p>
+<p>$$
+p(\mu \mid \X) \propto \exp \left( -\frac{1}{2} \frac{n\sigma_0^2 + \sigma^2}{\sigma_0^2\sigma^2} \left( \mu - \frac{n\sigma_0^2\mu\ml + \sigma^2\mu_0}{n\sigma_0^2 + \sigma^2} \right)^2 \right).
+$$</p>
+<p>As we predicted, this takes the form of a Gaussian:</p>
+<p>$$
+\mu \sim \Norm(\mu \mid \mu_n, \sigma^2_n),
+$$</p>
+<p>where</p>
+<p>$$
+\begin{align}
+\mu_n &amp;= \frac{\sigma^2}{n\sigma_0^2 + \sigma^2}\mu_0 + \frac{n\sigma_0^2}{n\sigma_0^2 + \sigma^2} \mu\ml = \frac{1}{\sigma_n^2} \left( \frac{1}{\sigma_0^2} \mu_0 + \frac{n}{\sigma^2} \mu\ml \right), \label{eq:poster-mean-uv-1} \\[10pt]
+\frac{1}{\sigma_n^2} &amp;= \frac{n\sigma_0^2 + \sigma^2}{\sigma_0^2\sigma^2} = \frac{n}{\sigma^2} + \frac{1}{\sigma_0^2}. \label{eq:poster-cov-uv-1}
+\end{align}
+$$</p>
+<p>To recap, we started with some initial belief about the parameter $\mu$, which was represented by the prior $p(\mu)$. For example, the prior mean $\mu_0$ might reflect our belief of a reasonable value for $\mu$, and the prior variance $\sigma_0^2$ might reflect how certain we are in that belief. Then, after observing $n$ samples, we updated our expressions for these parameters using $\eqref{eq:poster-mean-uv-1}$ and $\eqref{eq:poster-cov-uv-1}$.</p>
+<p>There are several interesting things to note about $\eqref{eq:poster-mean-uv-1}$ and $\eqref{eq:poster-cov-uv-1}$. First, we see that the posterior mean $\mu_n$ is a weighted average between the prior mean $\mu_0$ and the mle $\mu\ml$. When $n=0$, we simply have the prior mean $\mu_n = \mu_0$. As $n \to \infty$, the posterior mean approaches the mle $\mu_n \to \mu\ml$.</p>
+<p>Furthermore, we have expressed the posterior variance in terms of the precision:</p>
+<p>$$
+\lambda_n = \frac{1}{\sigma_n^2}.
+$$</p>
+<p>We see that, as $n$ gets big, the precision grows, and hence the variance gets small. That is, with more observations, we become more certain in our estimation of the parameters. Moreover, it&rsquo;s interesting to note that the precision gets updated additively. For each observation of the data, we increase prior precision $1/\sigma_0^2$ by one increment of the data precision $1/\sigma^2$.</p>
+<p>Finally, it&rsquo;s interesting to note that as $n \to \infty$, not only does $\mu_n \to \mu\ml$, but $\sigma_n^2 \to 0$ as well. Thus, the posterior distribution in the limit of infinitely many observations is the delta function centered at $\mu\ml$. Thus, the maximum likelihood estimator is recovered in the Bayesian formulation.</p>
+<h3 id="unknown-mean-known-variance-multivariate-case">Unknown mean, known variance (multivariate case)</h3>
+<p>Here, I extend the previous results to the multivariate case. Now suppose we have a dataset $\X = \{\x_i\}_{i=1}^n$, where $\x_i \sim \Norm(\x_i \mid \bmu, \Sigma)$ with $\x_i \in \R^d$. Again, we&rsquo;ll assume that $\Sigma$ is known and we wish to find the posterior distribution $p(\bmu \mid \X)$.</p>
+<p>Suppose the prior is given by $p(\bmu) = \Norm(\bmu \mid \bmu_0, \Sigma_0)$. Then, the posterior will take the form</p>
+<p>$$
+\begin{align*}
+&amp;p(\bmu \mid \X) \propto p(\X \mid \bmu) p(\bmu) \\
+&amp;= p(\bmu) \prod_{i=1}^n p(\x_i \mid \bmu) \\
+&amp;\propto \exp\left(-\frac{1}{2} (\bmu - \bmu_0)\T\Sigma_0\inv(\bmu - \bmu_0) \right) \exp \left( -\frac{1}{2}\sum_{i=1}^n (\x_i - \bmu)\T \Sigma\inv (\x_i - \bmu) \right) \\
+&amp;= \exp \left[ -\frac{1}{2} \left( (\bmu - \bmu_0)\T\Sigma_0\inv(\bmu-\bmu_0) + \sum_{i=1}^n (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \right) \right].
+\end{align*}
+$$</p>
+<p>We see the expression in the exponent is quadratic in terms of $\bmu$, hence the posterior will again be a Gaussian. Examining the quadratic:</p>
+<p>$$
+\begin{align*}
+&amp;-\frac{1}{2} \left[ (\bmu - \bmu_0)\T\Sigma_0\inv(\bmu-\bmu_0) + \sum_{i=1}^n (\x_i - \bmu)\T\Sigma\inv(\x_i - \bmu) \right] \\
+&amp;\qquad= -\frac{1}{2} \bigg[ \bmu\T\Sigma_0\inv\bmu - 2\bmu\T\Sigma_0\inv\bmu_0 + \bmu_0\T\Sigma_0\inv\bmu_0 + n\bmu\T\Sigma\inv\bmu \\
+&amp;\qquad\qquad + \sum_{i=1}^n \big( \x_i\T\Sigma\inv\x_i - 2\bmu\T\Sigma\inv\x_i \big) \bigg] \\
+&amp;\qquad= -\frac{1}{2} \bigg[ \bmu\T \left( \Sigma_0\inv + n\Sigma\inv \right) \bmu + -2 \bmu\T \left( \Sigma_0\inv\bmu_0 + \Sigma\inv \sum_{i=1}^n \x_i \right) \\
+&amp;\qquad\qquad + \bmu_0\T\Sigma\inv\bmu_0 + \sum_{i=1}^n \x_i\T\Sigma\inv\x_i \bigg] \\
+&amp;\qquad= -\frac{1}{2} \bmu\T \left( \Sigma_0\inv + n\Sigma\inv \right) + \bmu\T \left( \Sigma_0\inv\bmu_0 +n\Sigma\inv\bmu\ml \right) + c.
+\end{align*}
+$$</p>
+<p>Recalling the general form of the Gaussian from $\eqref{eq:generalgaussian}$, we see that the precision of the posterior distribution is</p>
+<p>$$
+\begin{equation}\label{eq:posterior-precision-mv-1}
+\Sigma_n\inv = n\Sigma\inv + \Sigma_0\inv.
+\end{equation}
+$$</p>
+<p>Similarly, the linear term is</p>
+<p>$$
+\Sigma_n\inv\bmu_n = \Sigma_0\inv\bmu_0 + n\Sigma\inv\bmu\ml,
+$$</p>
+<p>hence the posterior mean is given by</p>
+<p>$$
+\begin{align}\label{eq:posterior-mean-mv-1}
+\bmu_n &amp;= \Sigma_n \Sigma_0\inv \bmu_0 + n\Sigma_n\Sigma\inv\bmu\ml.
+\end{align}
+$$</p>
+<p>Comparing these expressions to $\eqref{eq:poster-mean-uv-1}$ and $\eqref{eq:poster-cov-uv-1}$, it&rsquo;s fairly straightforward to see the parallels.</p>
+<h3 id="known-mean-unknown-variance-univariate-case">Known mean, unknown variance (univariate case)</h3>
+<p>Previously, we assumed that the variance of the data distribution was known, and we found the posterior distribution for the mean. Instead, let&rsquo;s now suppose that we know the mean of the data distribution, and we wish to infer the variance. We will instead work with the precision $\lambda = 1/\sigma^2$, as it simplifies the derivation.</p>
+<p>The likelihood is now</p>
+<p>$$
+\begin{align*}
+p(\X \mid \lambda) &amp;= \prod_{i=1}^n \Norm (x_i \mid \mu, \lambda\inv) \\
+&amp;\propto \lambda^{n/2} \exp \left( -\frac{\lambda}{2} \sum_{i=1}^n (x_i - \mu)^2 \right) \\
+&amp;= \lambda^{n/2} \exp \left( -\frac{\sigma^2\ml}{2} \lambda \right),
+\end{align*}
+$$</p>
+<p>recalling the expression for $\sigma^2\ml$.<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> We see that the likelihood has the form of the product of a power of $\lambda$ and an exponential of a linear function of $\lambda$. This is the same form as the Gamma distribution:</p>
+<p>$$
+\gam(\lambda \mid a, b) = \frac{b^a}{\Gamma(a)} \lambda^{a-1} \exp(-b\lambda).
+$$</p>
+<p>So, the if we take the prior to be</p>
+<p>$$
+p(\lambda) = \gam(\lambda \mid a_0, b_0).
+$$</p>
+<p>Then, the posterior has the form</p>
+<p>$$
+\begin{align*}
+p(\lambda \mid \X) &amp;\propto p(\X \mid \lambda) p(\lambda) \\
+&amp;= \lambda^{a_0-1}\lambda^{n/2} \exp \left( -\frac{\sigma^2\ml}{2} \lambda \right)
+\end{align*}
+$$</p>
+<h3 id="known-mean-unknown-variance-multivariate-case">Known mean, unknown variance (multivariate case)</h3>
+<h3 id="unknown-mean-unknown-variance-univariate-case">Unknown mean, unknown variance (univariate case)</h3>
+<h3 id="unknown-mean-unknown-variance-multivariate-case">Unknown mean, unknown variance (multivariate case)</h3>
+<p>Suppose we have some dataset $\X = \{x_i\}_{i=1}^n$, where each $x_i$ is sampled i.i.d. from a Gaussian distribution with mean $\mu$ and variance $\sigma^2$. Suppose $\mu$ is known, and we wish to infer the posterior distribution of $\sigma^2$. Instead, we&rsquo;ll work with the precision: $\lambda = 1/\sigma^2$. Then, by Bayes&rsquo; theorem, we have</p>
+<p>$$
+\begin{align*}
+p(\lambda \mid \X) \propto p(\X \mid \lambda) p(\lambda),
+\end{align*}
+$$</p>
+<p>where $p(\X\mid\lambda)$ is the likelihood function, and $p(\lambda)$ is the prior distribution over $\lambda$. Then, the likelihood takes the form</p>
+<p>$$
+\begin{align*}
+p(\X \mid \lambda) &amp;= \prod_{i=1}^n p(x_i \mid \lambda) \\
+&amp;= \prod_{i=1}^n \Norm (x_i \mid \mu, \lambda\inv) \\
+&amp;\propto \lambda^{n/2} \exp \left( -\frac{\lambda}{2} \sum_{i=1}^n (x_i - \mu)^2 \right). \tag{1}
+\end{align*}
+$$</p>
+<p>We see this takes the form of a Gamma distribution:</p>
+<p>$$
+\Gamma(\lambda \mid a, b) = \frac{b^a}{\Gamma(a)}\lambda^{a-1}\exp(-b\lambda).
+$$</p>
+<p>Thus, the corresponding conjugate prior will also take a Gamma distribution:</p>
+<p>$$
+p(\lambda) = \gam(\lambda \mid a_0, b_0).
+$$</p>
+<p>Then, the posterior takes the form</p>
+<p>$$
+\begin{align*}
+p(\lambda \mid \X) &amp;\propto \lambda^{n/2}\lambda^{a_0 - 1} \exp \left(-\frac{\lambda}{2} \sum_{i=1}^n (x_i - \mu)^2 \right) \exp(-b_0\lambda) \\
+&amp;= \lambda^{a_0 + n/2 -1} \exp \left( - \left( b_0 + \frac{1}{2} \sum_{i=1}^n (x_i - \mu)^2 \right) \lambda \right).
+\end{align*}
+$$</p>
+<p>Thus,</p>
+<p>$$
+p(\lambda \mid \X) = \gam(\lambda \mid a_n, b_n),
+$$</p>
+<p>where</p>
+<p>$$
+\begin{align*}
+a_n &amp;= a_0 + \frac{n}{2} \tag{2} \\
+b_n &amp;= b_0 + \frac{1}{2} \sum_{i=1}^n (x_i - \mu)^2 = b_0 + \frac{n}{2}\sigma^2\ml, \tag{3}
+\end{align*}
+$$</p>
+<p>where $\sigma^2\ml$ is the maximum likelihood estimator of the variance.</p>
+<p>$$
+\sigma^2\ml = \frac{1}{n}\sum_{i=1}^n (x_i - \mu\ml)^2
+$$</p>
+<h2 id="appendix">Appendix</h2>
+<h3 id="matrix-derivatives">Matrix derivatives</h3>
+<h2 id="bayesian-linear-regression">Bayesian linear regression</h2>
+<p>Here I&rsquo;ll show how to use our results to perform Bayesian linear regression. Consider the linear model</p>
+<p>$$
+\begin{align*}
+f(\x; \w) = \w\T\x,
+\end{align*}
+$$</p>
+<p>where $\x \in \R^d$ is some input vector with $d$ features and $\w \in \R^d$ is the vector of parameters which specify the model. Note that we can incorporate an intercept term by always letting one element of $\x$ be constant, say $x_0 = 1$:</p>
+<p>$$
+f(\x; \w) = w_0 + w_1x_1 + \cdots + w_{d-1}x_{d-1}.
+$$</p>
+<p>Then, we can model noisy predictions by adding a zero-mean Gaussian random variable to the functional outputs:</p>
+<p>$$
+y = f(\x; \w) + \epsilon,
+$$</p>
+<p>where $\epsilon \sim \Norm(0, \beta\inv)$, with precision $\beta$. This gives rise to a probability distribution over $y$:</p>
+<p>$$
+\begin{align*}
+p(y \mid \x, \w, \beta) = \Norm(y \mid f(\x; \w), \beta\inv).
+\end{align*}
+$$</p>
+<p>Then, suppose we observe a dataset $(\X, \y)$, where $\X \in \R^{d\times n}$ is the matrix whose columns are the $n$ observed input vectors, and $\y = (y_1, y_2 ,\ldots, y_n)\T$ contains the correspondng targets. In light of these observations, we would like to do the following:</p>
+<ol>
+<li>Update our belief about the parameters $\w$ by modeling the posterior parameter distribution $p(\w \mid \X, \y)$</li>
+<li>Given a new test point $(\x_*, y_*)$, use the posterior parameter distribution to model the distribution over $y_*$: $p(y_* \mid \x_*, \X, \y).$</li>
+</ol>
+<p>First, we&rsquo;ll compute the posterior parameter distribution. To do so, recall Bayes&rsquo; rule:</p>
+<p>$$
+\begin{align*}
+p(\w \mid \cD) = \frac{p(\cD \mid \w)}{p(\w)}{p()}
+\end{align*}
+$$</p>
+<details>
+  <summary>Matrix derivatives</summary>
+  <p>
+  Here I prove the three matrix derivative rules $\eqref{eq:dervi1}, \eqref{eq:deriv2}$, and $\eqref{eq:deriv3}$, which are used in deriving the maximum likelihood estimator for the covariance matrix.
+<p><strong>Proof of $\eqref{eq:deriv1}$:</strong></p>
+<p>We wish to show that</p>
+<p>$$
+\pbx\A\inv = -\A\inv\frac{\partial\A}{\partial\x}\A\inv.
+$$</p>
+<p>From the product rule, we can write</p>
+<p>$$
+\pbx \left( \A\B \right) = \frac{\partial\A}{\partial\x}\B + \A\frac{\partial\B}{\partial\x}.
+$$</p>
+<p>Then, consider the equation</p>
+<p>$$
+\A\A\inv = \I.
+$$</p>
+<p>Differentiating both sides gives</p>
+<p>$$
+\begin{align*}
+\pbx (\A \A \inv) &amp;= \pbx \I \\
+&amp;= \zero.
+\end{align*}
+$$</p>
+<p>Then, applying the product rule, we have</p>
+<p>$$
+\begin{align*}
+\pbx (\A \A\inv) = \pbx(\A\inv)\A + \A\inv \frac{\partial\A}{\partial\x},
+\end{align*}
+$$</p>
+<p>hence</p>
+<p>$$
+\pbx (\A\inv)\A = - \A\inv \frac{\partial\A}{\partial\x},
+$$</p>
+<p>or</p>
+<p>$$
+\pbx (\A\inv) = - \A\inv \frac{\partial\A}{\partial\x} \A\inv,
+$$</p>
+<p>giving our result.</p>
+<p><strong>Proof of $\eqref{eq:deriv2}$:</strong></p>
+<p>We wish to show that</p>
+<p>$$
+\pbA \tr(\A\B) = \B\T.
+$$</p>
+<p>Consider the product $\A\B$:</p>
+<p>$$
+\begin{align*}
+\A\B &amp;= \begin{bmatrix}
+a_{11} &amp; a_{12} &amp; \cdots &amp; a_{1n} \\
+a_{21} &amp; a_{22} &amp; \cdots &amp; a_{2n} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+a_{n1} &amp; a_{n2} &amp; \cdots &amp; a_{nn}
+\end{bmatrix}
+\begin{bmatrix}
+b_{11} &amp; b_{12} &amp; \cdots &amp; b_{1n} \\
+b_{21} &amp; b_{22} &amp; \cdots &amp; b_{2n} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+b_{n1} &amp; b_{n2} &amp; \cdots &amp; b_{nn}
+\end{bmatrix} \\
+&amp;= \begin{bmatrix}
+\sum_{i=1}^na_{1i}b_{i1} &amp; \sum_{i=1}^na_{1i}b_{i2} &amp; \cdots &amp; \sum_{i=1}^na_{1i}b_{in} \\
+\sum_{i=1}^na_{2i}b_{i1} &amp; \sum_{i=1}^na_{2i}b_{i2} &amp; \cdots &amp; \sum_{i=1}^na_{2i}b_{in} \\
+\vdots &amp; \vdots &amp; \ddots &amp; \vdots \\
+\sum_{i=1}^na_{ni}b_{i1} &amp; \sum_{i=1}^na_{ni}b_{i2} &amp; \cdots &amp; \sum_{i=1}^na_{ni}b_{in}
+\end{bmatrix}.
+\end{align*}
+$$</p>
+<p>Each diagonal element is given by $\sum_{i=1}^n a_{ji}b_{ij}$ for $j \in [n]$, hence the trace is the sum over all the diagonal elements:</p>
+<p>$$
+\tr(\A\B) = \sum_{i=1}^n \sum_{j=1}^n a_{ji}b_{ij},
+$$</p>
+<p>Then, consider the derivative of this quantity with repect to a single element of $\A$:</p>
+<p>$$
+\begin{align*}
+\frac{\partial}{\partial a_{ij}} \tr(\A\B) &amp;= \frac{\partial}{\partial a_{ij}} \sum_{k=1}^n \sum_{l=1}^n a_{kl}b_{lk},
+\end{align*}
+$$</p>
+<p>where I have replaced the indices of the sums to avoid confusion with the fixed matrix element $a_{ij}$. This derivative will be $0$ when $a_{kl} \neq a_{ij}$, hence</p>
+<p>$$
+\frac{\partial}{\partial a_{ij}} \sum_{k=1}^n \sum_{l=1}^n a_{kl}b_{lk} = \frac{\partial}{\partial a_{ij}} \left( a_{ij} b_{ji} \right) = b_{ji}.
+$$</p>
+<p>Thus, for a single matrix element, we have</p>
+<p>$$
+\frac{\partial}{\partial a_{ij}} \tr(\A\B) = b_{ji}.
+$$</p>
+<p>Generalizing this to the entire matrix $\A$, we have</p>
+<p>$$
+\pbA \tr(\A\B) = \B\T.
+$$</p>
+<p><strong>Proof of $\eqref{eq:deriv3}$:</strong></p>
+  </p>
+</details>
+<p>Here, I&rsquo;ll show that</p>
+<p>$$
+\pbA \log \lvert \A \rvert = \left( \A\inv \right)\T.
+$$</p>
+<p>In order to prove this, I&rsquo;ll first show that</p>
+<p>$$
+\begin{equation}\label{A.2}\tag{A.2}
+\px \log \lvert \A \rvert = \tr \left( \A\inv \frac{\partial\A}{\partial x} \right).
+\end{equation}
+$$</p>
+<p>To see this, we can start by expressing the determinant of $\A$ as the product of its eigenvalues, hence</p>
+<p>$$
+\px \log \lvert \A \rvert = \px \log \prod_{i=1}^n \lambda_i = \px \sum_{i=1}^n \log \lambda_i = \sum_{i=1}^n \px \log \lambda_i.
+$$</p>
+<p>In general, each $\lambda_i$ could be some function of $x$. Using the chain rule, we have</p>
+<p>$$
+\px \log \lvert \A \rvert = \sum_{i=1}^n \frac{1}{\lambda_i} \frac{\partial\lambda_i}{\partial x}.
+$$</p>
+<p>Now, let&rsquo;s consider the right-hand side of $\eqref{A.2}$. Using the eigenvalue decomposition of $\A$, we can write this as</p>
+<p>$$
+\begin{align*}
+\tr\left( \A\inv \frac{\partial\A}{\partial x} \right) &amp;= \tr \left [\left( \sum_{i=1}^n \frac{\u_i\u_i\T}{\lambda_i} \right) \px \left( \sum_{i=1}^n \lambda_i\u\u_i\T \right) \right] \\
+&amp;= \tr\left[ \sum_{i, j} \frac{\u_i\u_i\T}{\lambda_i} \px \left( \lambda_j \u_j\u_j\T \right) \right] \\
+\text{\scriptsize (via product rule)} \qquad &amp;= \tr \left[ \sum_{i,j} \frac{\u_i\u_i\T}{\lambda_i} \left( \u_j\u_j\T \frac{\partial\lambda_j}{\partial x} + \lambda_j \px\u_j\u\T \right) \right] \\
+&amp;= \tr \left[ \sum_{i,j} \frac{1}{\lambda_i} \frac{\partial\lambda_j}{\partial x} \u_i\u_i\T\u_j\u_j\T + \sum_{i,j} \frac{\lambda_j}{\lambda_i} \u_i\u_i\T \px \u_j\u_j\T \right]
+\end{align*}
+$$</p>
+<p>Noting that $\u_i\T\u_j = \delta_{ij}$, the first term inside the trace becomes</p>
+<p>$$
+\begin{equation}\label{A.3}\tag{A.3}
+\sum_{i} \frac{1}{\lambda_i} \frac{\partial\lambda_j}{\partial x} \u_i\u_i\T.
+\end{equation}
+$$</p>
+<p>Then, examing the second term:</p>
+<p>$$
+\begin{align}
+\sum_{i,j} \frac{\lambda_j}{\lambda_i} \u_i\u_i\T \px \u_j\u_j\T &amp;= \sum_{i,j} \frac{\lambda_j}{\lambda_i} \u_i\u_i\T \left( \u_j \frac{\partial\u_j}{\partial x}\T + \frac{\partial\u_j}{\partial x}\u_j\T \right) \nonumber \\
+&amp;= \sum_{i,j} \left( \frac{\lambda_j}{\lambda_i} \u_i \u_i\T\u_j \frac{\partial \u_j}{\partial x}\T + \frac{\lambda_j}{\lambda_i} \u_i\u_i\T \frac{\partial\u_j}{\partial x} \u_j\T\right) \nonumber \\
+&amp;= \sum_i \u_i\frac{\partial\u_j}{\partial x}\T + \sum_{i,j} \frac{\lambda_j}{\lambda_i} \u_i\u_i\T \frac{\partial\u_j}{\partial x} \u_j\T. \label{A.4}\tag{A.4}
+\end{align}
+$$</p>
+<p>Putting together $\eqref{A.3}$ and $\eqref{A.4}$, we have</p>
+<p>$$
+\tr\left( \A\inv \frac{\partial\A}{\partial x} \right) = \tr \left[ \sum_i \frac{1}{\lambda_i} \frac{\partial\lambda_j}{\partial x} \u_i\u_i\T + \sum_i \u_i \frac{\partial\u_j}{\partial x}\T + \sum_{i,j} \frac{\lambda_j}{\lambda_i} \u_i\u_i\T \frac{\partial\u_j}{\partial x}\u_j\T \right].
+$$</p>
+<p>Next, I&rsquo;ll use the fact that $\tr(\A + \B) = \tr(\A) + \tr(\B)$. Note that this also implies that the trace and sum are interchangeable. Thus, we can write</p>
+<p>$$
+\begin{align}
+\tr\left( \A\inv \frac{\partial\A}{\partial x} \right) &amp;= \tr \left[ \sum_i \frac{1}{\lambda_i} \frac{\partial\lambda_j}{\partial x} \u_i\u_i\T \right] \tag{1} \\
+&amp;+ \tr \left[ \sum_i \u_i \frac{\partial\u_j}{\partial x}\T \right] \tag{2} \\
+&amp;+ \tr \left[ \sum_{i,j} \frac{\lambda_j}{\lambda_i} \u_i\u_i\T \frac{\partial\u_j}{\partial x}\u_j\T \right]. \tag{3}
+\end{align}
+$$</p>
+<p>Then, I&rsquo;ll use two more properties of the trace; first, scalar multiplication: $\tr(c\A) = c\tr(\A)$, and second: the trace of an outer product of two vectors $\a$ and $\b$ is equal to their inner product: $\tr(\a\b\T) = \b\T\a$. Thus,</p>
+<p>$$
+(1) = \sum_i \lambda_i \frac{\partial\lambda_i}{\partial x} \tr(\u_i\u_i\T) = \sum_i \lambda_i \frac{\partial\lambda_i}{\partial x} \u_i\T\u_i = \sum_i \lambda_i \frac{\partial \lambda_i}{\partial x},
+$$</p>
+<p>where the dot product vanishes, since $\u_i\T\u_i = 1$. Similarly,</p>
+<p>$$
+(2) = \sum_i \frac{\lambda_i}{\lambda_j} \tr \left( \u_i \frac{\partial\u_j}{\partial x}\T \right) = \sum_i \frac{\lambda_i}{\lambda_j} \frac{\partial\u_j}{\partial x}\T \u_i
+$$</p>
+<p>Furthermore, again using the cyclic property of the trace, we have</p>
+<p>$$
+\tr \left( \u_i\u_i\T \frac{\partial \u_j}{\partial x}\u_j\T \right) = \tr \left( \u_j\T\u_i\u_i\T \frac{\partial\u_j}{\partial x} \right),
+$$</p>
+<p>hence</p>
+<p>$$
+(3) = \sum_{i,j} \frac{\lambda_j}{\lambda_i} \tr \left( \u_j\T\u_i\u_i\T \frac{\partial\u_j}{\partial x} \right) = \sum_i \tr \left( \u_i\T \frac{\partial \u_j}{\partial x} \right).
+$$</p>
+<p>Then, the expression inside the trace is an inner product between two vectors, resulting in a scalar. Since the trace of a scalar is itself a scalar, we have</p>
+<p>$$
+(3) = \sum_i \u_i\T \frac{\partial\u_j}{\partial x}.
+$$</p>
+<p>Putting these terms together,</p>
+<p>$$
+\tr\left( \A\inv \frac{\partial\A}{\partial x} \right) = \sum_i \lambda_i
+$$</p>
+<!-- ## Bayes' rule for linear Gaussian systems
+
+Another useful result is Bayes' rule for linear Gaussian systems.[^fn5] In the previous sections, we had a random vector which specified a joint Gaussian distribution over $d$ random variables, and we wanted to find expressions for the marginal and conditional distributions of subsets of these random variables. Instead, suppose we are given a marginal distribution $p(\x)$ and a conditional distribution $p(\y \mid \x)$ and we wish to know the marginal distribution $p(\y)$ and the conditional $p(\x \mid \y).$ This can be seen as an application of Bayes' theorem. 
+
+Specifically, consider the two random vectors $\x$ and $\y$ given by
+
+$$
+\begin{align*}
+p(\x) &= \Norm(\x \mid \bmu, \bLambda\inv), \\\\[2pt]
+p(\y \mid \x) &= \Norm(\y \mid \A\x+\b, \L\inv),
+\end{align*}
+$$
+
+and suppose we want to know $p(\x \mid \y).$ First let's express $\x$ and $\y$ in terms of their joint distribution. As before, let
+
+$$
+\z = \begin{pmatrix}
+\x \\\\
+\y
+\end{pmatrix}.
+$$
+
+Then, by the product rule of probability, we have
+
+$$
+p(\z) = p(\y \mid \x) \\, p(\x).
+$$
+
+It's nice to express this in terms of the log of the joint distribution:
+
+$$
+\begin{align}
+&\log p(\z) = \log p(\y \mid \x) + \log p(\x) \nonumber \\\\
+&= -\frac{1}{2} \bigg[ \left( \y - \A\x-\b \right)\T\L\left( \y - \A\x - \b \right) + (\x - \bmu)\T\bLambda(\x - \bmu) \bigg] + c \label{eq:16}
+\end{align}
+$$
+
+We see that the exponent of the joint distribution is quadratic in terms of $\x$ and $\y,$ so $p(\z)$ will be a Gaussian. Then, let's again collect the quadratic and linear terms to find the parameters of the joint distribution. First, expanding $\eqref{eq:16},$ we have
+
+$$
+\begin{align*}
+& -\frac{1}{2} \y\T\L\y + \y\T\L\A\x - \frac{1}{2}\x\T\A\T\L\A\x + \y\T\L\b - \x\T\A\T\L\b \\\\
+&- \frac{1}{2}\x\T\bLambda\x + \x\T\bLambda\bmu\ + c.
+\end{align*}
+$$
+
+We see that the quadratic terms are given by
+
+$$
+\begin{align*}
+& -\frac{1}{2}\x\T\bLambda\x - \frac{1}{2}\y\T\L\y - \frac{1}{2}\x\T\A\T\L\A\x + \y\T\L\A\x \\\\[3pt]
+&= -\frac{1}{2}\x\T \left( \bLambda + \A\T\L\A \right) \x + \y\T\L\A\x - \frac{1}{2}\y\T\L\y \\\\[3pt]
+&= -\frac{1}{2}
+\begin{pmatrix}
+\x \\\\
+\y
+\end{pmatrix}\T
+\begin{pmatrix}
+\bLambda + \A\T\L\A & -\A\T\L \\\\
+-\L\A & \L
+\end{pmatrix}
+\begin{pmatrix}
+\x \\\\
+\y
+\end{pmatrix} \\\\[3pt]
+&= -\frac{1}{2} \z\T\mathbf{R}\z,
+\end{align*}
+$$
+
+where
+
+$$
+\mathbf{R} = \begin{pmatrix}
+\bLambda + \A\T\L\A & -\A\T\L \\\\
+-\L\A & \L
+\end{pmatrix}.
+$$
+
+Thus, $\mathbf{R}$ is the precision matrix of the joint distribution $p(\z),$ and hence the covariance matrix $\bSigma_z$ can be found by the matrix inversion formula:
+
+$$
+\bSigma_z = \mathbf{R}\inv = \begin{pmatrix}
+\bLambda\inv & \bLambda\inv\A\T \\\\
+\A\bLambda\inv & \L\inv + \A\bLambda\inv\A\T
+\end{pmatrix}.
+$$
+
+Similarly, we can collect the linear terms to identify the mean:
+
+$$
+\begin{align*}
+\x\T\bLambda\bmu + \y\T\L\b - \x\T\A\T\L\b &= \x\T \left( \bLambda\bmu - \A\T\L \right) \b + \y\T\L\b \\\\[3pt]
+&= \begin{pmatrix}
+\x \\\\
+\y
+\end{pmatrix}\T
+\begin{pmatrix}
+\bLambda\bmu\ - \A\T\L\b \\\\
+\L\b
+\end{pmatrix}.
+\end{align*}
+$$
+
+Again comparing this to $(7)$ we have that
+
+$$
+\bSigma_z\inv\bmu_z = 
+\begin{pmatrix}
+\bLambda\bmu\ - \A\T\L\b \\\\
+\L\b
+\end{pmatrix}.
+$$
+
+Then, the mean is given by
+
+$$
+\begin{align*}
+\bmu_z &= \bSigma_z \begin{pmatrix}
+\bLambda\bmu\ - \A\T\L\b \\\\
+\L\b
+\end{pmatrix} \\\\[3pt]
+&= \begin{pmatrix}
+\bLambda\inv & \bLambda\inv\A\T \\\\
+\A\bLambda\inv & \L\inv + \A\bLambda\inv\A\T
+\end{pmatrix}
+\begin{pmatrix}
+\bLambda\bmu\ - \A\T\L\b \\\\
+\L\b
+\end{pmatrix} \\\\[3pt]
+&= \begin{pmatrix}
+\bmu\ \\\\
+\A\bmu\ + \b
+\end{pmatrix}
+\end{align*}
+$$
+
+Now, we can obtain the parameters of the marginal distribution $p(\y)$ using $(14)$ and $(15):$
+
+$$
+\begin{align*}
+\bmu_y = \A\bmu + \b, \\\\
+\bSigma_y = \L\inv + \A\bLambda\inv\A\T.
+\end{align*}
+$$
+
+Similarly, we can use our previously derived rules to get an expression for the conditional distribution $p(\x \mid \y).$ In this case, it will be easier to use our expressions for the conditional parameters in terms of the precision matrix. From $(8),$ the conditional covariance is
+
+$$
+\begin{align*}
+\bSigma_{x\mid y} &= \bR_{xx}\inv \\\\
+&= \left( \bLambda + \A\T\L\A \right)\inv,
+\end{align*}
+$$
+
+and, using $(9),$ the conditional mean is given by
+
+$$
+\begin{align*}
+\bmu_{x\mid y} &= \bmu - \bR_{xx} \inv \bR_{xy}(\y - \bmu_y) \\\\
+&= \bmu + (\bLambda + \A\T\L\A)\inv \A\T\L (\y - \A\bmu - \b) \\\\
+&= \bmu + \bSigma_{x\mid y} \bigg[ \A\T\L (\y - \b) + \bLambda\bmu \bigg].
+\end{align*}
+$$ -->
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>Note that since the logarithm is monotonic, the maximizer of $\log f(x)$ is equivalent to that of $f(x)$, so finding the parameters which maximize the log-likelihood is equivalent to find those which maximize the likelihood. Furthermore, we often choose to <em>minimize</em> the NLL as opposed to <em>maximizing</em> the log-likelihood, as this is often treated as a sort of loss function, and many modern optimization frameworks for machine learning are designed to minimize loss objectives.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>This is a common strategy which we&rsquo;ve already seen in many of the previous derivations. Instead of carrying normalization constants throughout the procedure, we will find the form of the posterior distribution. Then, we can compute the normalization constant at the end. This will be easy if we find that the posterior takes the form of a known distribution, in which the normalization constant can be found by inspection.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:3">
+<p>Given a parameter $\theta$ and a dataset $\cD$, we call the prior distribution $p(\theta)$ a <em>conjugate prior</em> to the likelihood $p(\cD \mid \theta)$ if the posterior $p(\theta \mid \cD)$ takes the same functional form as the prior. Since it is up to us to choose the prior distribution, it is often desirable to choose a conjugate prior, since it simplifies the computation of the posterior.&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:4">
+<p>Note that here we use $\sigma^2\ml = \frac{1}{n}\sum_{i=1} (x_i - \mu)^2$. There is a subtle point here: we actually defined the maximum likelihood estimator for the variance to be $$&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+<style>
+  .katex a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .katex a:hover {
+    text-decoration: none;
+  }
+</style>
+
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body);"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
+      macros: {
+        "\\eqref": "\\href{###1}{\\text{#1}}",
+        "\\ref": "\\href{###1}{\\text{#1}}",
+        "\\label": "\\htmlId{#1}{}",
+        "\\R": "\\mathbb{R}",
+        "\\bR": "\\mathbf{R}",
+        "\\C": "\\mathbb{C}",
+        "\\Z": "\\mathbb{Z}",
+        "\\N": "\\mathbb{N}",
+        "\\Q": "\\mathbb{Q}",
+        "\\E": "\\mathbb{E}",
+        "\\cD": "\\mathcal{D}",
+        "\\var": "\\operatorname{Var}",
+        "\\cov":"\\operatorname{cov}",
+        "\\x": "\\mathbf{x}",
+        "\\X": "\\mathbf{X}",
+        "\\w": "\\mathbf{w}",
+        "\\W": "\\mathbf{W}",
+        "\\y": "\\mathbf{y}",
+        "\\z": "\\mathbf{z}",
+        "\\Z": "\\mathbf{Z}",
+        "\\u": "\\mathbf{u}",
+        "\\U": "\\mathbf{U}",
+        "\\V": "\\mathbf{V}",
+        "\\I": "\\mathbf{I}",
+        "\\A": "\\mathbf{A}",
+        "\\a": "\\mathbf{a}",
+        "\\B": "\\mathbf{B}",
+        "\\b": "\\mathbf{b}",
+        "\\c": "\\mathbf{c}",
+        "\\D": "\\mathbf{D}",
+        "\\M": "\\mathbf{M}",
+        "\\m": "\\mathbf{m}",
+        "\\bC": "\\mathbf{C}",
+        "\\J": "\\mathbf{J}",
+        "\\K": "\\mathbf{K}",
+        "\\L": "\\mathbf{L}",
+        "\\bS": "\\mathbf{S}",
+        "\\bmu": "\\boldsymbol{\\mu}",
+        "\\bphi": "\\boldsymbol{\\phi}",
+        "\\bepsilon": "\\boldsymbol{\\epsilon}",
+        "\\bSigma": "\\boldsymbol{\\Sigma}",
+        "\\bLambda": "\\boldsymbol{\\Lambda}",
+        "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\zero": "\\mathbf{0}",
+        "\\one": "\\mathbf{1}",
+        "\\T": "^{\\top}",
+        "\\p": "^\\prime",
+        "\\inv": "^{-1}",
+        "\\ij": "_{ij}",
+        "\\Norm": "\\mathcal{N}",
+        "\\gam": "\\text{Gamma}",
+        "\\nll": "\\text{NLL}",
+        "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
+        "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
+        "\\diag": "\\operatorname{diag}",
+        "\\tr": "\\operatorname{tr}",
+        "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
+        "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
+        "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\px": "\\frac{\\partial}{\\partial x}",
+        "\\pbA": "\\frac{\\partial}{\\partial \\mathbf{A}}",
+        "\\ml": "_\\text{ML}",
+      }
+    });
+  });
+</script>
+
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
+
+</html>

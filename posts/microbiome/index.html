@@ -143,7 +143,7 @@
   
 
   <div class="single-content">
-    <p>The human microbiome is a data rich ecosystem, which is generally known to have strong associations with host phenotypes (i.e., the set of observable characteristics of an organism). Yet, the extents of these relationships are not yet deeply understood. Until recently, the computing capabilities necessary to thoroughly analyze human microbiome data were severely lacking. However, due to novel advancements in sequencing technologies and data analysis techniques, there now exist a plethora of data, along with robust statistical tools, which can be leveraged to gain valuable insights into the impact of the human microbiome on overall health. Methods which can accurately detect disease early in developmental stages have the potential to revolutionize personalized and preventative medicine.</p>
+    <p>The human microbiome is a data rich ecosystem, which is generally known to have strong associations with host phenotypes (i.e., the set of observable characteristics of an organism). Yet, the extents of these relationships are not yet deeply understood. Until recently, the computing capabilities necessary to thoroughly analyze human microbiome data were severely lacking. However, due to novel advancements in sequencing technologies and data analysis techniques, there now exists a plethora of data, along with robust statistical tools, which can be leveraged to gain valuable insights into the impact of the human microbiome on overall health. Methods which can accurately detect disease early in developmental stages have the potential to revolutionize personalized and preventative medicine.</p>
 <p>In this post, I explore state-of-the-art machine learning methods for processing human microbiome data, building upon the work of <a href="https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1004977&amp;type=printable">Pasolli et al. [2016]</a>. Using data from the <a href="https://pubmed.ncbi.nlm.nih.gov/31142855/">Integrative Human Microbiome Project (HMP2) [2019]</a>, I demonstrate that IBD can be accurately identified using just 20 species of bacteria found in the human gut - a dramatic reduction from previous approaches requiring 200+ features. My majority-vote classification approach, an ensemble of XGBoost, CatBoost, LightGBM and random forests, achieves an ROC AUC score of 0.945 - a notable improvement from the previous study&rsquo;s 0.890.</p>
 <h2 id="data-loading-and-preprocessing">Data Loading and Preprocessing</h2>
 <p>The data I will be analyzing was taken as part of the <a href="https://pubmed.ncbi.nlm.nih.gov/31142855/">Integrative Human Microbiome Project (HMP2) [2019]</a>, which includes 1627 stool samples from clinical patients. Each patient was classified with IBD or as a control (i.e., healthy) - this is the target variable. The features are the relative species abundances found in each stool sample. This is the proportion of each species recorded in the sample with respect to the others.</p>
@@ -841,6 +841,16 @@ large metagenomic datasets: Tools and biological insights. PLoS Comput. Biol., 1
 
     <footer>
       
+<style>
+  .katex a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .katex a:hover {
+    text-decoration: none;
+  }
+</style>
+
 <link rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
 <script defer
@@ -869,30 +879,47 @@ large metagenomic datasets: Tools and biological insights. PLoS Comput. Biol., 1
         "\\N": "\\mathbb{N}",
         "\\Q": "\\mathbb{Q}",
         "\\E": "\\mathbb{E}",
+        "\\cD": "\\mathcal{D}",
+        "\\var": "\\operatorname{Var}",
         "\\cov":"\\operatorname{cov}",
         "\\x": "\\mathbf{x}",
         "\\X": "\\mathbf{X}",
         "\\w": "\\mathbf{w}",
+        "\\W": "\\mathbf{W}",
         "\\y": "\\mathbf{y}",
         "\\z": "\\mathbf{z}",
+        "\\Z": "\\mathbf{Z}",
         "\\u": "\\mathbf{u}",
         "\\U": "\\mathbf{U}",
+        "\\V": "\\mathbf{V}",
         "\\I": "\\mathbf{I}",
         "\\A": "\\mathbf{A}",
         "\\a": "\\mathbf{a}",
         "\\B": "\\mathbf{B}",
         "\\b": "\\mathbf{b}",
+        "\\c": "\\mathbf{c}",
         "\\D": "\\mathbf{D}",
         "\\M": "\\mathbf{M}",
         "\\m": "\\mathbf{m}",
         "\\bC": "\\mathbf{C}",
         "\\J": "\\mathbf{J}",
+        "\\K": "\\mathbf{K}",
         "\\L": "\\mathbf{L}",
         "\\bS": "\\mathbf{S}",
         "\\bmu": "\\boldsymbol{\\mu}",
+        "\\bphi": "\\boldsymbol{\\phi}",
+        "\\bepsilon": "\\boldsymbol{\\epsilon}",
+        "\\bSigma": "\\boldsymbol{\\Sigma}",
+        "\\bLambda": "\\boldsymbol{\\Lambda}",
+        "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\zero": "\\mathbf{0}",
+        "\\one": "\\mathbf{1}",
         "\\T": "^{\\top}",
+        "\\p": "^\\prime",
         "\\inv": "^{-1}",
+        "\\ij": "_{ij}",
         "\\Norm": "\\mathcal{N}",
+        "\\gam": "\\text{Gamma}",
         "\\nll": "\\text{NLL}",
         "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
         "\\argmax": "\\underset{#1}{\\operatorname{argmax}}",
@@ -901,6 +928,8 @@ large metagenomic datasets: Tools and biological insights. PLoS Comput. Biol., 1
         "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
         "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
         "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\px": "\\frac{\\partial}{\\partial x}",
+        "\\pbA": "\\frac{\\partial}{\\partial \\mathbf{A}}",
         "\\ml": "_\\text{ML}",
       }
     });
