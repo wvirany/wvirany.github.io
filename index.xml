@@ -13,7 +13,7 @@
       <link>http://localhost:1313/posts/gaussian/</link>
       <pubDate>Mon, 09 Jun 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/gaussian/</guid>
-      <description>Despite its ubiquity, I have frequently found myself in a state somewhere between discomfort and panic each time I am faced with the task of manipulating the Gaussian distribution, particularly in multiple dimensions. So, I&amp;rsquo;ve taken the opportunity to work through some detailed derivations involving the Gaussian.&#xA;In this blog, I focus on the multivariate Gaussian distribution, beginning by reasoning about its shape and properties in high dimensions. Then, I derive some useful formulas such as conditioning, marginalization, and some transformations.</description>
+      <description>Despite its ubiquity, I have frequently found myself in a state somewhere between discomfort and panic each time I am faced with the task of manipulating the Gaussian distribution, particularly in multiple dimensions. So, I&amp;rsquo;ve taken the opportunity to work through some detailed derivations involving the Gaussian.&#xA;In this blog, I focus on the multivariate Gaussian distribution, beginning by reasoning about its shape and properties in high dimensions. Then, I derive some useful formulas such as conditioning, marginalization, and certain transformations.</description>
     </item>
     <item>
       <title>Understanding the Neural Network Gaussian Process</title>
