@@ -143,22 +143,7 @@
   
 
   <div class="single-content">
-    <!-- 
-To Do:
-
-- Fill in "short proofs", appendix (triangle inequality, sum/product rules)
-- Finish references section
-- Double check resulting equations
-
-
-
-- Content:
-  - marginalization vs. conditioning
-  - my approach: trying to do detailed derivations; other sources focus on intuition + visualization
-  - Comment on frequent strategy of removing constants from sums in the exponent because they just become multiplicative scalars
-  - In "moments": show the formula for the second moment of a univariate Gaussian, and reference it properly (whether it's a footnote or appendix)
--->
-<style>
+    <style>
   details {
     border: 1px solid black;
     border-radius: 8px;
@@ -240,7 +225,7 @@ $$</p>
 y_i = \u_i\T(\x - \bmu).
 \end{equation*}
 $$</p>
-<p>The set $\{y_i\}$ can then be seen as a transformed coordinate system, shifted by $\bmu$ and rotated by $\u_i$.<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> Alternatively, we can write this as a vector:</p>
+<p>The set $\{y_i\}$ can then be seen as a transformed coordinate system, shifted by $\bmu$ and rotated by $\U$.<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup> Alternatively, we can write this as a vector:</p>
 <p>$$
 \begin{equation}\label{2}
 \y = \U(\x - \bmu).
@@ -541,12 +526,13 @@ $$</p>
 <p>Now, in the univariate case, the second moment is given by $\E[x^2]$. In the multivariate case, there are $d^2$ second moments, each given by $\E[x_i x_j]$ for $i, j \in [d]$. We can group these together to form the matrix $\E[\x\x\T]$. We write this as</p>
 <p>$$
 \begin{align}
-\E[\x\x\T] &amp;= \frac{1}{(2\pi)^{d/2}\lvert\bSigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}(\x - \bmu)\T\bSigma\inv (\x-\bmu) \right) \x\x\T d\x \nonumber \\[3pt]
+&amp;\E[\x\x\T] \nonumber \\
+&amp;= \frac{1}{(2\pi)^{d/2}\lvert\bSigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}(\x - \bmu)\T\bSigma\inv (\x-\bmu) \right) \x\x\T d\x \nonumber \\[3pt]
 &amp;= \frac{1}{(2\pi)^{d/2}\lvert\bSigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}\z\T\bSigma\inv \z \right) (\z + \bmu)(\z + \bmu)\T d\z \nonumber \\[3pt]
-&amp;= \frac{1}{(2\pi)^{d/2}\lvert\bSigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}\z\T\bSigma\inv \z \right) (\z\z\T + 2\z\T\bmu + \bmu\bmu\T)  d\z. \label{4}
+&amp;= \frac{1}{(2\pi)^{d/2}\lvert\bSigma\rvert^{1/2}}\int\exp\left( -\frac{1}{2}\z\T\bSigma\inv \z \right) (\z\z\T + \z\bmu\T + \bmu\z\T + \bmu\bmu\T)  d\z. \label{4}
 \end{align}
 $$</p>
-<p>By the same arguments as before, the term involving $\z\T\bmu$ will vanish due to symmetry, and the term involving $\bmu\bmu\T$ will integrate to $\bmu\bmu\T$ due to normalization. Then, we are left with the term involving $\z\z\T$. Using the eigenvalue decomposition of $\bSigma$, we can write</p>
+<p>By the same arguments as before, the terms involving $\z\bmu\T$ and $\bmu\z\T$ will vanish due to symmetry, and the term involving $\bmu\bmu\T$ will integrate to $\bmu\bmu\T$ due to normalization. Then, we are left with the term involving $\z\z\T$. Using the eigenvalue decomposition of $\bSigma$, we can write</p>
 <p align=center>
 $\y = \U\z, \quad$ or $\quad \z = \U\T\y$.
 </p>
