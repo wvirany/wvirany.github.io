@@ -9,6 +9,13 @@
     <lastBuildDate>Fri, 13 Jun 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="http://localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
+      <title>A spelled-out introduction to Gaussian processes</title>
+      <link>http://localhost:1313/posts/gp_intro/</link>
+      <pubDate>Fri, 13 Jun 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/gp_intro/</guid>
+      <description>Gaussian processes (GPs) have confounded me since I was first introduced to them. Many introductions talk about the beauty of implicitly defining infinitely many basis functions, or performing Bayesian inference directly in the space of functions. These explanations can seem daunting at first, but in this blog I aim to build up to GPs from a basic linear model,&#xA;spelled-out introduction.&#xA;Bayesian linear regression The linear model To build the foundation for GPs, I&amp;rsquo;ll start by considering a Bayesian treatment of linear regression.</description>
+    </item>
+    <item>
       <title>Some math behind the Gaussian distribution</title>
       <link>http://localhost:1313/posts/gaussian/</link>
       <pubDate>Fri, 13 Jun 2025 00:00:00 +0000</pubDate>
