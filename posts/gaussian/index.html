@@ -1054,7 +1054,7 @@ $$</p>
 <p>For the discussion on the sum of two Gaussians, the convolution operation, and the Fourier transform of the Gaussian, I referenced the following:</p>
 <ul>
 <li><a href="https://math.libretexts.org/Bookshelves/Differential_Equations/Introduction_to_Partial_Differential_Equations_(Herman)/09%3A_Transform_Techniques_in_Physics/9.06%3A_The_Convolution_Operation">LibreTexts</a> &mdash; This gives a great tutorial on the convolution operation and also shows how to compute the convolution of two zero-mean Gaussians.</li>
-<li><a href="https://www.ee.iitb.ac.in/~belur/ee210/current-tutorials-quizzes/Kenneth-Zeger-UCSD-Gaussian-polar-coordinate.pdf">This guy&rsquo;s notes</a> &mdash; this is a nice tutorial on performing the integral necessary to take the Fourier transform of a zero-mean Gaussian.</li>
+<li><a href="https://www.ee.iitb.ac.in/~belur/ee210/current-tutorials-quizzes/Kenneth-Zeger-UCSD-Gaussian-polar-coordinate.pdf">Kenneth Zeger&rsquo;s notes</a> &mdash; this is a nice tutorial on performing the integral necessary to take the Fourier transform of a zero-mean Gaussian.</li>
 <li><a href="https://ftfsite.ru/wp-content/files/tfkp_endlish_2.2.pdf">Ablowitz &amp; Foxas</a> &mdash; This is the main text I used for complex analysis; chapter 4 deals with contour integration as well as the Fourier transform.</li>
 </ul>
 <p>However, I added some details to the derivation and generalized the results for the Fourier transform of the Gaussian to a general Gaussian with nonzero mean.</p>
@@ -1082,7 +1082,7 @@ $$</p>
 \A = \U\bLambda\U\inv.
 \end{equation}
 $$</p>
-<p>In this case, $\A$ is <em>diagonalizable</em>. <sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup></p>
+<p>In this case, $\A$ is <em>diagonalizable</em>.</p>
 <p>Furthermore, if $\A$ is <em>real</em> and <em>symmetric</em>, then the eigenvalues of $\A$ are real, and the corresponding eigenvectors are orthonormal, i.e.</p>
 <p>$$
 \u_i\u_j\T = \delta_{ij}.
@@ -1348,9 +1348,6 @@ It is fairly straightforward to show, however, that the convolution is commutati
 </li>
 <li id="fn:6">
 <p>Note that, in general, finding the first and second moments is not enough to establish that the distribution is a Gaussian. For example, suppose we have two random variables $X, Y$ sampled from a Rademacher distribution (i.e., they take on values $\pm 1$ with equal probabilities). Each of these have mean $0$ and variance $1$. Then, the sum $Z = X + Y$ takes on values $\{ -2, 0, 2 \}$, with respective probabilities $\{ 1/4, 1/2, 1/4 \}$. $Z$ will then have mean $0$ and variance $2$ &mdash; the same parameters we would expect for the sum of two Gaussians. Thus, we must first show that $Z$ is Gaussian distributed; then, we can find it&rsquo;s parameters by computing the moments.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
-</li>
-<li id="fn:7">
-<p>From this, we see that a matrix $\A$ is diaongalizable if it is <em>square</em> and <em>nonsingular</em>. We see that it needs to be square since otherwise the notion of eigenvalues is not well-defined. This is because the eigenvalues are found by solving the characteristic equation $\det(\A - \lambda\I) = 0$, and which the determinant is only defined for square matrices. Moreover, $\A$ needs to be nonsingular so that the eigenvectors are linearly independent. In this case, the matrix $\U$ is nonsingular and hence invertible, allowing us to write $\A = \U\bLambda\U\inv$.&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </div>
