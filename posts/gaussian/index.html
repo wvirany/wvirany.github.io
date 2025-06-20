@@ -713,7 +713,7 @@ $$</p>
 \bC &amp; \D
 \end{pmatrix}\inv = \begin{pmatrix}
 \M &amp; -\M\B\D\inv \\
--\D\inv\bC\M &amp; \D\inv + \D\inv\bC\M\B\D
+-\D\inv\bC\M &amp; \D\inv + \D\inv\bC\M\B\D\inv
 \end{pmatrix},
 $$</p>
 <p>where $\M$ is the <a href="#appendix"><em>Schur complement</em></a>, defined</p>
@@ -1055,14 +1055,15 @@ $$</p>
 <ul>
 <li><a href="https://math.libretexts.org/Bookshelves/Differential_Equations/Introduction_to_Partial_Differential_Equations_(Herman)/09%3A_Transform_Techniques_in_Physics/9.06%3A_The_Convolution_Operation">LibreTexts</a> &mdash; This gives a great tutorial on the convolution operation and also shows how to compute the convolution of two zero-mean Gaussians.</li>
 <li><a href="https://www.ee.iitb.ac.in/~belur/ee210/current-tutorials-quizzes/Kenneth-Zeger-UCSD-Gaussian-polar-coordinate.pdf">Kenneth Zeger&rsquo;s notes</a> &mdash; this is a nice tutorial on performing the integral necessary to take the Fourier transform of a zero-mean Gaussian.</li>
-<li><a href="https://ftfsite.ru/wp-content/files/tfkp_endlish_2.2.pdf">Ablowitz &amp; Foxas</a> &mdash; This is the main text I used for complex analysis; chapter 4 deals with contour integration as well as the Fourier transform.</li>
+<li><a href="https://ftfsite.ru/wp-content/files/tfkp_endlish_2.2.pdf">Ablowitz &amp; Fokas</a> &mdash; This is the main text I used for complex analysis; chapters 3 &amp; 4 deal with Cauchy&rsquo;s theorem, contour integration, and the Fourier transform.</li>
 </ul>
-<p>However, I added some details to the derivation and generalized the results for the Fourier transform of the Gaussian to a general Gaussian with nonzero mean.</p>
-<p>For more intuition behind the Gaussian distribution, I cannot recommend the following videos by 3Blue1Brown highly enough:</p>
+<p>In addition to these resources, I added some details to the derivations and generalized the results for the Fourier transform of the Gaussian to a Gaussian with nonzero mean.</p>
+<p>For more intuition behind sums of Gaussian distributions, I cannot recommend the following videos by 3Blue1Brown highly enough:</p>
 <ul>
 <li><a href="https://youtu.be/IaSGqQa5O-M?si=g2pFPiZIvtl_eWT8">Convolutions | Why X+Y in probability is a beautiful mess</a></li>
 <li><a href="https://youtu.be/d_qvLDhkg00?si=nx-3tQK9SMjjouNG">A pretty reason why Gaussian + Gaussian = Gaussian</a></li>
 </ul>
+<p>Thanks for reading!</p>
 <h2 id="appendix">Appendix</h2>
 <details>
   <summary>Eigenvalue decomposition</summary>
