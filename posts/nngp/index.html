@@ -227,7 +227,7 @@ $$</p>
 Z_j^{(l+1)} = b_j^{l} + \sum_{i=1}^{n_l}w_{ji}^{(l)}A_j^{(l)}.
 $$</p>
 <p>Once again, since each $A_j^{(l)}$ are i.i.d., then as $n_l \to \infty$, the CLT implies that $Z_j^{(l+1)}$ will take a Normal distribution. Thus, $Z_j^{(l+1)}$ is also a GP, and we have our result.</p>
-<p>Specifically, the mean function of the corresponding GP is given by $m(\mathbf(x)) = \mathbb{E} \left[ Z_j^{(l+1)} \right]$, and since the weights and biases have mean zero, then $m(\mathbf{x}) = 0$. Then, we have</p>
+<p>Specifically, the mean function of the corresponding GP is given by $m(\x) = \mathbb{E} \left[ Z_j^{(l+1)} \right]$, and since the weights and biases have mean zero, then $m(\mathbf{x}) = 0$. Then, we have</p>
 <p>$$
 Z_j^{(l+1)} \sim \mathcal{GP}(0, k^{(l+1)}),
 $$</p>
@@ -399,12 +399,14 @@ $$</p>
         "\\U": "\\mathbf{U}",
         "\\V": "\\mathbf{V}",
         "\\I": "\\mathbf{I}",
+        "\\zv": "\\mathbf{0}",
         "\\A": "\\mathbf{A}",
         "\\a": "\\mathbf{a}",
         "\\B": "\\mathbf{B}",
         "\\b": "\\mathbf{b}",
         "\\c": "\\mathbf{c}",
         "\\D": "\\mathbf{D}",
+        "\\f": "\\mathbf{f}",
         "\\M": "\\mathbf{M}",
         "\\m": "\\mathbf{m}",
         "\\bC": "\\mathbf{C}",
@@ -425,6 +427,8 @@ $$</p>
         "\\inv": "^{-1}",
         "\\ij": "_{ij}",
         "\\Norm": "\\mathcal{N}",
+        "\\GP": "\\mathcal{GP}",
+        "\\bmid": "\\,\\Big|\\,",
         "\\gam": "\\text{Gamma}",
         "\\nll": "\\text{NLL}",
         "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",

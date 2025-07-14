@@ -128,7 +128,7 @@
 
       
       &nbsp; · &nbsp;
-      11 min read
+      21 min read
       
     </p>
 
@@ -172,8 +172,18 @@
   
 
   <div class="single-content">
-    <p>Gaussian processes (GPs) have confounded me since I was first introduced to them. Many introductions talk about the beauty of implicitly defining infinitely many basis functions, or performing Bayesian inference directly in the space of functions. These explanations can seem daunting at first, but in this blog I aim to build up to GPs from a basic linear model,</p>
-<p>spelled-out introduction.</p>
+    <!-- TO DO:
+* positive definite = PD?
+* ctrl + f: we -> I, when applicable
+* change \mid to \Big| where appropriate
+* am I using \phi instead of \bphi in some places?
+* clean up figures: axes, titles, legends, etc.
+* consistent format for references (e.g., Bishop, 2006, Bishop (2006), or [Bishop 2006])
+* at the end, discuss varying hyperparameters and how to make optimizations with Cholesky factorization
+-->
+<p>Gaussian processes (GPs) have always been a particularly confounding topic for me in machine learning (ML). Many introductions talk about the beauty of implicitly defining infinite-dimensional features in function space, or performing Bayesian inference directly in the space of functions. These explanations can seem daunting at first, but in this blog I aim to clarify things and build up to GPs from a basic linear model.</p>
+<p>spelled-out introduction (with code!).</p>
+<p>In this blog I attempt to accumulate &hellip; from different sources, as well as providing my own explanations to present only what I think is the core of understanding GPs.</p>
 <h2 id="bayesian-linear-regression">Bayesian linear regression</h2>
 <h3 id="the-linear-model">The linear model</h3>
 <p>To build the foundation for GPs, I&rsquo;ll start by considering a Bayesian treatment of linear regression. We&rsquo;ll see that this is in fact a basic example of a GP.</p>
@@ -201,7 +211,7 @@ $$</p>
 <p>$$
 f(\x; \w) = \bphi\T\w,
 $$</p>
-<p>where $\bphi = \phi(\x)$, and now $\w \in \R^m$. If the basis functions ${\phi_i}$ are nonlinear in terms of $\x$, we can model nonlinear relationships between the features and targets while stil enjoying the benefits of a linear model, since $f$ is linear in terms of $w$.</p>
+<p>where $\bphi = \phi(\x)$, and I&rsquo;ve abused notation by now letting $\w \in \R^m$. If the basis functions ${\phi_i}$ are nonlinear in terms of $\x$, we can model nonlinear relationships between in the features while still enjoying the benefits of a linear model, since $f$ is linear in terms of the learned parameters $\w$.</p>
 <p>As a simple example, suppose we have a one-dimensional input $x$, and we wish to model the class of polynomials up to degree $m-1$. Then, we simply define $\phi_j(x) = x^j$, which gives the following model:</p>
 <p>$$
 \begin{align*}
@@ -220,8 +230,7 @@ $$</p>
 p(y \mid \x, \w, \sigma^2) = \Norm(y \mid f(\x; \w), \sigma^2).
 \end{align*}
 $$</p>
-<p>Before moving forward, a quick note on notation: when referring to a general probability distribution $p$, we list the dependent variables on the LHS of the conditional and the given variables on the RHS, including hyperparameters like $\sigma^2$, in no particular order. For example, $p(y \mid \x, \w, \sigma^2) = p(y \mid \w, \sigma^2, \x)$. It&rsquo;s completely arbitrary what order the variables are in, so long as they fall on the correct side of the conditional, and often certain variables are omitted from the notation and are implicitly assumed. From this point, I will omit hyperparameters from the general expressions for distributions.</p>
-<p>However, when we refer to a specific distribution like the Gaussian, the positions of given variables have a specific meaning: the first position after the conditional is reserved for the mean, and the second position is reserved for the variance, hence $p(y \mid \x, \w) = \Norm(y \mid f(\x; \w), \sigma^2)$.</p>
+<p>Before moving forward, I&rsquo;ll make a quick note on notation: when referring to a general probability distribution $p$, we list the dependent variables on the LHS of the conditional and the given variables on the RHS, including hyperparameters like $\sigma^2$, in no particular order. For example, $p(y \mid \x, \w, \sigma^2) = p(y \mid \w, \sigma^2, \x)$. It&rsquo;s completely arbitrary what order the variables are in, so long as they fall on the correct side of the conditional, and often certain variables are omitted from the notation and are implicitly assumed. From this point, I will omit hyperparameters from the general expressions for distributions. However, when we refer to a specific distribution like the Gaussian, the positions of given variables follow certain conventions: the first position after the conditional is reserved for the mean, and the second position is reserved for the variance, hence I&rsquo;ll write $p(y \mid \x, \w) = \Norm(y \mid f(\x; \w), \sigma^2)$.</p>
 <h3 id="computing-the-parameters">Computing the parameters</h3>
 <p>Now, suppose we observe some iid dataset $\cD = (\X, \y)$, where $\X \in \R^{d\times n}$ is the matrix whose columns are the $n$ observed input vectors, and $\y = (y_1, y_2 ,\ldots, y_n)\T$ contains the correspondng target variables. Moreover, we can write the matrix containing our feature vectors as $\bPhi \in \R^{m\times n}$. Then, we have the following matrix equation:</p>
 <p>$$
@@ -236,18 +245,17 @@ p(\cD \mid \w) &amp;= p(\y \mid \X, \w) \\
 &amp;= \prod_{i=1}^n \Norm(y_i \mid f(\x_i; \w), \sigma^2).
 \end{align*}
 $$</p>
-<p>Then, we would maximize this expression w.r.t $\w$, which would give a point estimate for the parameters.</p>
+<p>Then, we would maximize this expression with respect to $\w$, which would give a point estimate for the parameters.</p>
 <p>Instead, we will take a Bayesian treatment, which will allow us to compute a probability distribution over all possible values of of the parameters. To do so, we start by defining a prior on $\w$:</p>
 <p>$$
 p(\w) = \Norm \left( \w \mid 0, \bSigma \right).
 $$</p>
-<p>With no previous information about $\w$, it&rsquo;s reasonable to assume that all values of $\w$ are equally likely &mdash; this corresponds to a zero-mean Gaussian. Furthermore, we often assume the parameters are independent, so $\bSigma = \alpha\I$, for some constant $\alpha$. However, I&rsquo;ll continue with the general form for the prior covariance.</p>
-<p>Now, we&rsquo;d like to infer the values of $\w$ from the observed data by computing the posterior distribution $p(\w \mid \cD)$. To do so, we can model the joint distribution of $\y$ and $\w$, then use the <a href="../gaussian/#conditioning">rules for conditioning</a> on multivariate Guassian distributions. <sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup></p>
-<p>First, we note that $\y$ is the <a href="../gaussian/#sum-of-gaussians">sum of two Gaussians</a>; the transformed $\bPhi\T\w$, and $\bepsilon$. Thus, $\y$ will be Gaussian-distributed as follows:</p>
+<p>With no previous information about $\w$, it&rsquo;s reasonable to assume that all values of $\w$ are equally likely &mdash; this corresponds to a zero-mean Gaussian. Furthermore, we often assume the elements of $\w$ are independent, so $\bSigma = \alpha\I$, for some constant $\alpha$. However, I&rsquo;ll continue with the general form for the prior covariance.</p>
+<p>Now, we&rsquo;d like to infer the values of $\w$ from the observed data by computing the posterior distribution $p(\w \mid \cD)$. To do so, we can model the joint distribution of $\y$ and $\w$, then use the <a href="../gaussian/#conditioning">rules for conditioning</a> on multivariate Guassian distributions.<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> First, we note that $\y$ is the <a href="../gaussian/#sum-of-gaussians">sum of two Gaussians</a>; the transformed $\bPhi\T\w$, and $\bepsilon$. Thus, $\y$ will be Gaussian-distributed as follows:</p>
 <p>$$
-p(\y \mid \X) = \Norm \left( \y \mid 0, \bPhi\T\bSigma\bPhi + \sigma^2\I \right).
+p(\y \mid \X) = \Norm \left( \y \bmid 0, \bPhi\T\bSigma\bPhi + \sigma^2\I \right).
 $$</p>
-<p>Finally, we compute the covariance between $\y$ and $\w$:</p>
+<p>Then, we compute the covariance between $\y$ and $\w$:</p>
 <p>$$
 \cov(\y, \w) = \cov(\bPhi\T\w + \bepsilon, \w) = \bPhi\T\cov(\w, \w) = \bPhi\T\bSigma.
 $$</p>
@@ -263,7 +271,7 @@ p(\y, \w \mid \X) = \Norm \left( \left. \begin{bmatrix}
 \end{bmatrix}
 \right).
 $$</p>
-<p>Now, the conditional distribution $p(\w \mid \y, \X)$ is Gaussian with the following parameters:</p>
+<p>Now we can compute the conditional distribution $p(\w \mid \y, \X),$ which is Gaussian with the following parameters:</p>
 <p>$$
 \begin{align*}
 \bmu_{\w\mid\cD} &amp;= \bSigma\bPhi \left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv\y, \\
@@ -273,17 +281,157 @@ $$</p>
 <h3 id="making-predictions">Making predictions</h3>
 <p>Using our posterior parameter distribution $p(\w \mid \cD)$, we&rsquo;d like to now make predictions at new test points $\X_\ast$, i.e., we&rsquo;d like to compute the posterior predictive distribution $p(\y_\ast \mid \X_\ast, \cD)$. One way to do this is to average over all values of $\w$:</p>
 <p>$$
-p(\y_\ast \mid \X_\ast, \D) = \int p(\y_\ast \mid \X_\ast, \w) p(\w \mid \cD) d\w,
+p(\y_\ast \mid \X_\ast, \cD) = \int p(\y_\ast \mid \X_\ast, \w) p(\w \mid \cD) d\w,
 $$</p>
-<p>where $p(\y_\ast \mid \X_\ast, \w)$ is just the likelihood and $p(\w\mid\cD)$ is the previously computed posterior parameter distribution. This integral is tractable, but takes a bit of work.<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> An easier way to compute the predictive distribution is to note that, under our model,</p>
+<p>where $p(\y_\ast \mid \X_\ast, \w)$ is just the likelihood of the new test points and $p(\w\mid\cD)$ is the previously computed posterior parameter distribution. This integral is tractable, but takes a bit of work.<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> However, an easier way to compute the predictive distribution is to note that, under our model,</p>
 <p>$$
 \y_\ast = \bPhi_\ast\T\w + \bepsilon.
 $$</p>
 <p>Then, if we use the posterior distribution over $\w$ and once again use the rules for transforming Gaussians, we have the following result:</p>
 <p>$$
-p(\y_\ast \mid \X_\ast, \D) = \Norm \left( \y_\ast \mid \bPhi_\ast\T\bmu_{\w\mid\cD}, \bPhi_\ast\T\bSigma_{\w\mid\cD}\bPhi_\ast + \sigma^2\I \right).
+p(\y_\ast \mid \X_\ast, \cD) = \Norm \left( \y_\ast \Big| \bPhi_\ast\T\bmu_{\w\mid\cD}, \bPhi_\ast\T\bSigma_{\w\mid\cD}\bPhi_\ast + \sigma^2\I \right).
 $$</p>
 <h3 id="bayesian-linear-regression-in-python">Bayesian linear regression in Python</h3>
+<p>Here I show a simple implementation of Bayesian linear regression in Python.</p>
+<p>First, I&rsquo;ll construct a toy dataset:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">import</span> numpy <span style="color:#00f">as</span> np
+</span></span><span style="display:flex;"><span><span style="color:#00f">from</span> math <span style="color:#00f">import</span> pi
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>f = <span style="color:#00f">lambda</span> x: x * np.sin(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>xs = np.linspace(0, 2*pi, 100)
+</span></span><span style="display:flex;"><span>ys = f(xs)
+</span></span></code></pre></div><p>This generates 100 evenly-spaced points on the interval $[0, 2\pi]$, as well as the corresponding functional outputs on the domain according to the function $f(x) = x\sin(x)$. To construct a training set, we can uniformly sample points in the domain and evaluate their corresponding functional values:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>np.random.seed(1)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>n_samples = 10
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#008000"># Noise term with variance 0.1 - note that Var(bX) = b^2 * Var(X)</span>
+</span></span><span style="display:flex;"><span>epsilon = np.sqrt(0.1) * np.random.standard_normal(size=n_samples)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>X_data = np.random.uniform(0, 2*pi, size=n_samples)
+</span></span><span style="display:flex;"><span>y_data = f(X_data) + epsilon
+</span></span></code></pre></div><p>I&rsquo;ve also added a noise term $\epsilon$ with variance 0.1 to the observations. This gives a dataset of observations $\cD = (\X, \y)$ as we saw before, and our goal is to approximate the function $f$ on the entire domain. Before going further, it&rsquo;s always a good idea to visualize your data (if applicable) for any machine learning task:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">import</span> matplotlib.pyplot <span style="color:#00f">as</span> plt
+</span></span><span style="display:flex;"><span><span style="color:#00f">import</span> seaborn <span style="color:#00f">as</span> sns
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#008000"># Set up Seaborn plotting style - this can be ignored</span>
+</span></span><span style="display:flex;"><span>sns.set_style(<span style="color:#a31515">&#34;darkgrid&#34;</span>,
+</span></span><span style="display:flex;"><span>              {<span style="color:#a31515">&#34;axes.facecolor&#34;</span>: <span style="color:#a31515">&#34;.95&#34;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;axes.edgecolor&#34;</span>: <span style="color:#a31515">&#34;#000000&#34;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;grid.color&#34;</span>: <span style="color:#a31515">&#34;#EBEBE7&#34;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;font.family&#34;</span>: <span style="color:#a31515">&#34;serif&#34;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;axes.labelcolor&#34;</span>: <span style="color:#a31515">&#34;#000000&#34;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;xtick.color&#34;</span>: <span style="color:#a31515">&#34;#000000&#34;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;ytick.color&#34;</span>: <span style="color:#a31515">&#34;#000000&#34;</span>,
+</span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;grid.alpha&#34;</span>: 0.4 })
+</span></span><span style="display:flex;"><span>sns.set_palette(<span style="color:#a31515">&#39;muted&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>plt.plot(xs, ys, c=<span style="color:#a31515">&#39;k&#39;</span>, ls=<span style="color:#a31515">&#39;dashed&#39;</span>, lw=1)  <span style="color:#008000"># Plot f(x) over the domain</span>
+</span></span><span style="display:flex;"><span>plt.scatter(X_data, y_data, c=<span style="color:#a31515">&#39;firebrick&#39;</span>, s=25); <span style="color:#008000"># Plot training samples</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>plt.xlim(0, 2*pi)
+</span></span></code></pre></div><div id="fig1" class="figure">
+   <img src="figures/figure1.png" alt="Figure 1" style="width:80%; margin-left:auto; margin-right:auto">
+</div>
+<p>Now, we can build our model. First, we define a feature map $\phi:\R \to \R^m$ as in the first section, where</p>
+<p>$$
+\phi(x) = w_0 + w_1x + \cdots + w_{m-1}x^{m-1}.
+$$</p>
+<p>We can implement this as follows:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">def</span> poly_feature_transform(X: np.ndarray, m: int) -&gt; np.ndarray:
+</span></span><span style="display:flex;"><span>    <span style="color:#a31515">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Transform the input vectors X into polynomial features of degree m.
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Args:
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    X: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        The input of shape (n, 1); n is number of samples
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    m: int
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        The degree of the polynomial features.
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Returns:
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    X_poly : np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        The transformed feature vector with polynomial features of shape
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        (m, n)
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>    n = X.shape[0]
+</span></span><span style="display:flex;"><span>    X_poly = np.ones(n).reshape(n, 1)  <span style="color:#008000"># Instantiate X_poly with intercept terms</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">for</span> i <span style="color:#00f">in</span> range(1, m):
+</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Add column of features x^i</span>
+</span></span><span style="display:flex;"><span>        X_poly = np.concatenate((X_poly, X.reshape(n, 1)**i), axis=1)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">return</span> X_poly.T   <span style="color:#008000"># (m, n)</span>
+</span></span></code></pre></div><p>Next, we&rsquo;d like to compute the posterior parameter and predictive distributions, and make predictions at new test points:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">def</span> make_predictions(
+</span></span><span style="display:flex;"><span>    X: np.ndarray, X_star: np.ndarray, y: np.ndarray, sigma: float
+</span></span><span style="display:flex;"><span>):
+</span></span><span style="display:flex;"><span>    <span style="color:#a31515">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Compute posterior paramter distribution and make predictions at test points.
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Args:
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    X: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Input of shape (m, n); m is dimension of feature space, n is number
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        of samples
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    X_star: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Test points of shape (m, n_star) at which to make new predictions;
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        n_star is number of test points
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    y: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Training labels of shape (n,)
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    sigma_n: Noise variance
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Returns:
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    mean: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Mean of predictive distribution at points X_star; shape = (n_star,)
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    std: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Standard deviation of predictive distribution at points X_star;
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        shape = (n_star,)
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    &#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    m, n = X.shape
+</span></span><span style="display:flex;"><span>    n_star = X_star.shape[1]
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">assert</span> X_star.shape[0] == m
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">assert</span> y.shape == (n,)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#008000"># Prior covariance of parameter distribution p(w); mean is zero</span>
+</span></span><span style="display:flex;"><span>    S = np.eye(m)   <span style="color:#008000"># (m, m)</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#008000"># Compute mean and covariance of posterior parameter distribution p(w|D)</span>
+</span></span><span style="display:flex;"><span>    S_post = S - S @ X @ np.linalg.inv(X.T @ S @ X + sigma*np.eye(n)) @ X.T @ S
+</span></span><span style="display:flex;"><span>    m_post = S @ X @ np.linalg.inv(X.T @ S @ X + sigma*np.eye(n)) @ y
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">assert</span> S_post.shape == (m, m)
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">assert</span> m_post.shape == (m,)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#008000"># Compute mean and standard deviation at locations X_star</span>
+</span></span><span style="display:flex;"><span>    mean = X_star.T @ m_post
+</span></span><span style="display:flex;"><span>    std = np.sqrt(np.diag(X_star.T @ S_post @ X_star + sigma*np.eye(n_star)))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">assert</span> mean.shape == std.shape == (n_star,)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">return</span> mean, std
+</span></span></code></pre></div><p>The expressions for computing the distributions of interest are just those derived in the previous sections. Using these functions, we can now perform Bayesian linear regression:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>m = 5  <span style="color:#008000"># Degree of polynomials in feature space is m - 1</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>X_poly = poly_feature_transform(X_data, m)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>X_star = xs  <span style="color:#008000"># Predict values of each point in domain</span>
+</span></span><span style="display:flex;"><span>X_star_poly = poly_feature_transform(X_star, m)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mean, std = make_predictions(X_poly, X_star_poly, y_data, sigma=.1)
+</span></span></code></pre></div><p>We can now visualize the results:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>plt.plot(xs, ys, c=<span style="color:#a31515">&#39;k&#39;</span>, ls=<span style="color:#a31515">&#39;dashed&#39;</span>, lw=1, label=<span style="color:#a31515">r</span><span style="color:#a31515">&#39;$f(x) = xsin(x)$&#39;</span>)
+</span></span><span style="display:flex;"><span>plt.scatter(X_data, y_data, c=<span style="color:#a31515">&#39;firebrick&#39;</span>, s=25, label=<span style="color:#a31515">&#39;Training samples&#39;</span>)
+</span></span><span style="display:flex;"><span>plt.plot(xs, mean, c=<span style="color:#a31515">&#39;midnightblue&#39;</span>, label=<span style="color:#a31515">&#39;Model predicitions&#39;</span>)  
+</span></span><span style="display:flex;"><span>plt.fill_between(xs, mean-std, mean+std, alpha=.25, label=<span style="color:#a31515">&#39;1 std&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>plt.xlim(0, 2*pi)
+</span></span></code></pre></div><div id="fig1" class="figure">
+   <img src="figures/figure2.png" alt="Figure 2" style="width:80%; margin-left:auto; margin-right:auto">
+</div>
+<p>The model predictions are shown in blue, with a shaded area corresponding to one standard deviation about the mean.</p>
+<p>I would encourage the reader to vary the complexity of the model by using different values of $m$. Some extreme examples would be $m = 1$ or $2$, which would give constant or linear predictions, respectively. Alternatively, by setting the value of $m$ to be very high, we see that the model overfits the data. This is a nice example of the bias-variance tradeoff.</p>
 <h2 id="the-kernel-trick">The kernel trick</h2>
 <p>If we write out the mean and covariance for the posterior predictive distribution, we have</p>
 <p>$$
@@ -302,13 +450,15 @@ $$</p>
 $$</p>
 <p>Thus, we see that all the dependence of the posterior predictive distribution on the features $\bPhi$ and $\bPhi_\ast$ is in the form of one of the following inner products:</p>
 <p>$$
+\begin{gather}\label{1}
 \bPhi\T\bSigma\bPhi, \quad \bPhi\T\bSigma\bPhi_\ast, \quad \bPhi_\ast\T\bSigma\bPhi, \quad \bPhi_\ast\T\bSigma\bPhi_\ast.
+\end{gather}
 $$</p>
 <p>In other words, all of the dependence on the features depends on an expression of the form</p>
 <p>$$
 k(\x, \x\p) = \phi(\x)\T\bSigma\phi(\x\p),
 $$</p>
-<p>where we&rsquo;ve defined a &ldquo;kernel function&rdquo; $k$. By noting that $\bSigma$ is positive definite, and hence has a matrix square root<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup>, we can rewrite this expression as</p>
+<p>where I&rsquo;ve defined a &ldquo;kernel function&rdquo; $k$. By noting that $\bSigma$ is positive definite, and hence has a matrix square root<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup>, we can rewrite this expression as</p>
 <p>$$
 k(\x, \x\p) = \psi(\x)\T\psi(\x\p),
 $$</p>
@@ -318,15 +468,15 @@ $$</p>
 \K &amp;= \bPhi\T\bSigma\bPhi, \quad \K_\ast = \bPhi\T\bSigma\bPhi_\ast, \quad \K_{\ast\ast} = \bPhi_\ast\T\bSigma\bPhi_\ast.
 \end{align*}
 $$</p>
-<p>Note that $K_\ast = (\bPhi_\ast\T\bSigma\bPhi)\T$, so we can represent each of the expressions in terms of these three Gram matrices. We can now rewrite the parameters of the predictive distribution as</p>
+<p>Note that $\K_\ast = (\bPhi_\ast\T\bSigma\bPhi)\T$, so we can represent each of the expressions in $\eqref{1}$ in terms of these three Gram matrices. We can then rewrite the parameters of the predictive distribution as</p>
 <p>$$
-\begin{align*}
-\bmu_{\y_\ast \mid \cD} &amp;= \K_\ast\T \left( \K + \sigma^2\I \right)\inv\y, \\
-\bSigma_{\y_\ast \mid \cD} &amp;= \K_{\ast\ast} - \K_\ast\T \left( \K + \sigma^2\I \right)\inv \K_\ast + \sigma^2\I.
-\end{align*}
+\begin{align}
+\bmu_{\y_\ast \mid \cD} &amp;= \K_\ast\T \left( \K + \sigma^2\I \right)\inv\y, \label{2} \\
+\bSigma_{\y_\ast \mid \cD} &amp;= \K_{\ast\ast} - \K_\ast\T \left( \K + \sigma^2\I \right)\inv \K_\ast + \sigma^2\I. \label{3}
+\end{align}
 $$</p>
-<p>To reiterate, we showed that, for <em>any</em> choice of feature map, we could express our result in terms of an inner product. Thus, we could achieve the same result by choosing a kernel function which can be represented by an inner product - then we never have to explicitly compute our feature vectors!</p>
-<p>The advantage of this is that perhaps the feature vectors we&rsquo;d like to work with are very high dimensional, and it might be cheaper to work in terms of the kernel function. As an example, suppose we have some</p>
+<p>To reiterate, we showed that, for <em>any</em> choice of feature map, we could express our result in terms of an inner product. Thus, instead of explicitly computing the feature vectors, we could simply specify a kernel function. So long as the kernel function we choose represents a valid inner product, this corresponds to some feature map of the input vectors. I&rsquo;ll discuss valid kernel functions shortly.</p>
+<p>The advantage of this is that the feature vectors we&rsquo;d like to work with might be very high dimensional, and it might be cheaper to work in terms of the kernel function.</p>
 <p>As a concrete example<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup>, consider some vector $\x = (x_1, x_2, \dots, x_d) \in R^d$, and suppose we wish to express all the second-order polynomials in terms of the features of $\x$:</p>
 <p>$$
 \phi(\x) = \begin{bmatrix}
@@ -344,7 +494,7 @@ $$</p>
 <p>$$
 d + {d\choose 2} + d = 2d + \frac{d(d-1)}{2} \sim \mathcal{O}(d^2).
 $$</p>
-<p>Alternatively, we can write the inner product as</p>
+<p>For large $d$, this could become prohibitive to compute. Alternatively, we can write the inner product as</p>
 <p>$$
 \begin{align*}
 \phi(\x)\T\phi(\x\p) &amp;= \sum_{i=1}^dx_ix_i\p + \sum_{i=1}^dx_i^2x_i^{\prime\,2} + 2 \sum_{i=1}^d \sum_{j \neq i}^d x_ix_i\p x_jx_j\p \\
@@ -354,14 +504,144 @@ $$</p>
 $$</p>
 <p>Thus, we can define the kernel function $k(\x, \x\p) = \x\T\x\p + (\x\T\x\p)^2$ &mdash; we never have to compute $\phi(\x)$ directly, we can just plug $\x$ into the kernel function and make our predictions based on these values.</p>
 <h3 id="comments-on-valid-kernel-functions">Comments on valid kernel functions</h3>
-<p>A caveat to the approach descirbed above is that we must use a <em>valid</em> kernel. However, there are some fairly straightforward methods of obtaining these.</p>
+<p>A caveat to the approach described above is that we must use a <em>valid</em> kernel function, i.e., a kernel which corresponds to an inner product. However, there are some fairly straightforward methods of obtaining these.</p>
 <p>There are several ways to check if a function is a valid kernel; one way is to show that, for any set of vectors $S$, the Gram matrix whose elements are given by $\K_{ij} = k(\x_i, \x_j)$ for each $\x_i, \x_j \in S$ is always positive-semidefinite. Another way is to show that $k$ can be represented as $k(\x, \x\p) = \psi(\x)\T\psi(\x\p)$, for some explicit feature map $\psi$, as we saw before.</p>
-<p>Moreover, once we have some valid kernel functions, we can use these as building blocks to construct new ones. For example, sums and products of valid kernels yield still valid kernels &mdash; we can use these properties to build rich classes of kernel functions. However, I will not focus my dicussion on these properties. For further discussion I like chapter 6 in <a href="#references">Bishop, 2006</a>.</p>
+<p>Moreover, once we have some valid kernel functions, we can use these as building blocks to construct new ones. For example, sums and products of valid kernels yield still valid kernels, along with many other transformations. We can take advantage of these properties to build rich classes of kernel functions. For further discussion on kernel functions, I like chapter 6 in <a href="#references">Bishop, 2006</a>.</p>
 <h2 id="gaussian-process-regression">Gaussian process regression</h2>
-<p>Now, let&rsquo;s return to the context of Bayesian linear regression. We previously derived the results for the predictive distribution</p>
+<p>Let&rsquo;s now return to the context of Bayesian linear regression. We have the following expression for the the predictive distribution:</p>
+<p>$$
+p(\y_\ast \mid \X_\ast, \cD) = \Norm\left( \y_\ast \bmid \bmu_{\y_\ast\mid\cD}, \bSigma_{\y_\ast\mid\cD} \right),
+$$</p>
+<p>for which the parameters are given by $\eqref{2}$ and $\eqref{3}$.</p>
+<p>As we showed before, we could the Gram matrices in these expressions via an inner product in terms of the feature vectors and the prior covariance $\Sigma$. However, we also showed that we can instead represent these in terms of a kernel function &mdash; one of our choosing! We don&rsquo;t have to explicitly compute the features. So,</p>
+<p>We previously derived these results by performing inference over the parameters. However, instead of reasoning about $\w$ and $\bphi$, we showed that we can represent the quantities of interest - that is, the parameters of the predictive distribution - solely in terms of a kernel function.</p>
+<p>Then, we know that we can specify our distribution in terms of functions. So, instead of performing inference in parameter space, we can express the mean and covariance as functions. If we treat these functions as black boxes, then our job becomes that of performing inference directly in the space of functions.</p>
+<p>We then write a GP as</p>
+<p>$$
+f \sim \GP(f; m, k),
+$$</p>
+<p>where $f$ is the function that is &ldquo;sampled&rdquo; from the GP. Like the Gaussian distribution, a GP is entirely specified by its first and second moments:</p>
+<p>$$
+\begin{align*}
+m(\x) &amp;= \E[f(\x)], \\
+k(\x, \x\p) &amp;= \E[(f(\x) - m(\x))(f(\x\p) - m(\x\p))].
+\end{align*}
+$$</p>
+<p>However, instead of explicitly constructing $k$, we just define some kernel function as discussed in the previous section.</p>
+<p>In the following sections I will develop the technology necessary to perform GP regression, which should also illuminate precisely how we model functions with a GP; however, before I do so, I will attempt to provide some intuition. First, I&rsquo;ll now state the formal definition of a GP:</p>
+<p><strong>Definition.</strong>   <em>A Gaussian Process (GP) is a collection of random variables such that any finite collection of which takes a joint multivariate Gaussian distribution.</em></p>
+<p>To see this, consider the case in which we define the function $f$ over a continuous interval $[a, b]$, and we&rsquo;d like to model the relationship between functional outputs $f(\x)$ for each $\x \in [a, b]$. Since this set contains uncountably many variables, we can&rsquo;t use our usual definition for the multivariate Gaussian distribution.  However, this definition states that if we take a finite subset of this interval, say $\{\x_1, \ldots, \x_n\} \subseteq [a, b]$, then the random variables $\{f(\x_1), \ldots, f(\x_n)\}$ will be jointly Gaussian-distributed. The GP specifies how we compute the parameters of this distribution. <sup id="fnref:8"><a href="#fn:8" class="footnote-ref" role="doc-noteref">8</a></sup></p>
+<p>This gives rise to one interpretation of GPs: where functions are the infinite-dimensional extension of fininite-dimensional vectors, GPs can be seen as an infinite-dimensional extension of the multivariate Gaussian distribution.</p>
 <h3 id="exact-observations">Exact observations</h3>
+<p>Analagously to Bayesian linear regression, we start with a prior <em>process</em> over the function $f$. Then, we will use observed data to reason about the distribution over functions.</p>
+<p>First, suppose we can observe the functional outputs directly, i.e., with no noise, so that our dataset is $\cD = (\X, \f)$, where $\f = (f(\x_1), \ldots, f(\x_n))\T$. Note that $f$ denotes the actual function we aim to model, and $\f$ denotes the vector of observations of the function.</p>
+<p>As before, we&rsquo;d like to predict the functional values $\f_\ast$ at new points $\X_\ast \in \R^{d\times n_\ast}$. Note that $\f$ and $\f_\ast$ are finite subsets of the function $f$ over the domain of interest. Thus, from our definition of a GP, the joint distribution $p(\f, \f_\ast)$ will be multivariate Gaussian with mean and covariance defined by the corresponding GP. Letting $m(\x) = 0$, we can model the joint distribution as</p>
+<p>$$
+\begin{bmatrix}
+\f \\
+\f_\ast
+\end{bmatrix} \sim
+\Norm \left(
+\zv, \begin{bmatrix}
+\;\K\;\; &amp; \K_\ast \\
+\;\K_\ast\T &amp; \K_{\ast\ast}
+\end{bmatrix}
+\right),
+$$</p>
+<p>where the elements of the Gram matrices are given by the kernel function $k$ evaluated at each pair of observation points. As before, we condition $\f_\ast$ on $\f$ to acquire the posterior distribution over the test points:</p>
+<p>$$
+p(\f_\ast \mid \X_\ast, \cD) = \Norm\left( \f_\ast \mid \bmu_{f\mid\cD}(\X_\ast), \K_{f\mid\D}(\X_\ast, \X_\ast) \right).
+$$</p>
+<p>The parameters are given by our usual conditioning formulas:</p>
+<p>$$
+\begin{align*}
+\bmu_{f\mid\cD} &amp;= \K_\ast\T\K\inv\f \\
+\K_{f\mid\cD} &amp;= \K_{\ast\ast} - \K_\ast\T\K\inv\K_\ast.
+\end{align*}
+$$</p>
+<p>I think it&rsquo;s useful to point out how this is different to the case of Bayesian linear regression. Before, we modeled the parameters of the distribution over observations by specifying prior distributions</p>
+<p>Now that we&rsquo;ve seen how predictions are made with a GP, I think it&rsquo;s useful to once more compare to the procedure of Bayesian linear regression. Before, we explicitly defined a feature map and a prior distribution over the parameters, with which we derived expressions for the mean and covariance of the predictive distribution.</p>
+<p>Here, we&rsquo;ve replaced all of the dependence on the features and parameters with functions, and we computed the mean and covariance of the joint distribution between training observations and test points using the mean and covariance functions which specify the GP.</p>
 <h3 id="noisy-observations">Noisy observations</h3>
+<p>Now we will see how to handle noisy observations, i.e., the case in which we cannot observe values of $f$ directly, but some $y$ corrupted by Gaussian noise:</p>
+<p>$$
+y = f(\x) + \epsilon
+$$</p>
+<p>As before, our training observations take the following distribution:</p>
+<p>$$
+\f \sim \Norm \left(\zv, \K(\X, \X) \right).
+$$</p>
+<p>Then, the distribution of</p>
+<p>$$
+\y \sim \Norm(\zv, \K + \sigma^2\I)
+$$</p>
 <h3 id="gaussian-process-regression-in-python">Gaussian process regression in Python</h3>
+<p>We now have all the tools to perform GP regression:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">class</span> <span style="color:#2b91af">ZeroMeanGP</span>:
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> __init__(
+</span></span><span style="display:flex;"><span>        self, X_train: np.ndarray, y_train: np.ndarray, kernel, sigma: float = 0.1
+</span></span><span style="display:flex;"><span>    ):
+</span></span><span style="display:flex;"><span>        self.kernel = kernel
+</span></span><span style="display:flex;"><span>        self.sigma = sigma
+</span></span><span style="display:flex;"><span>        self.set_training_data(X_train, y_train)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> set_training_data(self, X_train: np.ndarray, y_train: np.ndarray):
+</span></span><span style="display:flex;"><span>        self._X_train = X_train
+</span></span><span style="display:flex;"><span>        self._y_train = y_train
+</span></span><span style="display:flex;"><span>        self._K_train_train = self.make_covar(X_train, X_train) + self.sigma * np.eye(len(X_train))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> make_covar(self, x1, x2):
+</span></span><span style="display:flex;"><span>        covar = np.zeros(shape=(x1.shape[0], x2.shape[0]))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Compute pairwise kernel values</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00f">for</span> i, xi <span style="color:#00f">in</span> enumerate(x1):
+</span></span><span style="display:flex;"><span>            <span style="color:#00f">for</span> j, xj <span style="color:#00f">in</span> enumerate(x2):
+</span></span><span style="display:flex;"><span>                covar[i, j] = self.kernel(xi, xj)
+</span></span><span style="display:flex;"><span>        <span style="color:#00f">return</span> covar
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> predict(self, X_test: np.ndarray, full_covar: bool = <span style="color:#00f">False</span>):
+</span></span><span style="display:flex;"><span>        K_train_test = self.make_covar(self._X_train, X_test)
+</span></span><span style="display:flex;"><span>        K_test_test = self.make_covar(X_test, X_test)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Pre-compute inverse of covariance</span>
+</span></span><span style="display:flex;"><span>        K_inv = np.linalg.inv(self._K_train_train)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Posterior mean</span>
+</span></span><span style="display:flex;"><span>        mean = K_train_test.T @ K_inv @ self._y_train
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Posterior covariance</span>
+</span></span><span style="display:flex;"><span>        cov = K_test_test - K_train_test.T @ K_inv @ K_train_test
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#00f">if</span> full_covar:
+</span></span><span style="display:flex;"><span>            <span style="color:#00f">return</span> mean, cov
+</span></span><span style="display:flex;"><span>        <span style="color:#00f">else</span>:
+</span></span><span style="display:flex;"><span>            <span style="color:#00f">return</span> mean, np.diag(cov)
+</span></span></code></pre></div><p>Our GP class takes training data and a kernel function as input, and computes $\K$ by evaluating the pairwise kernel values. Note that we assumed the prior mean is zero. We also have the option to specify the noise variance $\sigma$. We can handle the case of exact observations by setting this equal to zero. Then, we compute the posterior predictions using the formulas derived in the previous section. The variables <code>K_train_test</code> and <code>K_test_test</code> correspond to $\K_\ast$ and $\K_{\ast\ast}$, respectively.</p>
+<p>We can define the squared exponential kernel function and make predictions as follows:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">def</span> squared_exponential(x, x_prime, amp=2.0, len=1.0):
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">return</span> amp**2 * np.exp(- (x - x_prime)**2 / (2 * len**2))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>gp = ZeroMeanGP(X_data, y_data, squared_exponential, sigma=0.1)
+</span></span><span style="display:flex;"><span>mean, cov = gp.predict(X_star)
+</span></span></code></pre></div><p>We can also change the hyperparameters of the kernel function by using the <code>partial</code> method:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">from</span> functools <span style="color:#00f">import</span> partial
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>kernel = partial(squared_exponential, amp=1.0, length=0.5)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>gp = ZeroMeanGP(X_data, y_data, kernel, sigma=0.1)
+</span></span><span style="display:flex;"><span>mean, cov = gp.predict(X_star)
+</span></span></code></pre></div><p>We can again visualize the results:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>std = np.sqrt(cov)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>plt.plot(xs, ys, c=<span style="color:#a31515">&#39;k&#39;</span>, ls=<span style="color:#a31515">&#39;dashed&#39;</span>, lw=1, label=<span style="color:#a31515">r</span><span style="color:#a31515">&#39;$f(x) = xsin(x)$&#39;</span>)
+</span></span><span style="display:flex;"><span>plt.scatter(X_data, y_data, c=<span style="color:#a31515">&#39;firebrick&#39;</span>, s=25, label=<span style="color:#a31515">&#39;Training samples&#39;</span>)
+</span></span><span style="display:flex;"><span>plt.plot(xs, mean, c=<span style="color:#a31515">&#39;midnightblue&#39;</span>, label=<span style="color:#a31515">&#39;Model predicitions&#39;</span>)  
+</span></span><span style="display:flex;"><span>plt.fill_between(xs, mean-std, mean+std, alpha=.25, label=<span style="color:#a31515">&#39;1 std&#39;</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>plt.xlim(0, 2*pi)
+</span></span></code></pre></div><div id="fig3" class="figure">
+   <img src="figures/figure3.png" alt="Figure 3" style="width:80%; margin-left:auto; margin-right:auto">
+</div>
 <h2 id="references">References</h2>
 <ol>
 <li>
@@ -378,7 +658,7 @@ $$</p>
 <hr>
 <ol>
 <li id="fn:1">
-<p>For a given variable, I use bold-faced symbols to refer to vectors; e.g., $\x \in \R^d$, and I use regular symbols to denote scalar values; e.g., the components of $\x$ are $(x_0, x_1, \dots, x_{d-1})$.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>For a given variable, I use bold-faced symbols to refer to vectors; e.g., $\x \in \R^d,$ and I use regular symbols to denote scalar values; e.g., the components of $\x$ are $(x_0, x_1, \dots, x_{d-1}).$&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:2">
 <p>This can be computed by noting that $y = f + \epsilon$ is an <a href="../gaussian/#affine-transformation">affine transformation</a> of $\epsilon$. In general, given a Gaussian random variable $\x \sim \Norm(, \bSigma)$, the affine transformation $\y = \A\x + \b$ will also be Gaussian-dsitributed with $\y \sim \Norm(\A\bmu + \b, \A\bSigma\A\T)$.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
@@ -390,16 +670,19 @@ p(\w \mid \cD) = \frac{p(\cD\mid\w)p(\w)}{p(\cD)}
 $$&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:4">
-<p>This integral can be done explicitly by writing out the integrand as a product of Gaussians, then completing the square in the exponent in terms of $\w$. The integrand takes the form of a Gaussian distribution over $\w$, which can be easily computed by identifying it&rsquo;s normalization constant, and the resulting predictive distribution takes the form of a Gaussian in terms of the variables which are left over, i.e., those which were factored out of the integral.&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>This integral can be done explicitly by writing out the integrand as a product of Gaussians, then completing the square in the exponent in terms of $\w$. The integrand takes the form of a Gaussian distribution over $\w$, which can be easily computed by equatiing it to the reciprocal of its normalization constant, and the resulting predictive distribution takes the form of a Gaussian in terms of the variables which are left over, i.e., those which were factored out of the integral.&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:5">
-<p>To see this, note that any $n\times n$ positive definite (PD) matrix has a valid eigenvalue decomposition (SVD). Thus, we can write $\bSigma = \U\Lambda\U\T$, where $\U\U\T = \I$, $\Lambda = \diag(\lambda_1, \dots, \lambda_n)$, and ${\lambda_i}$ are the eigenvalues of $\bSigma$ (also note that, since $\bSigma$ is PD, its eigenvalues are positive). Then, we define the matrix square root as $\bSigma^{1/2} = \U\Lambda^{1/2}\U\T$, where $\Lambda^{1/2}$ is, unsurprisingly, the matrix whose diagonal elements are given by the square roots of the eigenvalues.&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>To see this, note that any $n\times n$ positive definite matrix has a valid eigenvalue decomposition. Thus, we can write $\bSigma = \U\Lambda\U\T$, where $\U\U\T = \I$, $\Lambda = \diag(\lambda_1, \dots, \lambda_n)$, and ${\lambda_i}$ are the eigenvalues of $\bSigma$ (also note that, since $\bSigma$ is positive definite, its eigenvalues are positive). Then, we define the matrix square root as $\bSigma^{1/2} = \U\Lambda^{1/2}\U\T$, where $\Lambda^{1/2}$ is, perhaps unsurprisingly, the matrix whose diagonal elements are given by the square roots of the eigenvalues.&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:6">
 <p>A Gram matrix is one whose elements are formed by the pairwise inner products for a set of vectors. In our case, the sets of vectors for our Gram matrices are $\{\psi(\x)\}$, for the input vectors in the train / test sets.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:7">
 <p>I got this example from Prof. Henry Chai&rsquo;s <a href="https://www.cs.cmu.edu/~hchai2/courses/10624/lectures/Lecture7_Slides.pdf">lecture slides</a> on the kernel trick.&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:8">
+<p>Note that, in the case where a GP is defined over finitely many variables, this just reduces to the familiar multivariate Gaussian distribution.&#160;<a href="#fnref:8" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </div>
@@ -499,12 +782,14 @@ $$&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;
         "\\U": "\\mathbf{U}",
         "\\V": "\\mathbf{V}",
         "\\I": "\\mathbf{I}",
+        "\\zv": "\\mathbf{0}",
         "\\A": "\\mathbf{A}",
         "\\a": "\\mathbf{a}",
         "\\B": "\\mathbf{B}",
         "\\b": "\\mathbf{b}",
         "\\c": "\\mathbf{c}",
         "\\D": "\\mathbf{D}",
+        "\\f": "\\mathbf{f}",
         "\\M": "\\mathbf{M}",
         "\\m": "\\mathbf{m}",
         "\\bC": "\\mathbf{C}",
@@ -525,6 +810,8 @@ $$&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;
         "\\inv": "^{-1}",
         "\\ij": "_{ij}",
         "\\Norm": "\\mathcal{N}",
+        "\\GP": "\\mathcal{GP}",
+        "\\bmid": "\\,\\Big|\\,",
         "\\gam": "\\text{Gamma}",
         "\\nll": "\\text{NLL}",
         "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",

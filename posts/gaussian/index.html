@@ -139,6 +139,30 @@
   
 
   
+  <aside class="toc">
+    <p><strong>Table of contents</strong></p>
+    <nav id="TableOfContents">
+  <ul>
+    <li><a href="#properties">Properties</a>
+      <ul>
+        <li><a href="#normalization">Normalization</a></li>
+        <li><a href="#moments">Moments</a></li>
+      </ul>
+    </li>
+    <li><a href="#conditioning">Conditioning</a></li>
+    <li><a href="#marginalization">Marginalization</a></li>
+    <li><a href="#transformations">Transformations</a>
+      <ul>
+        <li><a href="#affine-transformation">Affine transformation</a></li>
+        <li><a href="#sum-of-gaussians">Sum of Gaussians</a></li>
+      </ul>
+    </li>
+    <li><a href="#references">References</a></li>
+    <li><a href="#appendix">Appendix</a></li>
+  </ul>
+</nav>
+  </aside>
+  
 
   
 
@@ -192,7 +216,7 @@ $$</p>
 Z = \frac{X - \mu}{\sigma}.
 \end{equation*}
 $$</p>
-<p>The z-score measures the number of standard deviations $X$ is from the mean. Unlike the z-score, however, the Mahalanobis distance depends on the <em>dimension</em>; one unit in Euclidean distance from the mean in one direction may not be the same as one unit distance in another direction, in terms of $\Delta$, since the variance along one dimension of $\x$ may be different than that along another. However, if $\bSigma$ is the identity matrix, then $\Delta$ is in fact equivalent to the Euclidean distance.</p>
+<p>The z-score measures the number of standard deviations $X$ is from the mean. Unlike the z-score, however, the Mahalanobis distance depends on the <em>dimension</em>; one unit in Euclidean distance from the mean in one direction may not be the same as one unit distance in another direction in terms of $\Delta$, since the variance along one dimension of $\x$ may be different along that of another. However, if $\bSigma$ is the identity matrix, then $\Delta$ is in fact equivalent to the Euclidean distance.</p>
 <p>Since the covariance matrix $\bSigma$ is real and symmetric, we can perform <a href="#appendix">eigenvalue decomposition</a> to write it in the form</p>
 <p>$$
 \begin{align*}
@@ -843,7 +867,7 @@ $$</p>
 &amp;= \A\bSigma\A\T.
 \end{align*}
 $$</p>
-<p>Thus, we have the result:</p>
+<p>This gives the following result:</p>
 <p>$$
 p(\y) = \Norm\left( \y \mid \A\bmu + \b, \A\bSigma\A\T \right).
 $$</p>
@@ -1057,7 +1081,7 @@ $$</p>
 <li><a href="https://www.ee.iitb.ac.in/~belur/ee210/current-tutorials-quizzes/Kenneth-Zeger-UCSD-Gaussian-polar-coordinate.pdf">Kenneth Zeger&rsquo;s notes</a> &mdash; this is a nice tutorial on performing the integral necessary to take the Fourier transform of a zero-mean Gaussian.</li>
 <li><a href="https://ftfsite.ru/wp-content/files/tfkp_endlish_2.2.pdf">Ablowitz &amp; Fokas</a> &mdash; This is the main text I used for complex analysis; chapters 3 &amp; 4 deal with Cauchy&rsquo;s theorem, contour integration, and the Fourier transform.</li>
 </ul>
-<p>In addition to these resources, I added some details to the derivations and generalized the results for the Fourier transform of the Gaussian to a Gaussian with nonzero mean.</p>
+<p>In addition to these resources, I added some details to the derivations and generalized the results for the Fourier transform of the Gaussian to the case where the mean is nonzero.</p>
 <p>For more intuition behind sums of Gaussian distributions, I cannot recommend the following videos by 3Blue1Brown highly enough:</p>
 <ul>
 <li><a href="https://youtu.be/IaSGqQa5O-M?si=g2pFPiZIvtl_eWT8">Convolutions | Why X+Y in probability is a beautiful mess</a></li>
@@ -1448,12 +1472,14 @@ It is fairly straightforward to show, however, that the convolution is commutati
         "\\U": "\\mathbf{U}",
         "\\V": "\\mathbf{V}",
         "\\I": "\\mathbf{I}",
+        "\\zv": "\\mathbf{0}",
         "\\A": "\\mathbf{A}",
         "\\a": "\\mathbf{a}",
         "\\B": "\\mathbf{B}",
         "\\b": "\\mathbf{b}",
         "\\c": "\\mathbf{c}",
         "\\D": "\\mathbf{D}",
+        "\\f": "\\mathbf{f}",
         "\\M": "\\mathbf{M}",
         "\\m": "\\mathbf{m}",
         "\\bC": "\\mathbf{C}",
@@ -1474,6 +1500,8 @@ It is fairly straightforward to show, however, that the convolution is commutati
         "\\inv": "^{-1}",
         "\\ij": "_{ij}",
         "\\Norm": "\\mathcal{N}",
+        "\\GP": "\\mathcal{GP}",
+        "\\bmid": "\\,\\Big|\\,",
         "\\gam": "\\text{Gamma}",
         "\\nll": "\\text{NLL}",
         "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
