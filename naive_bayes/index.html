@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    Naive Bayes | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/naive_bayes/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.70663b98395cb46c50fa4dfa0b5a36b1136b531b6fed206fa9944c2cc27b3221.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+    
+    
+    
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /blog
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/me" >
+                /me
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/why" >
+                /why?
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">Naive Bayes</h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div class="single-content">
+    <p>First, let&rsquo;s establish the Naive Bayes classification problem.</p>
+<p>Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)} \in \R^d$ is a $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.</p>
+<p>Let&rsquo;s distringuish between two approaches to classification: <em>discriminative</em> vs. <em>generative</em> modeling.</p>
+<p>In the <strong>discriminative modeling</strong> approach, we wish to model the distribution over class labels $p(y \mid \x)$. Thus, given an input $\x$, we should be able to assign probabilities to each of the $K$ classes, and choose the $y$ which maximizes this probabilitiy.</p>
+<p>In the <strong>generative modeling</strong> approach, we wish to model the sample generating process by estimating each class-conditional probability density. That is, using Bayes&rsquo; rule, we can write</p>
+<p>$$
+\begin{equation}\label{1}
+p(y \mid \x) \propto p(\x \mid y)p(y).
+\end{equation}
+$$</p>
+<p>We see that this achieves the same result as the discriminative modeling approach, but requires a bit more work - instead of skipping straight to the step of modeling the class probabilities given an input, we aim to model $p(\x \mid y)$ for each class $K$. Moreover, we also wish to estimate the prior class probabilities $p(y)$. One might ask: why bother? Well, in doing so, we gain the ability to generate new data points by first sampling $y \sim p(y)$, then sampling $x \sim p(\x \mid y)$.</p>
+<p>Naive Bayes takes a generative modeling approach to classification.</p>
+<p>There are many ways to estimate the densities $p(\x \mid y)$ and $p(y)$. One such method is maximum likelihood estimation (MLE), where we assume a particular parametric form of each distribution&mdash;for example, $\x$ might be drawn from a Gaussian distribution, with parameters $\bmu_k$ and $\bSigma_k$, and $y$ might be drawn from a multinomial distribution with $K$ classes, with probabilities $p(y = k) = \pi_k$. Then, we could find the parameters which maximize the likelihood of the observed dataset and use these to estimate the probability densities. However, for the sake of understanding Naive Bayes, I won&rsquo;t focus on density-estimation techniques here.</p>
+<p>As I previously said, our goal is to find $y$, given an input $\x$, which maximizes $p(y \mid \x)$. That is, we wish to find</p>
+<p>$$
+\begin{align*}
+\hat{y} &amp;\in \argmax{y} p(y \mid \x) \\
+&amp;=
+\end{align*}
+$$</p>
+<p>$$
+p(\x \mid y) = p(x_1 \mid y) \cdots p(x_d \mid y)
+$$</p>
+<p>However, if some $x_i$ never existed in the training set, this will be 0. This could be a problem (see spam vs. ham example)</p>
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+<style>
+  .katex a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .katex a:hover {
+    text-decoration: none;
+  }
+</style>
+
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body);"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
+      macros: {
+        "\\eqref": "\\href{###1}{(\\text{#1})}",
+        "\\ref": "\\href{###1}{\\text{#1}}",
+        "\\label": "\\htmlId{#1}{}",
+        "\\R": "\\mathbb{R}",
+        "\\bR": "\\mathbf{R}",
+        "\\C": "\\mathbb{C}",
+        "\\Z": "\\mathbb{Z}",
+        "\\N": "\\mathbb{N}",
+        "\\Q": "\\mathbb{Q}",
+        "\\E": "\\mathbb{E}",
+        "\\cD": "\\mathcal{D}",
+        "\\var": "\\operatorname{Var}",
+        "\\cov":"\\operatorname{cov}",
+        "\\x": "\\mathbf{x}",
+        "\\X": "\\mathbf{X}",
+        "\\w": "\\mathbf{w}",
+        "\\W": "\\mathbf{W}",
+        "\\y": "\\mathbf{y}",
+        "\\z": "\\mathbf{z}",
+        "\\Z": "\\mathbf{Z}",
+        "\\u": "\\mathbf{u}",
+        "\\U": "\\mathbf{U}",
+        "\\V": "\\mathbf{V}",
+        "\\I": "\\mathbf{I}",
+        "\\zv": "\\mathbf{0}",
+        "\\A": "\\mathbf{A}",
+        "\\a": "\\mathbf{a}",
+        "\\B": "\\mathbf{B}",
+        "\\b": "\\mathbf{b}",
+        "\\c": "\\mathbf{c}",
+        "\\D": "\\mathbf{D}",
+        "\\f": "\\mathbf{f}",
+        "\\M": "\\mathbf{M}",
+        "\\m": "\\mathbf{m}",
+        "\\bC": "\\mathbf{C}",
+        "\\J": "\\mathbf{J}",
+        "\\K": "\\mathbf{K}",
+        "\\L": "\\mathbf{L}",
+        "\\bS": "\\mathbf{S}",
+        "\\bmu": "\\boldsymbol{\\mu}",
+        "\\bphi": "\\boldsymbol{\\phi}",
+        "\\bepsilon": "\\boldsymbol{\\epsilon}",
+        "\\bSigma": "\\boldsymbol{\\Sigma}",
+        "\\bLambda": "\\boldsymbol{\\Lambda}",
+        "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\zero": "\\mathbf{0}",
+        "\\one": "\\mathbf{1}",
+        "\\T": "^{\\top}",
+        "\\p": "^\\prime",
+        "\\inv": "^{-1}",
+        "\\ij": "_{ij}",
+        "\\Norm": "\\mathcal{N}",
+        "\\GP": "\\mathcal{GP}",
+        "\\bmid": "\\,\\Big|\\,",
+        "\\gam": "\\text{Gamma}",
+        "\\nll": "\\text{NLL}",
+        "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
+        "\\argmax": "\\underset{#1}{\\operatorname{argmax}}\\;",
+        "\\diag": "\\operatorname{diag}",
+        "\\tr": "\\operatorname{tr}",
+        "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
+        "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
+        "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\px": "\\frac{\\partial}{\\partial x}",
+        "\\pbA": "\\frac{\\partial}{\\partial \\mathbf{A}}",
+        "\\ml": "_\\text{ML}",
+      }
+    });
+  });
+</script>
+
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
+
+</html>
