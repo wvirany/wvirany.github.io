@@ -139,7 +139,7 @@
     <p>First, let&rsquo;s establish the Naive Bayes classification problem.</p>
 <p>Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)}$ is some $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.</p>
 <p>Let&rsquo;s distinguish between two approaches to classification: <em>discriminative</em> vs. <em>generative</em> modeling.</p>
-<p>In the <strong>discriminative modeling</strong> approach, we wish to model the distribution over class labels $p(y \mid \x)$. Thus, given an input $\x$, we should be able to assign probabilities to each of the $K$ classes, and choose the $y$ which maximizes this probabilitiy.</p>
+<p>In the <strong>discriminative modeling</strong> approach, we wish to model the distribution over class labels $p(y \mid \x)$. An example of this would be using a generalized linear model (such as logistic regression) to predict class labels given the features. Thus, given an input $\x$, we should be able to assign probabilities to each of the $K$ classes, and choose the $y$ which maximizes this probabilitiy.</p>
 <p>In the <strong>generative modeling</strong> approach, we wish to model the sample generating process by estimating each class-conditional probability density. That is, using Bayes&rsquo; rule, we can write</p>
 <p>$$
 \begin{equation}\label{1}
@@ -149,14 +149,15 @@ $$</p>
 <p>We see that this achieves the same result as the discriminative modeling approach, but requires a bit more work - instead of skipping straight to the step of modeling the class probabilities given an input, we aim to model $p(\x \mid y)$ for each class $K$. Moreover, we also wish to estimate the prior class probabilities $p(y)$. One might ask: why bother? Well, in doing so, we gain the ability to generate new data points by first sampling $y \sim p(y)$, then sampling $x \sim p(\x \mid y)$.</p>
 <p>Naive Bayes takes a generative modeling approach to classification.</p>
 <p>There are many ways to estimate the densities $p(\x \mid y)$ and $p(y)$. One such method is maximum likelihood estimation (MLE), where we assume a particular parametric form of each distribution&mdash;for example, $\x$ might be drawn from a Gaussian distribution, with parameters $\bmu_k$ and $\bSigma_k$, and $y$ might be drawn from a multinomial distribution with $K$ classes, with probabilities $p(y = k) = \pi_k$. Then, we could find the parameters which maximize the likelihood of the observed dataset and use these to estimate the probability densities. However, for the sake of understanding Naive Bayes, I won&rsquo;t focus on density-estimation techniques here.</p>
-<p>Now, let&rsquo;s assume that the features of $\x$ are binary. Then, we can write the joint distribution over the features of $\x$, conditioned on $y$ as</p>
+<p><strong>Why Naive Bayes?</strong></p>
+<p>Let&rsquo;s assume that the features of $\x$ are binary. Then, we can write the joint distribution over the features of $\x$, conditioned on $y$ as</p>
 <p>$$
 \begin{equation}\label{2}
 p(\x \mid y) = p(x_1, x_2, \ldots, x_d \mid y),
 \end{equation}
 $$</p>
-<p>where each $x_i \in \{0, 1\}$. Then, if we want to estimate the probability density of $\x$ being in a particular class $y$, we would need to assign a probability to each possible configuration of $\x$ &mdash; there are $2^d$ possible such configurations! This requires estimating $2^d - 1$ parameters. <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>  In order to gain an accurate estimation for such a distribution, we would need <strong>a lot of data</strong> &mdash;  this is an example of the <em>curse of dimensionality</em>. Moreover, this is just for a single class $y$.</p>
-<p>This calls for a need to reduce the dimensionality of our parameter space.</p>
+<p>where each $x_i \in \{0, 1\}$. Then, if we want to estimate the probability of $\x$ being in a particular class $y$, we would need to assign a probability to each possible configuration of $\x$ &mdash; there are $2^d$ possible such configurations! This requires estimating $2^d - 1$ parameters for each class.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>  In order to gain an accurate estimation for such a distribution, we would need a lot of data &mdash;  this is an example of the <strong>curse of dimensionality</strong>.</p>
+<p>This calls for a need to reduce the dimensionality of our feature space.</p>
 <p><strong>What is conditional independence?</strong></p>
 <p>The &ldquo;naive&rdquo; assumption in Naive Bayes is that the features of our inputs are conditionally independent. Under this assumption, we can factor the joint distribution in $\eqref{2}$ as</p>
 <p>$$
@@ -165,7 +166,48 @@ $$</p>
 <p>One way to say this is &ldquo;$x_1, x_2, \ldots, x_d$ are independent, conditioned on $y$.&rdquo; Now, we can model each individual distribution $p(x_i \mid y)$ independently. In the case of binary features, this only requires $d$ parameters for each class instead of $2^d-1$.</p>
 <p><strong>When does Naive Bayes work?</strong></p>
 <p>Let&rsquo;s consider two classification problems:</p>
-<p><strong>Example: Document classification</strong></p>
+<p><strong>Example: Sentiment analysis</strong></p>
+<p>Suppose we are classifying restaurant reviews as either positive $P$ or negative $N$. To do so, we&rsquo;ll use the following words as features:</p>
+<ul>
+<li>$D$ - &ldquo;delicious&rdquo;</li>
+<li>$T$ - &ldquo;terrible&rdquo;</li>
+<li>$F$ - &ldquo;fast&rdquo;</li>
+<li>$S$ - &ldquo;slow&rdquo;</li>
+</ul>
+<p>Suppose we have a training dataset containing 10 positive and 10 negative reviews, i.e., $P(P) = P(N) = 0.5$. Moreover, suppose we observe the above features with the following probabilities:</p>
+<p>$$
+\begin{align*}
+&amp;P(D \mid P) = 0.6, \quad P(D \mid N) = 0 \\
+&amp;P(T \mid P) = 0, \quad \; \;\; P(T \mid N) = 0.5 \\
+&amp;P(F \mid P) = 0.5, \quad P(F \mid N) = 0.2 \\
+&amp;P(S \mid P) = 0.1, \quad P(S \mid N) = 0.6
+\end{align*}
+$$</p>
+<p>For example, we might have observed &ldquo;delicious&rdquo; in 6/10 of the positive reviews, and none of the negative reviews.</p>
+<p>Then, suppose we are given a new review: &ldquo;delicious food and fast service&rdquo;. From Bayes&rsquo; rule, we have</p>
+<p>$$
+\begin{align*}
+P(P \mid D, S) &amp;= \frac{P(D, S \mid P) \, P(P)}{P(D, S)} \qquad\qquad\qquad\qquad \\[10pt]
+\text{\scriptsize (naive Bayes assumption)} \qquad\qquad\qquad &amp;= \frac{P(D \mid P) \, P(S \mid P) \, P(P)}{P(D, S)}
+\end{align*}
+$$</p>
+<p>We can evaluate the denominator using the law of total probability:</p>
+<p>$$
+\begin{align*}
+P(D, S) &amp;= P(D, S \mid P) \, P(P) + P(D, S \mid N) \, P(N) \\[6pt]
+&amp;= P(D \mid P) \, P(S \mid P) \, P(P) + P(D \mid N) \, P(S \mid N) \, P(N) \\[6pt]
+&amp;= 0.6 * 0.1 * 0.5 = 0.03
+\end{align*}
+$$</p>
+<p>Then, the Naive Bayes model predicts the probability of the review being positive as</p>
+<p>$$
+P(P \mid D, S) = \frac{0.6 * 0.1 * 0.5}{0.3} = 1.
+$$</p>
+<p>This seems reasonable! Although, I will point out a caveat: since we never saw a negative review with the word &ldquo;delicious&rdquo;, then we will always predict a review with this word as positive, noting that</p>
+<p>$$
+P(N \mid D) \propto P(D \mid N) \, P(N),
+$$</p>
+<p>and $P(D \mid N) = 0$. To overcome this, a common strategy is to add a small value to all of the probabilities &mdash; this ensures that no probabilities are exactly 0.</p>
 <p><strong>Example: Medical diagnosis</strong></p>
 <p>Consider the task of diagnosing heart disease based on the following symptoms:</p>
 <ul>
@@ -174,25 +216,24 @@ $$</p>
 <li>$S$ - shortness of breath</li>
 </ul>
 <p>Furthermore, let $H$ indicate whether or not the patient has heart disease. Given a patient with any combination of these symptoms, we wish to diagnose their condition.</p>
-<p>Now, suppose we know</p>
-<ul>
-<li>$P(H) = 0.05$</li>
-<li>$P(\neg H) = 0.95$</li>
-</ul>
-<p>That is, 5% of the population suffers from heart disease. Moreover, suppose we know that for people with heart disease:</p>
-<ul>
-<li>$P(C \mid H) = 0.8$</li>
-<li>$P(F \mid H) = 0.6$</li>
-<li>$P(S \mid H) = 0.7$</li>
-</ul>
+<p>Now, suppose we know $P(H) = 0.05$ and $P(\neg H) = 0.95$. That is, 5% of the population suffers from heart disease. Moreover, suppose we know that for people with heart disease:</p>
+<p>$$
+\begin{gather*}
+&amp;P(C \mid H) = 0.8 \\
+&amp;P(F \mid H) = 0.6 \\
+&amp;P(S \mid H) = 0.7
+\end{gather*}
+$$</p>
 <p>and that for people without heart disease:</p>
-<ul>
-<li>$P(C \mid \neg H) = 0.05$</li>
-<li>$P(F \mid \neg H) = 0.2$</li>
-<li>$P(S \mid \neg H) = 0.1$</li>
-</ul>
+<p>$$
+\begin{gather*}
+&amp;P(C \mid \neg H) = 0.05 \\
+&amp;P(F \mid \neg H) = 0.2 \\
+&amp;P(S \mid \neg H) = 0.1
+\end{gather*}
+$$</p>
 <p>If a patient has heart disease, the probability that they suffer from a given symptom is high. On the other hand, the probability that a healthy patient suffers from a given symptom is low.</p>
-<p>Now, suppose we have a patient come in who is suffering from all three symptoms. From Bayes&rsquo; rule, we have</p>
+<p>Now, suppose we have a patient who is suffering from all three symptoms. From Bayes&rsquo; rule, we have</p>
 <p>$$
 \begin{align*}
 P(H \mid C, F, S) &amp;\propto P(C, F, S \mid H)P(H) \\[6pt]
