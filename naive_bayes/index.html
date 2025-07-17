@@ -140,13 +140,13 @@
 <p>Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)}$ is some $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.</p>
 <p>Let&rsquo;s distinguish between two approaches to classification: <em>discriminative</em> vs. <em>generative</em> modeling.</p>
 <p>In the <strong>discriminative modeling</strong> approach, we wish to model the distribution over class labels $p(y \mid \x)$. An example of this would be using a generalized linear model (such as logistic regression) to predict class labels given the features. Thus, given an input $\x$, we should be able to assign probabilities to each of the $K$ classes, and choose the $y$ which maximizes this probabilitiy.</p>
-<p>In the <strong>generative modeling</strong> approach, we wish to model the sample generating process by estimating each class-conditional probability density. That is, using Bayes&rsquo; rule, we can write</p>
+<p>In the <strong>generative modeling</strong> approach, we wish to model the data generation process. That is, using Bayes&rsquo; rule, we can write</p>
 <p>$$
 \begin{equation}\label{1}
 p(y \mid \x) \propto p(\x \mid y)p(y).
 \end{equation}
 $$</p>
-<p>We see that this achieves the same result as the discriminative modeling approach, but requires a bit more work - instead of skipping straight to the step of modeling the class probabilities given an input, we aim to model $p(\x \mid y)$ for each class $K$. Moreover, we also wish to estimate the prior class probabilities $p(y)$. One might ask: why bother? Well, in doing so, we gain the ability to generate new data points by first sampling $y \sim p(y)$, then sampling $x \sim p(\x \mid y)$.</p>
+<p>Instead of skipping straight to the step of modeling the class probabilities, we aim to model the class-conditional probability densities $p(\x \mid y)$ and the prior class probabilities $p(y)$ for each class $K$. One might ask: why bother? Well, in doing so, we gain the ability to generate new data points by first sampling $y \sim p(y)$, then $x \sim p(\x \mid y)$.</p>
 <p>Naive Bayes takes a generative modeling approach to classification.</p>
 <p>There are many ways to estimate the densities $p(\x \mid y)$ and $p(y)$. One such method is maximum likelihood estimation (MLE), where we assume a particular parametric form of each distribution&mdash;for example, $\x$ might be drawn from a Gaussian distribution, with parameters $\bmu_k$ and $\bSigma_k$, and $y$ might be drawn from a multinomial distribution with $K$ classes, with probabilities $p(y = k) = \pi_k$. Then, we could find the parameters which maximize the likelihood of the observed dataset and use these to estimate the probability densities. However, for the sake of understanding Naive Bayes, I won&rsquo;t focus on density-estimation techniques here.</p>
 <p><strong>Why Naive Bayes?</strong></p>
@@ -156,15 +156,14 @@ $$</p>
 p(\x \mid y) = p(x_1, x_2, \ldots, x_d \mid y),
 \end{equation}
 $$</p>
-<p>where each $x_i \in \{0, 1\}$. Then, if we want to estimate the probability of $\x$ being in a particular class $y$, we would need to assign a probability to each possible configuration of $\x$ &mdash; there are $2^d$ possible such configurations! This requires estimating $2^d - 1$ parameters for each class.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>  In order to gain an accurate estimation for such a distribution, we would need a lot of data &mdash;  this is an example of the <strong>curse of dimensionality</strong>.</p>
-<p>This calls for a need to reduce the dimensionality of our feature space.</p>
-<p><strong>What is conditional independence?</strong></p>
+<p>where each $x_i \in \{0, 1\}$. If we want to estimate the probability of $\x$ being in a particular class $y$, we would need to assign a probability to each possible configuration of $\x$ &mdash; there are $2^d$ possible such configurations! This requires estimating $2^d - 1$ parameters for each class.<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>  In order to gain an accurate estimation for such a distribution, we would need a lot of data &mdash;  this is an example of the <strong>curse of dimensionality</strong>. Thus, we&rsquo;d like to reduce the dimensionality of the feature space.</p>
+<h3 id="conditional-independence">Conditional independence</h3>
 <p>The &ldquo;naive&rdquo; assumption in Naive Bayes is that the features of our inputs are conditionally independent. Under this assumption, we can factor the joint distribution in $\eqref{2}$ as</p>
 <p>$$
 p(x_1, \ldots, x_d \mid y) = p(x_1 \mid y) \cdots p(x_2 \mid y).
 $$</p>
 <p>One way to say this is &ldquo;$x_1, x_2, \ldots, x_d$ are independent, conditioned on $y$.&rdquo; Now, we can model each individual distribution $p(x_i \mid y)$ independently. In the case of binary features, this only requires $d$ parameters for each class instead of $2^d-1$.</p>
-<p><strong>When does Naive Bayes work?</strong></p>
+<h3 id="when-does-naive-bayes-work">When does Naive Bayes work?</h3>
 <p>Let&rsquo;s consider two classification problems:</p>
 <p><strong>Example: Sentiment analysis</strong></p>
 <p>Suppose we are classifying restaurant reviews as either positive $P$ or negative $N$. To do so, we&rsquo;ll use the following words as features:</p>
@@ -174,7 +173,7 @@ $$</p>
 <li>$F$ - &ldquo;fast&rdquo;</li>
 <li>$S$ - &ldquo;slow&rdquo;</li>
 </ul>
-<p>Suppose we have a training dataset containing 10 positive and 10 negative reviews, i.e., $P(P) = P(N) = 0.5$. Moreover, suppose we observe the above features with the following probabilities:</p>
+<p>where each variable is binary indicating whether or not the corresponding word is present in a review. Then, suppose we have a training dataset containing 10 positive and 10 negative reviews, i.e., $P(P) = P(N) = 0.5$. Moreover, suppose we observe the above features with the following probabilities:</p>
 <p>$$
 \begin{align*}
 &amp;P(D \mid P) = 0.6, \quad P(D \mid N) = 0 \\
@@ -183,8 +182,8 @@ $$</p>
 &amp;P(S \mid P) = 0.1, \quad P(S \mid N) = 0.6
 \end{align*}
 $$</p>
-<p>For example, we might have observed &ldquo;delicious&rdquo; in 6/10 of the positive reviews, and none of the negative reviews.</p>
-<p>Then, suppose we are given a new review: &ldquo;delicious food and fast service&rdquo;. From Bayes&rsquo; rule, we have</p>
+<p>This corresponds to observing &ldquo;delicious&rdquo; in 6/10 of the positive reviews, and none of the negative reviews, and so on.</p>
+<p>Now consider a new review: &ldquo;delicious food and fast service&rdquo;. From Bayes&rsquo; rule, we have</p>
 <p>$$
 \begin{align*}
 P(P \mid D, S) &amp;= \frac{P(D, S \mid P) \, P(P)}{P(D, S)} \qquad\qquad\qquad\qquad \\[10pt]
@@ -201,13 +200,13 @@ P(D, S) &amp;= P(D, S \mid P) \, P(P) + P(D, S \mid N) \, P(N) \\[6pt]
 $$</p>
 <p>Then, the Naive Bayes model predicts the probability of the review being positive as</p>
 <p>$$
-P(P \mid D, S) = \frac{0.6 * 0.1 * 0.5}{0.3} = 1.
+P(P \mid D, S) = \frac{0.6 * 0.1 * 0.5}{0.03} = 1.
 $$</p>
 <p>This seems reasonable! Although, I will point out a caveat: since we never saw a negative review with the word &ldquo;delicious&rdquo;, then we will always predict a review with this word as positive, noting that</p>
 <p>$$
-P(N \mid D) \propto P(D \mid N) \, P(N),
+P(N \mid D, S) \propto P(D \mid N) \, P(S \mid N) \, P(N)
 $$</p>
-<p>and $P(D \mid N) = 0$. To overcome this, a common strategy is to add a small value to all of the probabilities &mdash; this ensures that no probabilities are exactly 0.</p>
+<p>and $P(D \mid N) = 0$. To overcome this, a common strategy is to add a small value to the frequency of each word &mdash; for example, by adding 1 to the number of times we observed each word, and recomputing the probabilities to maintain normalization. Thus, if we see a new sample that was not in our training set, we won&rsquo;t assign it a probability of exactly 0.</p>
 <p><strong>Example: Medical diagnosis</strong></p>
 <p>Consider the task of diagnosing heart disease based on the following symptoms:</p>
 <ul>
@@ -233,35 +232,23 @@ $$</p>
 \end{gather*}
 $$</p>
 <p>If a patient has heart disease, the probability that they suffer from a given symptom is high. On the other hand, the probability that a healthy patient suffers from a given symptom is low.</p>
-<p>Now, suppose we have a patient who is suffering from all three symptoms. From Bayes&rsquo; rule, we have</p>
+<p>Now, suppose we have a patient who is suffering from all three symptoms. Using the same process as the previous example, Naive Bayes predicts</p>
 <p>$$
 \begin{align*}
-P(H \mid C, F, S) &amp;\propto P(C, F, S \mid H)P(H) \\[6pt]
-\text{ \scriptsize (naive Bayes assumption) } \qquad &amp;= P(C\mid H) \, P(F\mid H) \, P(S\mid H) \, P(H) \\[6pt]
-&amp;= (0.8) * (0.6) * (0.7) * (0.05) \\[6pt]
-&amp;= 0.0168.
-\end{align*}
-$$</p>
-<p>Similarly,</p>
-<p>$$
-\begin{align*}
-P(\neg H \mid C, F, S) &amp;\propto P(C \mid \neg H) \, P(F \mid \neg H) \, P(S \mid \neg H) \, P(\neg H) \\[6pt]
-&amp;= (0.05) * (0.2) * (0.1) * (0.95) \\
-&amp;= 0.00095.
-\end{align*}
-$$</p>
-<p>Naive Bayes then predicts</p>
-<p>$$
-\begin{align*}
-P(H \mid C, F, S) &amp;= \frac{P(C, F, S) \, P(H)}{P(C, F, S)} \\[10pt]
-\text{\scriptsize (law of total probability)} \qquad &amp;= \frac{P(C, F, S) \, P(H)}{P(C, F, S \mid H) \, P(H) + P(C, F, S \mid \neg H) \, P(\neg H)} \\[10pt]
+P(H \mid C, F, S) &amp;= \frac{P(C, F, S \mid H) \, P(H)}{P(C, F, S)} \\[10pt]
 &amp;= \frac{0.0168}{0.0168 + 0.00095} \\[10pt]
-&amp;\approx 0.95.
+&amp;\approx 0.95
 \end{align*}
 $$</p>
-<p>This gives approximately a 95% chance that the patient has heart disease!</p>
-<p>However, there is a problem with this model. In reality, if a patient is suffering from any one of the symptoms, they are probably also suffering from the others. This shows an example of where the Naive Bayes assumption breaks down due to <strong>highly correlated features</strong>. The model essentially &ldquo;double counts&rdquo; features and overestimates the probability that the patient has heart disease.</p>
-<p>For example, if a patient suffers from chest pain, they will also likely suffer from the other symptoms. However, this could be due to any number of health problems, and doesn&rsquo;t necessarily indicate heart disease.</p>
+<p>In other words, there is approximately a 95% chance that the patient has heart disease!</p>
+<p>However, there is a problem with this model. In reality, if a patient is suffering from any one of the symptoms, they are probably also suffering from the others. For example, if we know that someone has chest pain, learning that they also have shortness of breath is less surprising &mdash; however, the model assumes this is independent evidence!</p>
+<p>This shows an example of where the Naive Bayes assumption breaks down due to <strong>highly correlated features</strong>. The model essentially &ldquo;double counts&rdquo; features and overestimates the probability that the patient has heart disease.</p>
+<h3 id="conclusion">Conclusion</h3>
+<p>We saw that Naive Bayes makes a strong simplifying assumption &mdash; conditional independence &mdash; which helps to reduce the complexity of the problem. While this assumption might not be entirely accurate, there are some scenarios in which it&rsquo;s reasonable.</p>
+<p>In the sentiment analysis problem, words like &ldquo;delicious&rdquo; and &ldquo;fast&rdquo; describe different aspects of the quality of the restaurant - it&rsquo;s reasonable to assume these are independent. On the other hand, in the medical diagnosis problem, different symptoms were strongly correlated, so the independence assumption was invalid.</p>
+<p>Another way to think about this is in terms of <strong>information gain</strong> - how much new evidence each feature provides. In sentiment analysis, learning that a review contains &lsquo;fast&rsquo; gives you roughly the same amount of information about positivity regardless of whether you already know it contains &lsquo;delicious&rsquo;. Each word contributes independent evidence.</p>
+<p>However, in the medical diagnosis problem, the information gain from each symptom depends heavily on what you already know. If you observe chest pain first, then learning about shortness of breath adds relatively little new information - you&rsquo;re already suspecting heart problems. But if shortness of breath were your first observation, it would provide substantial evidence. The problem is that Naive Bayes treats both scenarios identically, always giving shortness of breath the same &lsquo;weight&rsquo; regardless of context.</p>
+<p><strong>Key takeaway:</strong> Naive Bayes works well when the features provide roughly the same amount of information regardless of what features you&rsquo;ve already observed. This is the conditional independence assumption.</p>
 <div class="footnotes" role="doc-endnotes">
 <hr>
 <ol>
