@@ -37,6 +37,13 @@
       <description>I&#39;m currently pursuing an MSc in computer science at the University of Toronto under the supervision of Dr. Michał Koziarski and Dr. Mike Brudno.&#xD;My interests lie broadly in machine learning, statistics, and optimization, with applications in science.&#xD;At the moment, I am focused on developing machine learning methods for drug discovery.&#xD;Before that, I received a B.S. in applied mathematics as well as minors in computer science and physics from the University of Colorado Boulder.</description>
     </item>
     <item>
+      <title>Naive Bayes</title>
+      <link>http://localhost:1313/naive_bayes/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/naive_bayes/</guid>
+      <description>First, let&amp;rsquo;s establish the Naive Bayes classification problem.&#xA;Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)}$ is some $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.&#xA;Let&amp;rsquo;s distinguish between two approaches to classification: discriminative vs. generative modeling.</description>
+    </item>
+    <item>
       <title>Why the blog?</title>
       <link>http://localhost:1313/why/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>

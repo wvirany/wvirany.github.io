@@ -138,7 +138,7 @@
   <div class="single-content">
     <p>First, let&rsquo;s establish the Naive Bayes classification problem.</p>
 <p>Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)}$ is some $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.</p>
-<p>Let&rsquo;s distringuish between two approaches to classification: <em>discriminative</em> vs. <em>generative</em> modeling.</p>
+<p>Let&rsquo;s distinguish between two approaches to classification: <em>discriminative</em> vs. <em>generative</em> modeling.</p>
 <p>In the <strong>discriminative modeling</strong> approach, we wish to model the distribution over class labels $p(y \mid \x)$. Thus, given an input $\x$, we should be able to assign probabilities to each of the $K$ classes, and choose the $y$ which maximizes this probabilitiy.</p>
 <p>In the <strong>generative modeling</strong> approach, we wish to model the sample generating process by estimating each class-conditional probability density. That is, using Bayes&rsquo; rule, we can write</p>
 <p>$$
@@ -163,11 +163,56 @@ $$</p>
 p(x_1, \ldots, x_d \mid y) = p(x_1 \mid y) \cdots p(x_2 \mid y).
 $$</p>
 <p>One way to say this is &ldquo;$x_1, x_2, \ldots, x_d$ are independent, conditioned on $y$.&rdquo; Now, we can model each individual distribution $p(x_i \mid y)$ independently. In the case of binary features, this only requires $d$ parameters for each class instead of $2^d-1$.</p>
-<p>As an example, consider three random variables $a, b, c \in \R$.</p>
 <p><strong>When does Naive Bayes work?</strong></p>
-<p>From here, it&rsquo;s natural to ask the question &ldquo;when does Naive Bayes work?&rdquo; Let&rsquo;s look at some different examples.</p>
-<p><strong>Example:</strong> Spam vs. ham</p>
-<p><strong>Example:</strong> Medical diagnosis</p>
+<p>Let&rsquo;s consider two classification problems:</p>
+<p><strong>Example: Spam vs. ham</strong></p>
+<p><strong>Example: Medical diagnosis</strong></p>
+<p>Consider the task of diagnosing heart disease based on the following symptoms:</p>
+<ul>
+<li>$C$ - chest pain</li>
+<li>$B$ - high blood pressure</li>
+<li>$S$ - shortness of breath</li>
+</ul>
+<p>Furthermore, let $H$ indicate whether or not the patient has heart disease. Given a patient with any combination of these symptoms, we wish to diagnose their condition.</p>
+<p>Now, suppose we know</p>
+<ul>
+<li>$P(H) = 0.05$</li>
+<li>$P(\neg H) = 0.95$</li>
+</ul>
+<p>That is, 5% of the population suffers from heart disease. Moreover, suppose we know that for people with heart disease:</p>
+<ul>
+<li>$P(C \mid H) = 0.8$</li>
+<li>$P(B \mid H) = 0.6$</li>
+<li>$P(S \mid H) = 0.7$</li>
+</ul>
+<p>and that for people without heart disease:</p>
+<ul>
+<li>$P(C \mid \neg H) = 0.05$</li>
+<li>$P(B \mid \neg H) = 0.2$</li>
+<li>$P(S \mid \neg H) = 0.1$</li>
+</ul>
+<p>If a patient has heart disease, the probability that they suffer from a given symptom is high. On the other hand, the probability that a healthy patient suffers from a given symptom is low.</p>
+<p>Now, suppose we have a patient come in who is suffering from all three symptoms. From Bayes&rsquo; rule, we have</p>
+<p>$$
+\begin{align*}
+P(H \mid C, B, S) &amp;\propto P(C, B, S \mid H)P(H) \\[6pt]
+\text{ \scriptsize (naive Bayes assumption) } \qquad &amp;= P(C\mid H) \, P(B\mid H) \, P(S\mid H) \, P(H) \\[6pt]
+&amp;= (0.8) * (0.6) * (0.7) * (0.05) \\[6pt]
+&amp;= 0.0168.
+\end{align*}
+$$</p>
+<p>Similarly,</p>
+<p>$$
+\begin{align*}
+P(\neg H \mid C, B, S) &amp;\propto P(C \mid \neg H) \, P(B \mid \neg H) \, P(S \mid \neg H) \, P(\neg H) \\[6pt]
+&amp;= (0.05) * (0.2) * (0.1) * (0.95) \\
+&amp;= 0.00095.
+\end{align*}
+$$</p>
+<p>The result:</p>
+<p>$$
+P(H \mid C, B, S) = \frac{P(C, B, S \mid H)P(H)}{P(H)}
+$$</p>
 <div class="footnotes" role="doc-endnotes">
 <hr>
 <ol>

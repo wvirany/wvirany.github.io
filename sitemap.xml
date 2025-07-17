@@ -19,6 +19,8 @@
   </url><url>
     <loc>http://localhost:1313/me/</loc>
   </url><url>
+    <loc>http://localhost:1313/naive_bayes/</loc>
+  </url><url>
     <loc>http://localhost:1313/tags/</loc>
   </url><url>
     <loc>http://localhost:1313/why/</loc>
