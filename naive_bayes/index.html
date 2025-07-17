@@ -137,7 +137,7 @@
 
   <div class="single-content">
     <p>First, let&rsquo;s establish the Naive Bayes classification problem.</p>
-<p>Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)} \in \R^d$ is a $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.</p>
+<p>Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)}$ is some $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.</p>
 <p>Let&rsquo;s distringuish between two approaches to classification: <em>discriminative</em> vs. <em>generative</em> modeling.</p>
 <p>In the <strong>discriminative modeling</strong> approach, we wish to model the distribution over class labels $p(y \mid \x)$. Thus, given an input $\x$, we should be able to assign probabilities to each of the $K$ classes, and choose the $y$ which maximizes this probabilitiy.</p>
 <p>In the <strong>generative modeling</strong> approach, we wish to model the sample generating process by estimating each class-conditional probability density. That is, using Bayes&rsquo; rule, we can write</p>
@@ -149,17 +149,37 @@ $$</p>
 <p>We see that this achieves the same result as the discriminative modeling approach, but requires a bit more work - instead of skipping straight to the step of modeling the class probabilities given an input, we aim to model $p(\x \mid y)$ for each class $K$. Moreover, we also wish to estimate the prior class probabilities $p(y)$. One might ask: why bother? Well, in doing so, we gain the ability to generate new data points by first sampling $y \sim p(y)$, then sampling $x \sim p(\x \mid y)$.</p>
 <p>Naive Bayes takes a generative modeling approach to classification.</p>
 <p>There are many ways to estimate the densities $p(\x \mid y)$ and $p(y)$. One such method is maximum likelihood estimation (MLE), where we assume a particular parametric form of each distribution&mdash;for example, $\x$ might be drawn from a Gaussian distribution, with parameters $\bmu_k$ and $\bSigma_k$, and $y$ might be drawn from a multinomial distribution with $K$ classes, with probabilities $p(y = k) = \pi_k$. Then, we could find the parameters which maximize the likelihood of the observed dataset and use these to estimate the probability densities. However, for the sake of understanding Naive Bayes, I won&rsquo;t focus on density-estimation techniques here.</p>
-<p>As I previously said, our goal is to find $y$, given an input $\x$, which maximizes $p(y \mid \x)$. That is, we wish to find</p>
+<p>Now, let&rsquo;s assume that the features of $\x$ are binary. Then, we can write the joint distribution over the features of $\x$, conditioned on $y$ as</p>
 <p>$$
-\begin{align*}
-\hat{y} &amp;\in \argmax{y} p(y \mid \x) \\
-&amp;=
-\end{align*}
+\begin{equation}\label{2}
+p(\x \mid y) = p(x_1, x_2, \ldots, x_d \mid y),
+\end{equation}
 $$</p>
+<p>where each $x_i \in \{0, 1\}$. Then, if we want to estimate the probability density of $\x$ being in a particular class $y$, we would need to assign a probability to each possible configuration of $\x$ &mdash; there are $2^d$ possible such configurations! This requires estimating $2^d - 1$ parameters. <sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>  In order to gain an accurate estimation for such a distribution, we would need <strong>a lot of data</strong> &mdash;  this is an example of the <em>curse of dimensionality</em>. Moreover, this is just for a single class $y$.</p>
+<p>This calls for a need to reduce the dimensionality of our parameter space.</p>
+<p><strong>What is conditional independence?</strong></p>
+<p>The &ldquo;naive&rdquo; assumption in Naive Bayes is that the features of our inputs are conditionally independent. Under this assumption, we can factor the joint distribution in $\eqref{2}$ as</p>
 <p>$$
-p(\x \mid y) = p(x_1 \mid y) \cdots p(x_d \mid y)
+p(x_1, \ldots, x_d \mid y) = p(x_1 \mid y) \cdots p(x_2 \mid y).
 $$</p>
-<p>However, if some $x_i$ never existed in the training set, this will be 0. This could be a problem (see spam vs. ham example)</p>
+<p>One way to say this is &ldquo;$x_1, x_2, \ldots, x_d$ are independent, conditioned on $y$.&rdquo; Now, we can model each individual distribution $p(x_i \mid y)$ independently. In the case of binary features, this only requires $d$ parameters for each class instead of $2^d-1$.</p>
+<p>As an example, consider three random variables $a, b, c \in \R$.</p>
+<p><strong>When does Naive Bayes work?</strong></p>
+<p>From here, it&rsquo;s natural to ask the question &ldquo;when does Naive Bayes work?&rdquo; Let&rsquo;s look at some different examples.</p>
+<p><strong>Example:</strong> Spam vs. ham</p>
+<p><strong>Example:</strong> Medical diagnosis</p>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>Estimating a discrete probability distribution with $n$ possible inputs only requires $n-1$ parameters due to the summation constraint:
+$$
+\sum_{i=1}^n p_i = 1,
+$$
+where $p_i$ is the probability of the $i^{\text{th}}$ event. The $n^{\text{th}}$ probability is defined implicitly as $1 - \sum_{i=1}^{n-1}p_i$.&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
 
     
   </div>
