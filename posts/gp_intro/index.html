@@ -128,7 +128,7 @@
 
       
       &nbsp; · &nbsp;
-      21 min read
+      24 min read
       
     </p>
 
@@ -161,6 +161,7 @@
         <li><a href="#exact-observations">Exact observations</a></li>
         <li><a href="#noisy-observations">Noisy observations</a></li>
         <li><a href="#gaussian-process-regression-in-python">Gaussian process regression in Python</a></li>
+        <li><a href="#varying-the-hyperparameters">Varying the hyperparameters</a></li>
       </ul>
     </li>
     <li><a href="#references">References</a></li>
@@ -181,7 +182,8 @@
 * consistent format for references (e.g., Bishop, 2006, Bishop (2006), or [Bishop 2006])
 * at the end, discuss varying hyperparameters and how to make optimizations with Cholesky factorization
 * type hinting for `kernel`; e.g., from typing import Callable?
-* Varying the hyperparameters / marginal log likelihood?
+* double check formulas in `ZeroMeanGP` class -> when to use K vs. K + sigma^2I
+* when to use \btheta vs. \theta
 -->
 <p>Gaussian processes (GPs) have always been a particularly confounding topic for me in machine learning (ML). Many introductions talk about the beauty of implicitly defining infinite-dimensional features in function space, or performing Bayesian inference directly in the space of functions. These explanations can seem daunting at first, but in this blog I aim to clarify things and build up to GPs from a basic linear model.</p>
 <p>spelled-out introduction (with code!).</p>
@@ -477,7 +479,7 @@ k(\x, \x\p) = \psi(\x)\T\psi(\x\p),
 $$</p>
 <p>where $\psi(\x) = \Sigma^{1/2}\phi(\x)$. We can then redefine the Gram matrices in terms of the kernel function:</p>
 <p>$$
-\begin{equation}label{2}
+\begin{equation}\label{2}
 \K = k(\X, \X), \quad \K_\ast = k(\X, \X_\ast), \quad \K_{\ast\ast} = k(\X_\ast, \X_\ast).
 \end{equation}
 $$</p>
@@ -597,7 +599,7 @@ $$</p>
 <p>Using the same conditioning rules as before, the parameters of our predictive distribution $p(\f_\ast \mid \X_\ast, \cD)$ are given by</p>
 <p>$$
 \begin{align*}
-\bmu_{f\mid\cD} &amp;= \K_\ast\T \left( \K + \sigma^2\I \right)\inv\f \\
+\bmu_{f\mid\cD} &amp;= \K_\ast\T \left( \K + \sigma^2\I \right)\inv\y \\
 \K_{f\mid\cD} &amp;= \K_{\ast\ast} - \K_\ast\T \left( \K + \sigma^2\I \right)\inv \K_\ast.
 \end{align*}
 $$</p>
@@ -665,7 +667,7 @@ $$</p>
 </span></span><span style="display:flex;"><span>        K_train_test = self.make_covar(self._X_train, X_test)
 </span></span><span style="display:flex;"><span>        K_test_test = self.make_covar(X_test, X_test)
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Pre-compute inverse of covariance</span>
+</span></span><span style="display:flex;"><span>        <span style="color:#008000"># Pre-compute inverse of covariance for repeated use</span>
 </span></span><span style="display:flex;"><span>        K_inv = np.linalg.inv(self._K_train_train)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>        <span style="color:#008000"># Posterior mean</span>
@@ -691,31 +693,41 @@ $$</p>
 </span></span></code></pre></div><div id="fig3" class="figure">
    <img src="figures/figure3.png" alt="Figure 3" style="width:80%; margin-left:auto; margin-right:auto">
 </div>
-<!-- ### Varying the hyperparameters
-
-The performance of the GP can depend drastically on the setting of the hyperparameters. In this case, our hyperparameters are the amplitude and noise of the squared exponential function. Since we are passing a generic function to the GP model, we can change the parameters of the kernel function by using the `partial` method:
-
-```py
-from functools import partial
-
-kernel = partial(squared_exponential, amp=1.0, length=0.5)
-
-gp = ZeroMeanGP(X_data, y_data, kernel, sigma=0.1)
-mean, cov = gp.predict(X_star)
-```
-
-The following shows the GP fit under three different settings of these hyperparameters:
-
-
-
-
-
-
-
-For simple problems like ours, we can often choose appropriate hyperparameter settings by inspection. However, for more sophisticated problems, we might like to employ a more robust method for finding reasonable values for the hyperparameters.
-
-
- -->
+<h3 id="varying-the-hyperparameters">Varying the hyperparameters</h3>
+<p>The performance of the GP can depend drastically on the setting of the hyperparameters. In this case, our hyperparameters are the amplitude and noise of the squared exponential function.</p>
+<p>For simple problems like ours, we can often choose appropriate hyperparameter settings by inspecting a few reasonable options. There are also common methods for choosing reasonable values.<sup id="fnref:10"><a href="#fn:10" class="footnote-ref" role="doc-noteref">10</a></sup> However, for more sophisticated problems, particularly those in high-dimensional spaces, we might like to employ more robust methods for finding reasonable values for the hyperparameters.</p>
+<p>We can assess how well the model fits the training data by computing the marginal likelihood, defined as</p>
+<p>$$
+p(\y \mid \X, \theta) = \Norm \big( \y \mid \bmu(\X; \theta), \K(\X, \X; \btheta) \big),
+$$</p>
+<p>where $\theta$ is some vector containing the hyperparameters. This measures the likelihood of drawing samples from our modeled distribution Thus, choosing some hyperparameters for which the MLL is high corresponds to choosing a model which closely approximates the true distribution of the data.</p>
+<p>In practice, we usually compute the marginal log-likelihood (MLL). This takes the form:</p>
+<p>$$
+\begin{align*}
+\log p(\y \mid \X, \btheta) &amp;= - \frac{n}{2} \log 2\pi - \frac{1}{2} \log \Big| \K + \sigma^2\I \Big| \\[4pt]
+&amp;- \frac{1}{2} \Big( \y - \bmu \Big)\T \Big( \K + \sigma^2\I \Big) \inv \Big( \y - \bmu \Big).
+\end{align*}
+$$</p>
+<p>Note that the first term is constant with respect to the hyperparameters, so we can ignore this when maximizing the MLL. Moreover, we are assuming that the mean function is zero. Thus, we have the following simplified expression for the MLL:</p>
+<p>$$
+\log p(\y \mid \X, \btheta) \propto - \log \Big| \K + \sigma^2\I \Big| - \y\T \Big( \K + \sigma^2\I \Big) \inv \y.
+$$</p>
+<p>We can now implement a function to in the <code>ZeroMeanGP</code> class to compute the MLL:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">def</span> compute_mll(self):
+</span></span><span style="display:flex;"><span>        <span style="color:#a31515">&#34;&#34;&#34;Compute the MLL of training data.&#34;&#34;&#34;</span>
+</span></span><span style="display:flex;"><span>        n = len(self._X_train)
+</span></span><span style="display:flex;"><span>        K = self._K_train_train
+</span></span><span style="display:flex;"><span>        K_inv = np.linalg.inv(K)
+</span></span><span style="display:flex;"><span>        mll = - np.log(np.linalg.det(K)) - self._y_train.T @ K_inv @ self._y_train
+</span></span><span style="display:flex;"><span>        <span style="color:#00f">return</span> mll
+</span></span></code></pre></div><p>Since we are passing a generic function to the GP model, we can change the parameters of the kernel function by using the <code>partial</code> method:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">from</span> functools <span style="color:#00f">import</span> partial
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>kernel = partial(squared_exponential, amp=1.0, length=0.5)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>gp = ZeroMeanGP(X_data, y_data, kernel, sigma=0.1)
+</span></span><span style="display:flex;"><span>mean, cov = gp.predict(X_star)
+</span></span></code></pre></div><p>The following shows the GP fit under three different settings of these hyperparameters, as well as the corresponding MLL values:</p>
 <h2 id="references">References</h2>
 <ol>
 <li>
@@ -760,6 +772,9 @@ $$&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;
 </li>
 <li id="fn:9">
 <p>Note that, in the case where a GP is defined over finitely many variables, this just reduces to the familiar multivariate Gaussian distribution.&#160;<a href="#fnref:9" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:10">
+<p>For example when using the squared exponentional covariance function, it is commong to set the amplitude equal to the variance of the training set and the lengthscale equal to $.01$ times the amplitude. Similarly, it is common to use a constant mean function equal to the average of the training set. Moreover, one might initialize the hyperparameters to these settings, then maximize the MLL with respect to the hyperparameters under gradient descent.&#160;<a href="#fnref:10" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 </ol>
 </div>
@@ -880,6 +895,7 @@ $$&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;
         "\\bSigma": "\\boldsymbol{\\Sigma}",
         "\\bLambda": "\\boldsymbol{\\Lambda}",
         "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\btheta": "\\boldsymbol{\\theta}",
         "\\zero": "\\mathbf{0}",
         "\\one": "\\mathbf{1}",
         "\\T": "^{\\top}",

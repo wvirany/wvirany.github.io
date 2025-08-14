@@ -791,7 +791,7 @@ Moreover, the voting classifier trained on only <em>20 features</em> achieves an
 </table>
 </div>
 <p>Even when using just 20 features (about 3.5% of the original feature set), the voting classifier maintains strong performance with an ROC AUC score of 0.945 and F1 score of 0.949. This suggests that a very small subset of bacterial species may be sufficient for accurate IBD diagnosis.</p>
-<p>It is important to note here that the original study had a slightly different experimental setup. These results which they report were from cross-validated test scores evaluated on data taken in different studies. This is slightly different to my experimental setup, where I took several datasets from different studies and shuffled them together, training and testing on samples across datasets.a</p>
+<p>It is important to note here that the original study had a slightly different experimental setup. These results which they report were from cross-validated test scores evaluated on data taken in different studies. This is slightly different to my experimental setup, where I took several datasets from different studies and shuffled them together, training and testing on samples across datasets.</p>
 <h2 id="discussion">Discussion</h2>
 <p>In this post, I used machine learning techniques to predict disease presence in patients from gut microbiome samples, building upon the work of <a href="https://journals.plos.org/ploscompbiol/article/file?id=10.1371/journal.pcbi.1004977&amp;type=printable">Pasolli et al. [2016]</a>. By leveraging a larger dataset, implementing modern ensemble methods (XGBoost, CatBoost, and LightGBM), and implementing feature selection techniques, I was able to improve upon their prediction accuracy. The highest ROC AUC score we achieved was 0.98, on just 100 of the original 579 features. Moreover, I was able to achieve an ROC AUC score of 0.96 with a subset of just 20 features, identifying potential biological markers for early diagnosis.</p>
 <p>In future work, it would be interesting to ultimately increase the scale of this project, which can be done in a number of ways:</p>
@@ -932,6 +932,7 @@ large metagenomic datasets: Tools and biological insights. PLoS Comput. Biol., 1
         "\\bSigma": "\\boldsymbol{\\Sigma}",
         "\\bLambda": "\\boldsymbol{\\Lambda}",
         "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\btheta": "\\boldsymbol{\\theta}",
         "\\zero": "\\mathbf{0}",
         "\\one": "\\mathbf{1}",
         "\\T": "^{\\top}",
