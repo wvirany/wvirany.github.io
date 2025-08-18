@@ -123,12 +123,12 @@
       
       
       
-      <time datetime="2025-06-13T00:00:00&#43;00:00">June 13, 2025</time>
+      <time datetime="2025-08-18T00:00:00&#43;00:00">August 18, 2025</time>
       
 
       
       &nbsp; · &nbsp;
-      24 min read
+      23 min read
       
     </p>
 
@@ -139,42 +139,12 @@
   
 
   
-  <aside class="toc">
-    <p><strong>Table of contents</strong></p>
-    <nav id="TableOfContents">
-  <ul>
-    <li><a href="#bayesian-linear-regression">Bayesian linear regression</a>
-      <ul>
-        <li><a href="#the-linear-model">The linear model</a></li>
-        <li><a href="#computing-the-parameters">Computing the parameters</a></li>
-        <li><a href="#making-predictions">Making predictions</a></li>
-        <li><a href="#bayesian-linear-regression-in-python">Bayesian linear regression in Python</a></li>
-      </ul>
-    </li>
-    <li><a href="#the-kernel-trick">The kernel trick</a>
-      <ul>
-        <li><a href="#comments-on-valid-kernel-functions">Comments on valid kernel functions</a></li>
-      </ul>
-    </li>
-    <li><a href="#gaussian-process-regression">Gaussian process regression</a>
-      <ul>
-        <li><a href="#exact-observations">Exact observations</a></li>
-        <li><a href="#noisy-observations">Noisy observations</a></li>
-        <li><a href="#gaussian-process-regression-in-python">Gaussian process regression in Python</a></li>
-        <li><a href="#varying-the-hyperparameters">Varying the hyperparameters</a></li>
-      </ul>
-    </li>
-    <li><a href="#references">References</a></li>
-  </ul>
-</nav>
-  </aside>
-  
 
   
 
   <div class="single-content">
     <!-- TO DO:
-* positive definite = PD?
+* proper way to format footnote headers
 * ctrl + f: we -> I, when applicable
 * change \mid to \Big| where appropriate
 * am I using \phi instead of \bphi in some places?
@@ -185,9 +155,7 @@
 * double check formulas in `ZeroMeanGP` class -> when to use K vs. K + sigma^2I
 * when to use \btheta vs. \theta
 -->
-<p>Gaussian processes (GPs) have always been a particularly confounding topic for me in machine learning (ML). Many introductions talk about the beauty of implicitly defining infinite-dimensional features in function space, or performing Bayesian inference directly in the space of functions. These explanations can seem daunting at first, but in this blog I aim to clarify things and build up to GPs from a basic linear model.</p>
-<p>spelled-out introduction (with code!).</p>
-<p>In this blog I attempt to accumulate &hellip; from different sources, as well as providing my own explanations to present only what I think is the core of understanding GPs.</p>
+<p>Gaussian processes (GPs) have always been a particularly confounding topic for me in machine learning. In this blog, I attempt to present a spelled-out introduction to GPs, building up from a simple linear model. I provide both the underlying mathematics as well as a Python implementation. For the sake of clarity, I omit certain practical considerations regarding numerical stability, computational complexity, etc., which can all be found in standard treatments of GPs.</p>
 <h2 id="bayesian-linear-regression">Bayesian linear regression</h2>
 <h3 id="the-linear-model">The linear model</h3>
 <p>To build the foundation for GPs, I&rsquo;ll start by considering a Bayesian treatment of linear regression. We&rsquo;ll see that this is in fact a basic example of a GP.</p>
@@ -211,11 +179,11 @@ $$</p>
 \phi_{m-1}(\x)
 \end{bmatrix}.
 $$</p>
-<p>Again, by defining $\phi_0(\x) = 1$, we can implicitly incorporate a bias term. Now, we can redefine our model in terms of these basis functions:</p>
+<p>Again, letting $\phi_0(\x) = 1$ implicitly defines a bias term. Now, we can redefine our model in terms of these basis functions:</p>
 <p>$$
 f(\x; \w) = \bphi\T\w,
 $$</p>
-<p>where $\bphi = \phi(\x)$, and I&rsquo;ve abused notation by now letting $\w \in \R^m$. If the basis functions ${\phi_i}$ are nonlinear in terms of $\x$, we can model nonlinear functions of the features while still enjoying the benefits of a linear model, since $f$ is linear in terms of the learned parameters $\w$.</p>
+<p>where $\bphi = \phi(\x)$, and I&rsquo;ve abused notation by now letting $\w \in \R^m$. If the basis functions ${\phi_i}$ are nonlinear in terms of $\x$, we can model nonlinear relatiomships while still enjoying the benefits of a linear model, since $f$ is linear in terms of the learned parameters $\w$.</p>
 <p>For example, suppose we have a one-dimensional input $x$, and we wish to model the class of polynomials up to degree $m-1$. Then, we simply define $\phi_j(x) = x^j$, which gives the following model:</p>
 <p>$$
 \begin{align*}
@@ -234,30 +202,30 @@ $$</p>
 p(y \mid \x, \w, \sigma^2) = \Norm(y \mid f(\x; \w), \sigma^2).
 \end{align*}
 $$</p>
-<p>Before moving forward, I&rsquo;ll make a quick note on notation: when referring to a general probability distribution $p$, we list the unobserved variables on the LHS of the conditional and the observed variables on the RHS, including hyperparameters like $\sigma^2$, in no particular order. For example, $p(y \mid \x, \w, \sigma^2) = p(y \mid \w, \sigma^2, \x)$. It&rsquo;s completely arbitrary what order the variables are in, so long as they fall on the correct side of the conditional, and often certain variables are omitted from the notation and are implicitly assumed. From this point, I will omit hyperparameters from the general expressions for distributions. However, when we refer to a specific distribution like the Gaussian, the positions of given variables follow certain conventions: the first position after the conditional is reserved for the mean, and the second position is reserved for the variance, hence I&rsquo;ll write $p(y \mid \x, \w) = \Norm(y \mid f(\x; \w), \sigma^2)$.</p>
+<p>Before moving forward, I&rsquo;ll make a quick note on notation: when referring to a general probability distribution $p$, we list the unobserved variables on the LHS of the conditional and the observed variables on the RHS, including hyperparameters like $\sigma^2$, in no particular order. For example, $p(y \mid \x, \w, \sigma^2) = p(y \mid \w, \sigma^2, \x)$. It&rsquo;s completely arbitrary what order the variables are in, so long as they fall on the correct side of the conditional, and often certain variables are omitted from the notation and implicitly assumed. From this point, I will omit hyperparameters from the general expressions for distributions. However, when we refer to a specific distribution like the Gaussian, the positions of given variables follow certain conventions: the first position after the conditional is reserved for the mean, and the second position is reserved for the variance, hence I&rsquo;ll write $p(y \mid \x, \w) = \Norm(y \mid f(\x; \w), \sigma^2)$.</p>
 <h3 id="computing-the-parameters">Computing the parameters</h3>
 <p>Now, suppose we observe some iid dataset $\cD = (\X, \y)$, where $\X \in \R^{d\times n}$ is the matrix whose columns are the $n$ observed input vectors, and $\y = (y_1, y_2 ,\ldots, y_n)\T$ contains the correspondng target variables. Moreover, we can write the matrix containing our feature vectors as $\bPhi \in \R^{m\times n}$. Then, we have the following matrix equation:</p>
 <p>$$
 \y = \bPhi\T\w + \bepsilon,
 $$</p>
-<p>where $\bepsilon \sim \Norm(0, \sigma^2\I)$. As is often the case in supervised learning, we seek to find reasonable values for the parameters $\w$ in light of this observed data. In the frequentist approach to linear regression, we might model the likelihood function:</p>
+<p>where $\bepsilon \sim \Norm(\zv, \sigma^2\I)$. As is often the case in supervised learning, we seek to find reasonable values for the parameters $\w$ in light of this observed data. In the frequentist approach to linear regression, we might model the likelihood function:</p>
 <p>$$
 \begin{align*}
 p(\cD \mid \w) &amp;= p(\y \mid \X, \w) \\
 &amp;= p(y_1, \dots, y_n \mid \x_1, \dots, \x_n, \w) \\
-\text{\scriptsize (from iid assumption)} \qquad &amp;= \prod_{i=1}^n p(y_i \mid \x, \w) \\
+\text{\scriptsize (from iid assumption)} \qquad &amp;= \prod_{i=1}^n p(y_i \mid \x_i, \w) \\
 &amp;= \prod_{i=1}^n \Norm(y_i \mid f(\x_i; \w), \sigma^2).
 \end{align*}
 $$</p>
 <p>Then, we would maximize this expression with respect to $\w$, which would give a point estimate for the parameters.</p>
 <p>Instead, we will take a Bayesian treatment, which will allow us to compute a probability distribution over all possible values of of the parameters. To do so, we start by defining a prior on $\w$:</p>
 <p>$$
-p(\w) = \Norm \left( \w \mid 0, \bSigma \right).
+p(\w) = \Norm \left( \w \mid \zv, \bSigma \right).
 $$</p>
 <p>With no previous information about $\w$, it&rsquo;s reasonable to assume that all values of $\w$ are equally likely &mdash; this corresponds to a zero-mean Gaussian. Furthermore, we often assume the elements of $\w$ are independent, so $\bSigma = \alpha\I$, for some constant $\alpha$. However, I&rsquo;ll continue with the general form for the prior covariance.</p>
 <p>Now, we&rsquo;d like to infer the values of $\w$ from the observed data by computing the posterior distribution $p(\w \mid \cD)$. To do so, we can model the joint distribution of $\y$ and $\w$, then use the <a href="../gaussian/#conditioning">rules for conditioning</a> on multivariate Guassian distributions.<sup id="fnref:3"><a href="#fn:3" class="footnote-ref" role="doc-noteref">3</a></sup> First, we note that $\y$ is the <a href="../gaussian/#sum-of-gaussians">sum of two Gaussians</a>; the transformed $\bPhi\T\w$, and $\bepsilon$. Thus, $\y$ will be Gaussian-distributed as follows:</p>
 <p>$$
-p(\y \mid \X) = \Norm \left( \y \bmid 0, \bPhi\T\bSigma\bPhi + \sigma^2\I \right).
+p(\y \mid \X) = \Norm \left( \y \bmid \zv, \bPhi\T\bSigma\bPhi + \sigma^2\I \right).
 $$</p>
 <p>Then, we compute the covariance between $\y$ and $\w$:</p>
 <p>$$
@@ -269,7 +237,7 @@ p(\y, \w \mid \X) = \Norm \left( \left. \begin{bmatrix}
 \y \\
 \w
 \end{bmatrix}\right\vert
-0, \begin{bmatrix}
+\zv, \begin{bmatrix}
 \bPhi\T\bSigma\bPhi + \sigma^2\I &amp; \bPhi\T\bSigma \\
 \bSigma\bPhi &amp; \bSigma
 \end{bmatrix}
@@ -287,7 +255,7 @@ $$</p>
 <p>$$
 p(\y_\ast \mid \X_\ast, \cD) = \int p(\y_\ast \mid \X_\ast, \w) p(\w \mid \cD) d\w,
 $$</p>
-<p>where $p(\y_\ast \mid \X_\ast, \w)$ is just the likelihood of the new test points and $p(\w\mid\cD)$ is the previously computed posterior parameter distribution. This integral is tractable, but takes a bit of work.<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> However, an easier way to compute the predictive distribution is to note that, under our model,</p>
+<p>where $p(\y_\ast \mid \X_\ast, \w)$ is the likelihood of the new test points. This integral is tractable, but takes a bit of work.<sup id="fnref:4"><a href="#fn:4" class="footnote-ref" role="doc-noteref">4</a></sup> An easier way to compute the predictive distribution is to note that, under our model,</p>
 <p>$$
 \y_\ast = \bPhi_\ast\T\w + \bepsilon.
 $$</p>
@@ -305,7 +273,7 @@ $$</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>xs = np.linspace(0, 2*pi, 100)
 </span></span><span style="display:flex;"><span>ys = f(xs)
-</span></span></code></pre></div><p>This generates 100 evenly-spaced points on the interval $[0, 2\pi]$, as well as the corresponding functional outputs on the domain according to the function $f(x) = x\sin(x)$. To construct a training set, we can uniformly sample points in the domain and evaluate their corresponding functional values:</p>
+</span></span></code></pre></div><p>This generates 100 evenly-spaced points on the interval $[0, 2\pi]$, as well as the corresponding functional outputs according to the function $f(x) = x\sin(x)$. To construct a training set, we can uniformly sample points in the domain and evaluate their corresponding functional values:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>np.random.seed(1)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>n_samples = 10
@@ -315,7 +283,7 @@ $$</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>X_data = np.random.uniform(0, 2*pi, size=n_samples)
 </span></span><span style="display:flex;"><span>y_data = f(X_data) + epsilon
-</span></span></code></pre></div><p>I&rsquo;ve also added a noise term $\epsilon$ with variance 0.1 to the observations. This gives a dataset of observations $\cD = (\X, \y)$ as we saw before, and our goal is to approximate the function $f$ on the entire domain. Before going further, it&rsquo;s always a good idea to visualize your data (if applicable) for any machine learning task:</p>
+</span></span></code></pre></div><p>I&rsquo;ve also added a noise term <code>epsilon</code> with variance 0.1 to the observations. This gives a dataset of observations $\cD = (\X, \y)$ as we saw before, and our goal is to approximate the function $f$ on the entire domain. Before going further, it&rsquo;s always a good idea to visualize the data (if applicable) for any machine learning task:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">import</span> matplotlib.pyplot <span style="color:#00f">as</span> plt
 </span></span><span style="display:flex;"><span><span style="color:#00f">import</span> seaborn <span style="color:#00f">as</span> sns
 </span></span><span style="display:flex;"><span>
@@ -331,10 +299,14 @@ $$</p>
 </span></span><span style="display:flex;"><span>               <span style="color:#a31515">&#34;grid.alpha&#34;</span>: 0.4 })
 </span></span><span style="display:flex;"><span>sns.set_palette(<span style="color:#a31515">&#39;muted&#39;</span>)
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>plt.plot(xs, ys, c=<span style="color:#a31515">&#39;k&#39;</span>, ls=<span style="color:#a31515">&#39;dashed&#39;</span>, lw=1)  <span style="color:#008000"># Plot f(x) over the domain</span>
-</span></span><span style="display:flex;"><span>plt.scatter(X_data, y_data, c=<span style="color:#a31515">&#39;firebrick&#39;</span>, s=25); <span style="color:#008000"># Plot training samples</span>
+</span></span><span style="display:flex;"><span><span style="color:#00f">def</span> create_base_plot():
+</span></span><span style="display:flex;"><span>    fig, ax = plt.subplots()
+</span></span><span style="display:flex;"><span>    ax.plot(xs, ys, c=<span style="color:#a31515">&#39;k&#39;</span>, ls=<span style="color:#a31515">&#39;dashed&#39;</span>, lw=1, label=<span style="color:#a31515">r</span><span style="color:#a31515">&#39;$f(x) = x\sin(x)$&#39;</span>)
+</span></span><span style="display:flex;"><span>    ax.scatter(X_data, y_data, c=<span style="color:#a31515">&#39;firebrick&#39;</span>, s=25, label=<span style="color:#a31515">&#39;Training samples&#39;</span>)
+</span></span><span style="display:flex;"><span>    ax.set_xlim(0, 2*pi)
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">return</span> ax
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>plt.xlim(0, 2*pi)
+</span></span><span style="display:flex;"><span>create_base_plot()
 </span></span></code></pre></div><div id="fig1" class="figure">
    <img src="figures/figure1.png" alt="Figure 1" style="width:80%; margin-left:auto; margin-right:auto">
 </div>
@@ -417,7 +389,7 @@ $$</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#00f">return</span> mean, std
 </span></span></code></pre></div><p>The expressions for computing the distributions of interest are just those derived in the previous sections. Using these functions, we can now perform Bayesian linear regression:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>m = 5  <span style="color:#008000"># Degree of polynomials in feature space is m - 1</span>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>m = 4  <span style="color:#008000"># Degree of polynomials in feature space is m - 1</span>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>X_poly = poly_feature_transform(X_data, m)
 </span></span><span style="display:flex;"><span>
@@ -427,13 +399,9 @@ $$</p>
 </span></span><span style="display:flex;"><span>mean, std = make_predictions(X_poly, X_star_poly, y_data, sigma=.1)
 </span></span></code></pre></div><p>We can now visualize the results:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">def</span> plot_predictions(mean, std):
-</span></span><span style="display:flex;"><span>    plt.figure()
-</span></span><span style="display:flex;"><span>    plt.plot(xs, ys, c=<span style="color:#a31515">&#39;k&#39;</span>, ls=<span style="color:#a31515">&#39;dashed&#39;</span>, lw=1, label=<span style="color:#a31515">r</span><span style="color:#a31515">&#39;$f(x) = xsin(x)$&#39;</span>)
-</span></span><span style="display:flex;"><span>    plt.scatter(X_data, y_data, c=<span style="color:#a31515">&#39;firebrick&#39;</span>, s=25, label=<span style="color:#a31515">&#39;Training samples&#39;</span>)
-</span></span><span style="display:flex;"><span>    plt.plot(xs, mean, c=<span style="color:#a31515">&#39;midnightblue&#39;</span>, lw=1, label=<span style="color:#a31515">&#39;Model predicitions&#39;</span>)  
-</span></span><span style="display:flex;"><span>    plt.fill_between(xs, mean-std, mean+std, alpha=.25, label=<span style="color:#a31515">&#39;1 std&#39;</span>)
-</span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>    plt.xlim(0, 2*pi)
+</span></span><span style="display:flex;"><span>    ax = create_base_plot()
+</span></span><span style="display:flex;"><span>    ax.plot(xs, mean, c=<span style="color:#a31515">&#39;midnightblue&#39;</span>, lw=1, label=<span style="color:#a31515">&#39;Model predictions&#39;</span>)  
+</span></span><span style="display:flex;"><span>    ax.fill_between(xs, mean-std, mean+std, alpha=.25, label=<span style="color:#a31515">&#39;1 std&#39;</span>)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>plot_predictions(mean, std)
 </span></span></code></pre></div><div id="fig1" class="figure">
@@ -614,19 +582,19 @@ $$</p>
 </span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> __init__(
 </span></span><span style="display:flex;"><span>        self, X_train: np.ndarray, y_train: np.ndarray, kernel, sigma: float = 0.1
 </span></span><span style="display:flex;"><span>    ):
-</span></span><span style="display:flex;"><span>    <span style="color:#a31515">&#34;&#34;&#34;
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Initialize GP model.
+</span></span><span style="display:flex;"><span>        <span style="color:#a31515">&#34;&#34;&#34;
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Initialize GP model.
 </span></span></span><span style="display:flex;"><span><span style="color:#a31515">
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    Args:
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    X_train: np.ndarray
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Training data of shape (d, n); d is dimension of feature space,
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        n is number of samples
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    y_train: np.ndarray
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Training labels of shape (n,)
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    kernel:
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Kernel function; takes two vectors as input and returns a scalar
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    sigma: Noise variance
-</span></span></span><span style="display:flex;"><span><span style="color:#a31515">    &#34;&#34;&#34;</span>
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        Args:
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        X_train: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">            Training data of shape (d, n); d is dimension of feature space,
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">            n is number of samples
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        y_train: np.ndarray
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">            Training labels of shape (n,)
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        kernel:
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">            Kernel function; takes two vectors as input and returns a scalar
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        sigma: Noise variance
+</span></span></span><span style="display:flex;"><span><span style="color:#a31515">        &#34;&#34;&#34;</span>
 </span></span><span style="display:flex;"><span>        self.kernel = kernel
 </span></span><span style="display:flex;"><span>        self.sigma = sigma
 </span></span><span style="display:flex;"><span>        self.set_training_data(X_train, y_train)
@@ -720,14 +688,31 @@ $$</p>
 </span></span><span style="display:flex;"><span>        K_inv = np.linalg.inv(K)
 </span></span><span style="display:flex;"><span>        mll = - np.log(np.linalg.det(K)) - self._y_train.T @ K_inv @ self._y_train
 </span></span><span style="display:flex;"><span>        <span style="color:#00f">return</span> mll
-</span></span></code></pre></div><p>Since we are passing a generic function to the GP model, we can change the parameters of the kernel function by using the <code>partial</code> method:</p>
-<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">from</span> functools <span style="color:#00f">import</span> partial
+</span></span></code></pre></div><p>Then, we can define the following to optimize the MLL with respect to the hyperparameters:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">from</span> scipy.optimize <span style="color:#00f">import</span> minimize
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>kernel = partial(squared_exponential, amp=1.0, length=0.5)
+</span></span><span style="display:flex;"><span><span style="color:#00f">def</span> optimize_hyperparams(X_data, y_data, init_params):
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">def</span> objective(params):
+</span></span><span style="display:flex;"><span>        amp, length, sigma = params
+</span></span><span style="display:flex;"><span>        kernel = partial(squared_exponential, amp=amp, length=length)
+</span></span><span style="display:flex;"><span>        gp = ZeroMeanGP(X_data, y_data, kernel, sigma=sigma)
+</span></span><span style="display:flex;"><span>        <span style="color:#00f">return</span> -gp.compute_mll()  <span style="color:#008000"># negative because we minimize</span>
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    result = minimize(objective, init_params)
+</span></span><span style="display:flex;"><span>    <span style="color:#00f">return</span> result.x
+</span></span></code></pre></div><p>Finally, let&rsquo;s find the optimal hyperparameters and once more make predictions:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span>init_params = (2.0, 1.0, 0.1)
+</span></span><span style="display:flex;"><span>amp, length, sigma = optimize_hyperparams(X_data, y_data, init_params)
 </span></span><span style="display:flex;"><span>
-</span></span><span style="display:flex;"><span>gp = ZeroMeanGP(X_data, y_data, kernel, sigma=0.1)
+</span></span><span style="display:flex;"><span>kernel = partial(squared_exponential, amp=amp, length=length)
+</span></span><span style="display:flex;"><span>gp = ZeroMeanGP(X_data, y_data, kernel, sigma=sigma)
+</span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>mean, cov = gp.predict(X_star)
-</span></span></code></pre></div><p>The following shows the GP fit under three different settings of these hyperparameters, as well as the corresponding MLL values:</p>
+</span></span><span style="display:flex;"><span>std = np.sqrt(cov)
+</span></span><span style="display:flex;"><span>plot_predictions(mean, std)
+</span></span></code></pre></div><div id="fig4" class="figure">
+   <img src="figures/figure4.png" alt="Figure 4" style="width:80%; margin-left:auto; margin-right:auto">
+</div>
 <h2 id="references">References</h2>
 <ol>
 <li>
