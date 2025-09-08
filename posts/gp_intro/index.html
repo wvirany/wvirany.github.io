@@ -128,7 +128,7 @@
 
       
       &nbsp; · &nbsp;
-      23 min read
+      24 min read
       
     </p>
 
@@ -283,7 +283,7 @@ $$</p>
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>X_data = np.random.uniform(0, 2*pi, size=n_samples)
 </span></span><span style="display:flex;"><span>y_data = f(X_data) + epsilon
-</span></span></code></pre></div><p>I&rsquo;ve also added a noise term <code>epsilon</code> with variance 0.1 to the observations. This gives a dataset of observations $\cD = (\X, \y)$ as we saw before, and our goal is to approximate the function $f$ on the entire domain. Before going further, it&rsquo;s always a good idea to visualize the data (if applicable) for any machine learning task:</p>
+</span></span></code></pre></div><p>I&rsquo;ve also added a noise term <code>epsilon</code> with variance 0.1 to the observations. This gives a dataset of noisy observations $\cD = (\X, \y)$ as we saw before, and our goal is to approximate the function $f$ on the entire domain. Before going further, it&rsquo;s always a good idea to visualize the data (if applicable) for any machine learning task:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">import</span> matplotlib.pyplot <span style="color:#00f">as</span> plt
 </span></span><span style="display:flex;"><span><span style="color:#00f">import</span> seaborn <span style="color:#00f">as</span> sns
 </span></span><span style="display:flex;"><span>
@@ -413,7 +413,7 @@ $$</p>
 <p>If we write out the mean and covariance for the posterior predictive distribution, we have</p>
 <p>$$
 \begin{align*}
-\bmu_{y_\ast \mid \cD} &amp;= \bPhi_\ast\T\bmu_{\w\mid\cD} \\
+\bmu_{\y_\ast \mid \cD} &amp;= \bPhi_\ast\T\bmu_{\w\mid\cD} \\
 &amp;= \bPhi_\ast\T\bSigma\bPhi \left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv\y,
 \end{align*}
 $$</p>
@@ -425,7 +425,7 @@ $$</p>
 &amp;= \bPhi_\ast\T\bSigma\bPhi_\ast - \bPhi_\ast\T\bSigma\bPhi \left( \bPhi\T\bSigma\bPhi + \sigma^2\I \right)\inv \bPhi\T\bSigma\bPhi_\ast + \sigma^2\I.
 \end{align*}
 $$</p>
-<p>By doing so, we see that all the dependence of the posterior predictive distribution on the features $\bPhi$ and $\bPhi_\ast$ is in the form of one of the following inner products:</p>
+<p>By doing so, we see that all the dependence of the posterior predictive distribution on the features $\bPhi$ and $\bPhi_\ast$ is in the form of one of the following expressions:</p>
 <p>$$
 \begin{gather}\label{1}
 \bPhi\T\bSigma\bPhi, \quad \bPhi\T\bSigma\bPhi_\ast, \quad \bPhi_\ast\T\bSigma\bPhi, \quad \bPhi_\ast\T\bSigma\bPhi_\ast.
@@ -433,48 +433,48 @@ $$</p>
 $$</p>
 <p>We can rewrite these quantities as the following matrices:</p>
 <p>$$
-\begin{align*}
+\begin{align}\label{2}
 \K &amp;= \bPhi\T\bSigma\bPhi, \quad \K_\ast = \bPhi\T\bSigma\bPhi_\ast, \quad \K_{\ast\ast} = \bPhi_\ast\T\bSigma\bPhi_\ast.
-\end{align*}
+\end{align}
 $$</p>
-<p>Note that $\K_\ast = (\bPhi_\ast\T\bSigma\bPhi)\T\!,\,$ so we can represent each of the quantities in $\eqref{1}$ as a <em>Gram matrix</em>$,$<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup> whose elements can be written in the form</p>
+<p>Note that $\K_\ast = (\bPhi_\ast\T\bSigma\bPhi)\T\!,\,$ so we can represent each of the four quantities in $\eqref{1}$ using the three matrices above. Each element of these matrices can be written in the form</p>
 <p>$$
 k(\x, \x\p) = \phi(\x)\T\bSigma\phi(\x\p),
 $$</p>
-<p>where I&rsquo;ve defined a <em>kernel function</em> $k$, also sometimes called a <em>covariance function</em>. By noting that $\bSigma$ is positive definite, and hence has a matrix square root,<sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup> we can rewrite this expression as</p>
-<p>$$
+<p>where I&rsquo;ve defined a <em>kernel function</em> $k$, also sometimes called a <em>covariance function</em>. By noting that $\bSigma$ is positive definite, and hence has a matrix square root,<sup id="fnref:5"><a href="#fn:5" class="footnote-ref" role="doc-noteref">5</a></sup> we can rewrite $k$ as
+$$
 k(\x, \x\p) = \psi(\x)\T\psi(\x\p),
-$$</p>
-<p>where $\psi(\x) = \Sigma^{1/2}\phi(\x)$. We can then redefine the Gram matrices in terms of the kernel function:</p>
+$$
+where $\psi(\x) = \Sigma^{1/2}\phi(\x)$. Thus, $k$ corresponds to a valid inner product between two vectors which are functions of the observations. Then, since $k$ corresponds to an inner product between two vectors, the matrices in $\eqref{2}$ are <em>Gram matrices</em>.<sup id="fnref:6"><a href="#fn:6" class="footnote-ref" role="doc-noteref">6</a></sup> The Gram matrices can then be written in terms of the kernel function:</p>
 <p>$$
-\begin{equation}\label{2}
+\begin{equation}\label{3}
 \K = k(\X, \X), \quad \K_\ast = k(\X, \X_\ast), \quad \K_{\ast\ast} = k(\X_\ast, \X_\ast).
 \end{equation}
 $$</p>
-<p>Likewise, we can rewrite the parameters of the predictive distribution:</p>
+<p>We can also rewrite the parameters of the predictive distribution:</p>
 <p>$$
 \begin{align}
-\bmu_{\y_\ast \mid \cD} &amp;= \K_\ast\T \left( \K + \sigma^2\I \right)\inv\y, \label{3} \\
-\bSigma_{\y_\ast \mid \cD} &amp;= \K_{\ast\ast} - \K_\ast\T \left( \K + \sigma^2\I \right)\inv \K_\ast + \sigma^2\I. \label{4}
+\bmu_{\y_\ast \mid \cD} &amp;= \K_\ast\T \left( \K + \sigma^2\I \right)\inv\y, \label{4} \\
+\bSigma_{\y_\ast \mid \cD} &amp;= \K_{\ast\ast} - \K_\ast\T \left( \K + \sigma^2\I \right)\inv \K_\ast + \sigma^2\I. \label{5}
 \end{align}
 $$</p>
-<p>Thus, we&rsquo;ve shown that for <em>any</em> choice of prior covariance $\bSigma$ and feature map $\phi$, we can express our result in terms of a function which corresponds to some inner product. If we treat this function as a &ldquo;black box&rdquo;, we could skip the step of explicitly defining these quantities, and simply specify a kernel function to build our Gram matrices. So long as the kernel function we choose can be expressed in terms of a valid inner product, this corresponds to some feature map of the input vectors. I&rsquo;ll shortly discuss how to choose valid kernel functions.</p>
-<p>The advantage of this approach is that the feature vectors we&rsquo;d like to work with might be very high dimensional, and it might be cheaper to work in terms of the kernel function. As a concrete example<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup>, consider some vector $\x = (x_1, x_2, \dots, x_d) \in R^d$, and suppose we wish to express all the second-order polynomials in terms of the features of $\x$:</p>
+<p>Thus, we&rsquo;ve shown that for <em>any</em> choice of prior covariance $\bSigma$ and feature map $\phi$, we can express our result in terms of a function $k$ which corresponds to some inner product. If we treat this function as a &ldquo;black box&rdquo;, we could skip the step of explicitly defining these quantities, and simply specify a kernel function to build our Gram matrices. So long as the kernel function we choose can be expressed in terms of a valid inner product, this corresponds to some feature map of the input vectors. I&rsquo;ll shortly discuss how to choose valid kernel functions.</p>
+<p>The advantage of this approach is that the feature vectors we&rsquo;d like to work with might be very high dimensional, and it might be cheaper to work in terms of the kernel function. As a concrete example,<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup> consider some vector $\x = (x_1, x_2, \dots, x_d) \in R^d$, and suppose we wish to express all the monomials up to degree $2$ in terms of the features of $\x$:</p>
 <p>$$
 \phi(\x) = \begin{bmatrix}
+1 \\
 x_1 \\
-x_2 \\
 \vdots \\
-x_d \\
+x_d \\[3pt]
 x_1^2 \\
 x_1x_2 \\
-\vdots \\
+\vdots \\[3pt]
 x_d^2
 \end{bmatrix}.
 $$</p>
-<p>Noting that there are $d$ linear terms, ${d\choose2}$ cross terms, and $d$ squared terms, computing this requires $\mathcal{O}(d^2)$ operations:</p>
+<p>Noting that there is one constant term, $d$ linear terms, and $d^2$ quadratic terms, computing this requires $\mathcal{O}(d^2)$ operations:</p>
 <p>$$
-d + {d\choose 2} + d = 2d + \frac{d(d-1)}{2} \sim \mathcal{O}(d^2).
+1 + d + d^2 \sim \mathcal{O}(d^2).
 $$</p>
 <p>For large $d$, this could become prohibitive to compute. Alternatively, we can write the inner product as</p>
 <p>$$
@@ -484,7 +484,7 @@ $$</p>
 &amp;= \x\T\x\p + (\x\T\x\p)^2.
 \end{align*}
 $$</p>
-<p>Thus, we can define the kernel function $k(\x, \x\p) = \x\T\x\p + (\x\T\x\p)^2$. In doing so, we never have to compute $\phi(\x)$ directly, we can just plug $\x$ into the kernel function and make our predictions based on these values.</p>
+<p>Thus, we can define the kernel function $k(\x, \x\p) = \x\T\x\p + (\x\T\x\p)^2$. In doing so, we can just plug $\x$ into the kernel function and make our predictions based on these values using the expressions for the parameters defined by $\eqref{4}$ and $\eqref{5}$. We never have to compute the explicit feature map $\phi(\x)$, nor the parameters $\w$.</p>
 <h3 id="comments-on-valid-kernel-functions">Comments on valid kernel functions</h3>
 <p>A caveat to the approach described above is that we must use a <em>valid</em> kernel function, i.e., a kernel which corresponds to an inner product. Luckily, there are some fairly straightforward methods of obtaining these.</p>
 <p>There are several ways to check if a function is a valid kernel; one way is to show that, for any set of vectors $S$, the Gram matrix whose elements are given by $\K_{ij} = k(\x_i, \x_j)$ for each $\x_i, \x_j \in S$ is always positive-semidefinite. Another way is to show that $k$ can be represented as $k(\x, \x\p) = \psi(\x)\T\psi(\x\p)$, for some explicit feature map $\psi$, as we saw before.</p>
@@ -499,7 +499,7 @@ $$</p>
 <p>$$
 p(\y_\ast \mid \X_\ast, \cD) = \Norm\left( \y_\ast \bmid \bmu_{\y_\ast\mid\cD}, \bSigma_{\y_\ast\mid\cD} \right),
 $$</p>
-<p>for which the parameters are given by $\eqref{3}$ and $\eqref{4}$.</p>
+<p>for which the parameters are given by $\eqref{4}$ and $\eqref{5}$.</p>
 <p>We previously derived these results by performing inference over the parameters. However, instead of reasoning about $\w$ and $\bphi$, we showed that we can represent the quantities of interest - that is, the parameters of the predictive distribution - solely in terms of a kernel function and given quantities. Then, instead of performing inference in parameter space, we can express the mean and covariance as functions, and our job becomes that of performing inference directly in the space of functions.</p>
 <p>This gives rise to the GP framework. We write a GP as</p>
 <p>$$
@@ -533,7 +533,7 @@ $$</p>
 \end{bmatrix}
 \right),
 $$</p>
-<p>where the components of the covariance matrix are given by $\eqref{2}$. As before, we condition $\f_\ast$ on $\f$ to acquire the posterior distribution over the test points:</p>
+<p>where the components of the covariance matrix are given by $\eqref{3}$. As before, we condition $\f_\ast$ on $\f$ to acquire the posterior distribution over the test points:</p>
 <p>$$
 p(\f_\ast \mid \X_\ast, \cD) = \Norm\left( \f_\ast \bmid \bmu_{f\mid\cD}(\X_\ast), \K_{f\mid\D}(\X_\ast, \X_\ast) \right).
 $$</p>
@@ -744,10 +744,10 @@ $$&#160;<a href="#fnref:3" class="footnote-backref" role="doc-backlink">&#x21a9;
 <p>This integral can be done explicitly by writing out the integrand as a product of Gaussians, then completing the square in the exponent in terms of $\w$. The integrand takes the form of a Gaussian distribution over $\w$, which can be easily computed by equating it to the reciprocal of its normalization constant, and the resulting predictive distribution takes the form of a Gaussian in terms of the variables which are left over, i.e., those which were factored out of the integral.&#160;<a href="#fnref:4" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:5">
-<p>A Gram matrix is one whose elements are given by the pairwise inner products of a set of vectors. In our case, the sets of vectors for our Gram matrices are $\{\psi(\x)\}$, for the input vectors in the train / test sets.&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>To see this, note that any $n\times n$ positive definite matrix has a valid eigenvalue decomposition. Thus, we can write $\bSigma = \U\Lambda\U\T$, where $\U\U\T = \I$, $\Lambda = \diag(\lambda_1, \dots, \lambda_n)$, and ${\lambda_i}$ are the eigenvalues of $\bSigma$ (also note that, since $\bSigma$ is positive definite, its eigenvalues are positive). Then, we define the matrix square root as $\bSigma^{1/2} = \U\Lambda^{1/2}\U\T$, where $\Lambda^{1/2}$ is, perhaps unsurprisingly, the matrix whose diagonal elements are given by the square roots of the eigenvalues.&#160;<a href="#fnref:5" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:6">
-<p>To see this, note that any $n\times n$ positive definite matrix has a valid eigenvalue decomposition. Thus, we can write $\bSigma = \U\Lambda\U\T$, where $\U\U\T = \I$, $\Lambda = \diag(\lambda_1, \dots, \lambda_n)$, and ${\lambda_i}$ are the eigenvalues of $\bSigma$ (also note that, since $\bSigma$ is positive definite, its eigenvalues are positive). Then, we define the matrix square root as $\bSigma^{1/2} = \U\Lambda^{1/2}\U\T$, where $\Lambda^{1/2}$ is, perhaps unsurprisingly, the matrix whose diagonal elements are given by the square roots of the eigenvalues.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+<p>A Gram matrix is one whose elements are given by the pairwise inner products of a set of vectors. Thus, the kernel function $k$ corresponds to a valid inner product between the vectors $\psi(\x)$ and $\psi(\x\p)$.&#160;<a href="#fnref:6" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
 </li>
 <li id="fn:7">
 <p>I got this example from Prof. Henry Chai&rsquo;s <a href="https://www.cs.cmu.edu/~hchai2/courses/10624/lectures/Lecture7_Slides.pdf">lecture slides</a> on the kernel trick.&#160;<a href="#fnref:7" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
