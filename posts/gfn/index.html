@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    Generating synthesizable molecules with GFlowNets | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/posts/gfn/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.70663b98395cb46c50fa4dfa0b5a36b1136b531b6fed206fa9944c2cc27b3221.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+    
+    
+    
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /blog
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/me" >
+                /me
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/why" >
+                /why?
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">Generating synthesizable molecules with GFlowNets</h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+      
+      
+      <time datetime="2025-09-12T00:00:00&#43;00:00">September 12, 2025</time>
+      
+
+      
+      &nbsp; · &nbsp;
+      0 min read
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div class="single-content">
+    
+    
+    <script src="https://giscus.app/client.js"
+        data-repo="wvirany/blog"
+        data-repo-id="R_kgDOMs9-zQ"
+        data-category=""
+        data-category-id="DIC_kwDOMs9-zc4CrdIu"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="noborder_light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+<style>
+  .katex a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .katex a:hover {
+    text-decoration: none;
+  }
+</style>
+
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body);"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
+      macros: {
+        "\\eqref": "\\href{###1}{(\\text{#1})}",
+        "\\ref": "\\href{###1}{\\text{#1}}",
+        "\\label": "\\htmlId{#1}{}",
+        "\\R": "\\mathbb{R}",
+        "\\bR": "\\mathbf{R}",
+        "\\C": "\\mathbb{C}",
+        "\\Z": "\\mathbb{Z}",
+        "\\N": "\\mathbb{N}",
+        "\\Q": "\\mathbb{Q}",
+        "\\E": "\\mathbb{E}",
+        "\\cD": "\\mathcal{D}",
+        "\\var": "\\operatorname{Var}",
+        "\\cov":"\\operatorname{cov}",
+        "\\x": "\\mathbf{x}",
+        "\\X": "\\mathbf{X}",
+        "\\w": "\\mathbf{w}",
+        "\\W": "\\mathbf{W}",
+        "\\y": "\\mathbf{y}",
+        "\\z": "\\mathbf{z}",
+        "\\Z": "\\mathbf{Z}",
+        "\\u": "\\mathbf{u}",
+        "\\U": "\\mathbf{U}",
+        "\\V": "\\mathbf{V}",
+        "\\I": "\\mathbf{I}",
+        "\\zv": "\\mathbf{0}",
+        "\\A": "\\mathbf{A}",
+        "\\a": "\\mathbf{a}",
+        "\\B": "\\mathbf{B}",
+        "\\b": "\\mathbf{b}",
+        "\\c": "\\mathbf{c}",
+        "\\D": "\\mathbf{D}",
+        "\\f": "\\mathbf{f}",
+        "\\M": "\\mathbf{M}",
+        "\\m": "\\mathbf{m}",
+        "\\bC": "\\mathbf{C}",
+        "\\J": "\\mathbf{J}",
+        "\\K": "\\mathbf{K}",
+        "\\L": "\\mathbf{L}",
+        "\\bS": "\\mathbf{S}",
+        "\\bmu": "\\boldsymbol{\\mu}",
+        "\\bphi": "\\boldsymbol{\\phi}",
+        "\\bepsilon": "\\boldsymbol{\\epsilon}",
+        "\\bSigma": "\\boldsymbol{\\Sigma}",
+        "\\bLambda": "\\boldsymbol{\\Lambda}",
+        "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\btheta": "\\boldsymbol{\\theta}",
+        "\\zero": "\\mathbf{0}",
+        "\\one": "\\mathbf{1}",
+        "\\T": "^{\\top}",
+        "\\p": "^\\prime",
+        "\\inv": "^{-1}",
+        "\\ij": "_{ij}",
+        "\\Norm": "\\mathcal{N}",
+        "\\GP": "\\mathcal{GP}",
+        "\\bmid": "\\,\\Big|\\,",
+        "\\gam": "\\text{Gamma}",
+        "\\nll": "\\text{NLL}",
+        "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
+        "\\argmax": "\\underset{#1}{\\operatorname{argmax}}\\;",
+        "\\diag": "\\operatorname{diag}",
+        "\\tr": "\\operatorname{tr}",
+        "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
+        "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
+        "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\px": "\\frac{\\partial}{\\partial x}",
+        "\\pbA": "\\frac{\\partial}{\\partial \\mathbf{A}}",
+        "\\ml": "_\\text{ML}",
+      }
+    });
+  });
+</script>
+
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
+
+</html>
