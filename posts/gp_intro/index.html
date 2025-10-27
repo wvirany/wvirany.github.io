@@ -123,7 +123,7 @@
       
       
       
-      <time datetime="2025-08-18T00:00:00&#43;00:00">August 18, 2025</time>
+      <time datetime="2025-09-01T00:00:00&#43;00:00">September 1, 2025</time>
       
 
       
@@ -459,7 +459,8 @@ $$</p>
 \end{align}
 $$</p>
 <p>Thus, we&rsquo;ve shown that for <em>any</em> choice of prior covariance $\bSigma$ and feature map $\phi$, we can express our result in terms of a function $k$ which corresponds to some inner product. If we treat this function as a &ldquo;black box&rdquo;, we could skip the step of explicitly defining these quantities, and simply specify a kernel function to build our Gram matrices. So long as the kernel function we choose can be expressed in terms of a valid inner product, this corresponds to some feature map of the input vectors. I&rsquo;ll shortly discuss how to choose valid kernel functions.</p>
-<p>The advantage of this approach is that the feature vectors we&rsquo;d like to work with might be very high dimensional, and it might be cheaper to work in terms of the kernel function. As a concrete example,<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup> consider some vector $\x = (x_1, x_2, \dots, x_d) \in R^d$, and suppose we wish to express all the monomials up to degree $2$ in terms of the features of $\x$:</p>
+<p>The advantage of this approach is that the feature vectors we&rsquo;d like to work with might be very high dimensional, and it might be cheaper to work in terms of the kernel function.</p>
+<p>As a concrete example,<sup id="fnref:7"><a href="#fn:7" class="footnote-ref" role="doc-noteref">7</a></sup> consider some vector $\x = (x_1, x_2, \dots, x_d) \in R^d$, and suppose we wish to express all the monomials up to degree $2$ in terms of the features of $\x$:</p>
 <p>$$
 \phi(\x) = \begin{bmatrix}
 1 \\
@@ -472,19 +473,19 @@ x_1x_2 \\
 x_d^2
 \end{bmatrix}.
 $$</p>
-<p>Noting that there is one constant term, $d$ linear terms, and $d^2$ quadratic terms, computing this requires $\mathcal{O}(d^2)$ operations:</p>
+<p>Noting that there is one constant term, $d$ linear terms, and $d\choose{2}$ quadratic terms, computing this requires $\mathcal{O}(d^2)$ operations:</p>
 <p>$$
-1 + d + d^2 \sim \mathcal{O}(d^2).
+1 + d + {d\choose{2}} \sim \mathcal{O}(d^2).
 $$</p>
 <p>For large $d$, this could become prohibitive to compute. Alternatively, we can write the inner product as</p>
 <p>$$
 \begin{align*}
-\phi(\x)\T\phi(\x\p) &amp;= \sum_{i=1}^dx_ix_i\p + \sum_{i=1}^dx_i^2x_i^{\prime\,2} + 2 \sum_{i=1}^d \sum_{j \neq i}^d x_ix_i\p x_jx_j\p \\
-&amp;= \sum_{i=1}^d x_ix_i\p + \left( \sum_{i=1}^d x_ix_i\p \right)^2 \\
-&amp;= \x\T\x\p + (\x\T\x\p)^2.
+\phi(\x)\T\phi(\x\p) &amp;= 1 + \sum_{i=1}^dx_ix_i\p + \sum_{i=1}^dx_i^2x_i^{\prime\,2} + 2 \sum_{i=1}^d \sum_{i &lt; j} x_ix_j x_i\p x_j\p \\
+&amp;= 1 + \sum_{i=1}^d x_ix_i\p + \left( \sum_{i=1}^d x_ix_i\p \right)^2 \\
+&amp;= 1 + \x\T\x\p + (\x\T\x\p)^2.
 \end{align*}
 $$</p>
-<p>Thus, we can define the kernel function $k(\x, \x\p) = \x\T\x\p + (\x\T\x\p)^2$. In doing so, we can just plug $\x$ into the kernel function and make our predictions based on these values using the expressions for the parameters defined by $\eqref{4}$ and $\eqref{5}$. We never have to compute the explicit feature map $\phi(\x)$, nor the parameters $\w$.</p>
+<p>Thus, we can define the kernel function $k(\x, \x\p) = 1 + \x\T\x\p + (\x\T\x\p)^2$. In doing so, we can just plug $\x$ into the kernel function and make our predictions based on these values using the expressions for the parameters defined by $\eqref{4}$ and $\eqref{5}$. We never have to compute the explicit feature map $\phi(\x)$, nor the parameters $\w$.</p>
 <h3 id="comments-on-valid-kernel-functions">Comments on valid kernel functions</h3>
 <p>A caveat to the approach described above is that we must use a <em>valid</em> kernel function, i.e., a kernel which corresponds to an inner product. Luckily, there are some fairly straightforward methods of obtaining these.</p>
 <p>There are several ways to check if a function is a valid kernel; one way is to show that, for any set of vectors $S$, the Gram matrix whose elements are given by $\K_{ij} = k(\x_i, \x_j)$ for each $\x_i, \x_j \in S$ is always positive-semidefinite. Another way is to show that $k$ can be represented as $k(\x, \x\p) = \psi(\x)\T\psi(\x\p)$, for some explicit feature map $\psi$, as we saw before.</p>
@@ -680,7 +681,7 @@ $$</p>
 <p>$$
 \log p(\y \mid \X, \btheta) \propto - \log \Big| \K + \sigma^2\I \Big| - \y\T \Big( \K + \sigma^2\I \Big) \inv \y.
 $$</p>
-<p>We can now implement a function to in the <code>ZeroMeanGP</code> class to compute the MLL:</p>
+<p>We can now implement a function in the <code>ZeroMeanGP</code> class to compute the MLL:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-py" data-lang="py"><span style="display:flex;"><span><span style="color:#00f">def</span> compute_mll(self):
 </span></span><span style="display:flex;"><span>        <span style="color:#a31515">&#34;&#34;&#34;Compute the MLL of training data.&#34;&#34;&#34;</span>
 </span></span><span style="display:flex;"><span>        n = len(self._X_train)
