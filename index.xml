@@ -13,7 +13,7 @@
       <link>http://localhost:1313/posts/gp_intro/</link>
       <pubDate>Mon, 01 Sep 2025 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/posts/gp_intro/</guid>
-      <description>Gaussian processes (GPs) have always been a particularly confounding topic for me in machine learning. In this blog, I attempt to present a spelled-out introduction to GPs, building up from a simple linear model. I provide both the underlying mathematics as well as a Python implementation. For the sake of clarity, I omit certain practical considerations regarding numerical stability, computational complexity, etc., which can all be found in standard treatments of GPs.</description>
+      <description>Gaussian processes (GPs) have always been a particularly unintuitive topic for me in machine learning. In this blog, I attempt to present a spelled-out introduction to GPs, building up from a simple linear model. I provide both the underlying mathematics as well as a Python implementation. For the sake of clarity, I omit certain practical considerations regarding numerical stability, computational complexity, etc., which can all be found in standard treatments of GPs.</description>
     </item>
     <item>
       <title>Some math behind the Gaussian distribution</title>

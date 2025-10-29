@@ -155,7 +155,7 @@
 * double check formulas in `ZeroMeanGP` class -> when to use K vs. K + sigma^2I
 * when to use \btheta vs. \theta
 -->
-<p>Gaussian processes (GPs) have always been a particularly confounding topic for me in machine learning. In this blog, I attempt to present a spelled-out introduction to GPs, building up from a simple linear model. I provide both the underlying mathematics as well as a Python implementation. For the sake of clarity, I omit certain practical considerations regarding numerical stability, computational complexity, etc., which can all be found in standard treatments of GPs.</p>
+<p>Gaussian processes (GPs) have always been a particularly unintuitive topic for me in machine learning. In this blog, I attempt to present a spelled-out introduction to GPs, building up from a simple linear model. I provide both the underlying mathematics as well as a Python implementation. For the sake of clarity, I omit certain practical considerations regarding numerical stability, computational complexity, etc., which can all be found in standard treatments of GPs.</p>
 <h2 id="bayesian-linear-regression">Bayesian linear regression</h2>
 <h3 id="the-linear-model">The linear model</h3>
 <p>To build the foundation for GPs, I&rsquo;ll start by considering a Bayesian treatment of linear regression. We&rsquo;ll see that this is in fact a basic example of a GP.</p>
@@ -662,7 +662,7 @@ $$</p>
 </span></span></code></pre></div><div id="fig3" class="figure">
    <img src="figures/figure3.png" alt="Figure 3" style="width:80%; margin-left:auto; margin-right:auto">
 </div>
-<h3 id="varying-the-hyperparameters">Varying the hyperparameters</h3>
+<h3 id="fitting-the-hyperparameters">Fitting the hyperparameters</h3>
 <p>The performance of the GP can depend drastically on the setting of the hyperparameters. In this case, our hyperparameters are the amplitude and noise of the squared exponential function, as well as the noise variance $\sigma^2$.</p>
 <p>For simple problems like ours, we can often choose appropriate hyperparameter settings by inspecting a few reasonable options. There are also common methods for choosing reasonable values.<sup id="fnref:10"><a href="#fn:10" class="footnote-ref" role="doc-noteref">10</a></sup> However, for more sophisticated problems, particularly those in high-dimensional spaces, we might like to employ more robust methods for finding reasonable values for the hyperparameters.</p>
 <p>We can assess how well the model fits the training data by computing the marginal likelihood, defined as</p>
