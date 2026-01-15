@@ -18,11 +18,11 @@
 
 <title>
     
-    About | Walter Virany
+    About me | Walter Virany
     
 </title>
 
-<link rel="canonical" href="http://localhost:1313/about/"/>
+<link rel="canonical" href="http://localhost:1313/me/"/>
 
 
 
@@ -35,7 +35,7 @@
 
 
 
-<link rel="stylesheet" href="/assets/combined.min.c5b19f349890ba8c8308e8d948f1754211fca49303531d62bb79927877c7df0e.css" media="all">
+<link rel="stylesheet" href="/assets/combined.min.70663b98395cb46c50fa4dfa0b5a36b1136b531b6fed206fa9944c2cc27b3221.css" media="all">
 
 
 
@@ -72,14 +72,14 @@
       
         <p class="small ">
             <a href="/" >
-                /home
+                /blog
             </a>
         </p>
         
       
-        <p class="small  bold ">
-            <a href="/about" >
-                /about
+        <p class="small ">
+            <a href="/me" >
+                /me
             </a>
         </p>
         
@@ -114,7 +114,7 @@
 
     
 
-    <h1 class="single-title">About</h1>
+    <h1 class="single-title">About me</h1>
     
 
     
@@ -140,42 +140,40 @@
 
 <style>
 
-.card {
-  box-shadow: 2px 2px 0 0 rgb(103, 102, 102);
-  transition: 0.3s;
-  border-radius: 5px; /* 5px rounded corners */
-  background-color: #212529;/*rgba(82, 81, 81, 0.4);*/
+.bio-container {
+    display: grid;
+    grid-template-columns: 65% 1fr;
+    gap: 0px;
+    max-width: 1000px;
+    margin: 0;
+    line-height: 1.6;
 }
 
-/* Add rounded corners to the top left and the top right corner of the image */
-img {
-  border-radius: 5px 5px 5px 5px;
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
-.card:hover {
-  box-shadow: 0 8px 16px 0 rgb(191, 191, 191);
+.profile-image {
+    width: 70%;
+    max-width: 250px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
 }
 
-.container {
-  padding: 2px 16px;
-  height: 120px;
-}
-
-.tag-cloud {
-  display: inline-block;
-  color: lightgray;
-  padding: 8px 20px;
-  border-radius: 25px;
-  background-color: rgba(13, 13, 13, 0.2);
-  margin-top: 8px;
-  max-width:33%;
-  font-size: .7vw;
-}
-
-.column {
-  float: left;
-  width: 33%;
-  padding:0 5px 0 0; /* Only right padding*/
+/* Responsive design */
+@media (max-width: 600px) {
+    .bio-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        text-align: center;
+    }
+    
+    .profile-section {
+        order: -1;
+    }
 }
 
 </style>
@@ -186,61 +184,78 @@ img {
 
 <div class="content">
 
-<p>
-  <img src="profile.JPG" alt="Profile" style="float:right; width:20%;">
-    I recently graduated from the University of Colorado with a B.S. in applied mathematics as well as minors in computer science and physics.
-    My interests lie broadly in machine learning, statistics, and optimization, with applications in chemistry and the life sciences.
-</p>
-
-<div class="social-icons">
-  <a href="https://scholar.google.ca/citations?hl=en&amp;user=S2GA1h8AAAAJ" target="_blank"
-        rel="noopener noreferrer me"
-        title="Googlescholar">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 25" fill="none" stroke="currentColor" stroke-width="2"
-    stroke-linecap="round" stroke-linejoin="round">
-    <path
-        d="M5.242 13.769L0.5 9.5 12 1l11.5 9-5.242 3.769C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" />
-</svg>
-    </a>
-  <a href="https://www.linkedin.com/in/walter-virany/" target="_blank"
-      rel="noopener noreferrer me"
-      title="Linkedin">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-  stroke-linecap="round" stroke-linejoin="round">
-  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
-  <rect x="2" y="9" width="4" height="12"></rect>
-  <circle cx="4" cy="4" r="2"></circle>
-</svg>
-  </a>
-  <a href="https://github.com/wvirany" target="_blank"
-      rel="noopener noreferrer me"
-      title="Github">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-  stroke-linecap="round" stroke-linejoin="round">
-  <path
-      d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22">
-  </path>
-</svg>
-  </a>
-  <a href="https://www.youtube.com/channel/UC3atzAmp5W9vJ2vnOKUYrvA" target="_blank"
-      rel="noopener noreferrer me"
-      title="Youtube">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-  stroke-linecap="round" stroke-linejoin="round">
-  <path
-      d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z">
-  </path>
-  <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
-</svg>
-  </a>
+<div class="bio-container">
+  <div>
+    I'm currently pursuing an MSc in computer science at the University of Toronto under the supervision of Dr. Michał Koziarski and Dr. Mike Brudno.
+    My interests lie broadly in machine learning, statistics, and optimization, with applications in science.
+    In particular, I am currently focused on developing machine learning methods for drug discovery and precision medicine.
+    <br><br>
+    Before that, I received a B.S. in applied mathematics with minors in computer science and physics from the University of Colorado Boulder.
+  </div>
+  
+  <div class="profile-section">
+    <img src="profile.JPG" alt="Profile" class="profile-image">
+      
+    <div class="social-icons">
+        <a href="https://scholar.google.ca/citations?hl=en&user=S2GA1h8AAAAJ" target="_blank"
+           rel="noopener noreferrer me"
+           title="Google Scholar">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 25" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5.242 13.769L0.5 9.5 12 1l11.5 9-5.242 3.769C17.548 11.249 14.978 9.5 12 9.5c-2.977 0-5.548 1.748-6.758 4.269zM12 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14z" />
+            </svg>
+        </a>
+        <a href="https://www.linkedin.com/in/walter-virany/" target="_blank"
+           rel="noopener noreferrer me"
+           title="LinkedIn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                <rect x="2" y="9" width="4" height="12"></rect>
+                <circle cx="4" cy="4" r="2"></circle>
+            </svg>
+        </a>
+        <a href="https://github.com/wvirany" target="_blank"
+           rel="noopener noreferrer me"
+           title="GitHub">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+            </svg>
+        </a>
+        <a href="https://www.youtube.com/channel/UC3atzAmp5W9vJ2vnOKUYrvA" target="_blank"
+           rel="noopener noreferrer me"
+           title="YouTube">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+            </svg>
+        </a>
+    </div>
+  </div>
 </div>
 
 <h2>Updates</h2>
 
 <div class="post-line">
+  <p class="line-date">24 Nov 2025</p>
+  <div>
+      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;New paper! (<a href="https://arxiv.org/abs/2511.17078">link</a>)</p>
+  </div>
+</div>
+
+<div class="post-line">
+  <p class="line-date">1 Sep 2025</p>
+  <div>
+      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Starting MSc in computer science at UofT with <a href="https://koziarskilab.com/">Koziarski Lab!</a></p>
+  </div>
+</div>
+
+<div class="post-line">
   <p class="line-date">10 Jan 2025</p>
   <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Presented at <a href="https://jointmathematicsmeetings.org/jmm">JMM 2025</a></p>
+      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Presented at <a href="https://jointmathematicsmeetings.org/meetings/national/jmm2025/2314_program.html">JMM 2025</a></p>
   </div>
 </div>
 
