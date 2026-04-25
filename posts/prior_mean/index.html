@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en-us"
+  dir="ltr">
+
+  <head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width">
+
+
+
+<link rel="icon" type="image/ico" href="http://localhost:1313//favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313//favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313//favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="http://localhost:1313//android-chrome-192x192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="http://localhost:1313//apple-touch-icon.png">
+
+<meta name="description" content=""/>
+
+<title>
+    
+    What do you really mean? Revisiting the role of the prior mean | Walter Virany
+    
+</title>
+
+<link rel="canonical" href="http://localhost:1313/posts/prior_mean/"/>
+
+
+
+
+
+
+
+
+
+
+
+
+<link rel="stylesheet" href="/assets/combined.min.70663b98395cb46c50fa4dfa0b5a36b1136b531b6fed206fa9944c2cc27b3221.css" media="all">
+
+
+
+
+
+  </head>
+
+  
+
+  
+  
+  
+
+  <body class="light">
+
+    <div class="content">
+      <header>
+        
+
+<div class="header">
+
+    
+
+    <h1 class="header-title">Walter Virany</h1>
+    
+    
+    
+
+    <div class="flex">
+        
+
+        
+        
+      
+        <p class="small ">
+            <a href="/" >
+                /blog
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/me" >
+                /me
+            </a>
+        </p>
+        
+      
+        <p class="small ">
+            <a href="/why" >
+                /why?
+            </a>
+        </p>
+        
+        
+    </div>
+
+    
+
+</div>
+
+      </header>
+
+      <main class="main">
+        
+
+
+
+
+
+
+
+<div >
+
+  <div class="single-intro-container">
+
+    
+
+    <h1 class="single-title">What do you really mean? Revisiting the role of the prior mean</h1>
+    
+
+    
+
+    <p class="single-readtime">
+      
+      
+      
+      <time datetime="2026-04-25T00:00:00&#43;00:00">April 25, 2026</time>
+      
+
+      
+      &nbsp; · &nbsp;
+      13 min read
+      
+    </p>
+
+  </div>
+
+  
+
+  
+
+  
+
+  
+
+  <div class="single-content">
+    <p>I recently came across a paper from De Ath et al. (2020) evaluating different prior means for Gaussian processes (GPs) with some interesting implications for performance in Bayesian optimization (BO) [1]. Specifically, they looked at the behavior in BO under different choices of the constant prior mean parameter $c$, setting this equal to the mean, max, and min of the observed data. They also looked at several other non-constant means. However, they importantly did not consider the case in which we choose $c$ by optimizing the marginal log-likelihood (MLL) of the data, which is arguably the most common way of choosing GP hyperparameters.</p>
+<p>In this blog, I extend the results from De Ath et al. to also evaluate BO performance on several tasks when using the maximum likelihood estimate (MLE) for the prior mean. De Ath et al. also tested different choices of the prior mean on various &ldquo;real-world&rdquo; datasets, showing that the best choice of prior mean is very problem-dependent. Since I am primarily interested in the application of BO to molecular discovery, I also test different choices of the prior mean on various molecular optimization tasks. Finally, I try out an idea in which a low-fidelity oracle for binding affinity is used as the prior mean for a higher-fidelity oracle in an attempt to incorporate domain knowledge into the prior of the surrogate model.</p>
+<h2 id="the-prior-mean">The prior mean</h2>
+<p>The prior mean doesn&rsquo;t get much attention in the GP literature. This is typically supported by claims that the primary object determining the behavior of a GP is the kernel function. While I agree that choosing the kernel function is arguably the most important modeling decision when using GPs, I think it&rsquo;s still important to consider how the prior mean will affect predictions and consequently performance in BO.</p>
+<p>In particular, the prior mean determines the extrapolation of a GP. To see this, suppose we have some dataset of observations $\mathcal{D} = (\X, \y)$, and consider the form of the posterior mean:<sup id="fnref:1"><a href="#fn:1" class="footnote-ref" role="doc-noteref">1</a></sup>
+$$
+\mu_\mathcal{D}(\x) = \mu(\x) + K_\ast\T \left( K + \sigma_n^2 I\right)\inv (\y - \mathbf{m})
+$$
+When $K_\ast$ is <em>small</em>&mdash;i.e., when $\x$ and the previously observed data $\X$ have <em>low covariance</em>&mdash;the predictions revert to the prior mean $\mu(\x)$. In other words, the prior mean determines the <em>extrapolation</em> of the model. This suggests that the prior mean will have an important effect on the exploratory behavior in BO.</p>
+<h2 id="computing-the-prior-mean">Computing the prior mean</h2>
+<p>The form of the constant mean function is just</p>
+<p>$$
+\mu(\x) = c
+$$</p>
+<p>for any $\x$ in our design space $\mathcal{X}$.</p>
+<p>The authors of the original study state that typical packages implement a default value of $c$ as the mean of the training data observations $\y$. So the default value of $c$ for observations ${(\x_i, y_i)}_{i=1}^n$ would be</p>
+<p>$$
+c = \frac{1}{n}\sum_{i=1}^n y_i.
+$$</p>
+<p>However, this is not the value that&rsquo;s typically used. As a running example, consider the following dataset:<sup id="fnref:2"><a href="#fn:2" class="footnote-ref" role="doc-noteref">2</a></sup></p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>train_X = torch.tensor([0.1, 0.15, 0.75]).unsqueeze(-1)
+</span></span><span style="display:flex;"><span>train_y = torch.tensor([0.6, 0.6, 0.65]).unsqueeze(-1)
+</span></span></code></pre></div><div id="fig1" class="figure">
+   <img src="figures/dataset.png" alt="Figure 1" style="width:80%; margin-left:auto; margin-right:auto">
+</div>
+<p>We have two points which have the same output value $y = 0.6$, and one point with $y = 0.65$. Instantiating a <code>SingleTaskGP</code> model on this data gives the following:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#00f">from</span> botorch.models <span style="color:#00f">import</span> SingleTaskGP
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>model = SingleTaskGP(train_X, train_y)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>c = model.mean_module.constant
+</span></span><span style="display:flex;"><span>print(c)
+</span></span></code></pre></div><pre tabindex="0"><code>Parameter containing:
+tensor(0., requires_grad=True)
+</code></pre><p>The <code>SingleTaskGP</code> model automatically standardizes the output to have zero mean and unit variance:
+$$
+\bar{\y} = \frac{\y - \bar{\mu}}{\bar{\sigma}},
+$$
+where $\bar{\mu}$ and $\bar{\sigma}$ are the sample mean and standard deviation of the observations. In this space, the initial value for $c$ is given by
+$$
+\bar{c} = \frac{1}{n}\sum_{i=1}^n\bar{y}_i = 0.
+$$
+We can invert the transformation to get $c$ in the original output space:
+$$
+c = \bar{c} \cdot \bar{\sigma} + \bar{\mu}
+$$</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>print(model.outcome_transform.untransform(c)[0])
+</span></span></code></pre></div><pre tabindex="0"><code>tensor([[0.6167]], grad_fn=&lt;AddBackward0&gt;)
+</code></pre><p>This does match the mean of the observed data. However, if we train the model as is done in typical workflows, we get the following mean parameter:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#00f">import</span> gpytorch
+</span></span><span style="display:flex;"><span><span style="color:#00f">from</span> botorch.fit <span style="color:#00f">import</span> fit_gpytorch_mll
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>mll = gpytorch.mlls.ExactMarginalLogLikelihood(model.likelihood, model)
+</span></span><span style="display:flex;"><span>fit_gpytorch_mll(mll);
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>print(c)
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-plaintext" data-lang="plaintext"><span style="display:flex;"><span>Parameter containing:
+</span></span><span style="display:flex;"><span>tensor(0.3322, requires_grad=True)
+</span></span></code></pre></div><p>This is, of course, no longer equal to the (standardized) mean of the observed data. Instead, this is the MLE for $c$ which is achieved by optimizing the MLL.</p>
+<h2 id="optimizing-the-mll">Optimizing the MLL</h2>
+<p>The constant parameter in the <code>ConstantMean</code> module in GPyTorch (also used by <code>SingleTaskGP</code>) is a learnable hyperpameter as denoted by <code>requires_grad=True</code>. Thus, it is learned when we optimize the MLL by calling <code>fit_gpytorch_mll()</code>. But what is the maximum likelihood solution for $c$?</p>
+<p>We can write the likelihood of our data in terms of $c$ as</p>
+<p>$$
+p(\y \mid \X) = \Norm(\y \mid c\mathbf{1}, \bSigma)
+$$</p>
+<p>for some general covariance matrix $\bSigma$. Then, treatng other hyperparameters as fixed, we can write the MLL w.r.t. $c$ as</p>
+<p>$$
+\mathcal{L}(c) = -\frac{1}{2} \log \lvert \bSigma \rvert - \frac{1}{2} (\y - c\mathbf{1})\T\bSigma\inv(\y- c\mathbf{1}).
+$$</p>
+<p>We can find the MLE by taking the derivative and setting it equal to zero:</p>
+<p>$$
+\begin{align*}
+\frac{\partial \mathcal{L}}{\partial c} &amp;= \frac{\partial}{\partial c} \left( \y\T\bSigma\inv\y - 2c\mathbf{1}\bSigma\inv\y + c^2\mathbf{1}\T\bSigma\inv\mathbf{1} \right) \\[4pt]
+&amp;= -2 \mathbf{1}\T \bSigma\inv\y + 2c \mathbf{1}\T \bSigma\inv\mathbf{1}
+\end{align*}
+$$</p>
+<p>Thus, the MLE for $c$ is given by</p>
+<p>$$
+c = \frac{\mathbf{1}\T \bSigma\inv \y}{\mathbf{1}\T \bSigma\inv \mathbf{1}}.
+$$</p>
+<p>This is not the arithmetic mean of the observations $\y$. Instead, it is a weighted average where terms are weighted by their covariance with other data points. To see this, let $\bLambda = \bSigma\inv$ denote the precision matrix, with corresponding elements $\lambda_{ij}$. Then, we can write the MLE as
+$$
+c = \frac{\sum_{i,j}\lambda_{ij}(y_i + y_j)}{\sum_{i,j}\lambda_{i,j}}.
+$$
+This considers the sum between all pairs of points, weighted by their precision. When the covariance between two points $\x_i, \x_j$ is high, the corresponding element of the precision matrix $\lambda_{i, j}$ will be low. Thus, multiple points which are correlated according to the covariance matrix will contribute less to computing $c$ than points which are independent from other observations.</p>
+<p>Note that if the observations are independent, i.e., $\bSigma = \I$, then this is just the unweighted average. Also, note that we learn this parameter via gradient-based optimizers (e.g., Adam) rather than computing it in closed form, but since the loss with respect to $c$ in this case is convex, these optimizers have no trouble converging to the solution.</p>
+<p>Let&rsquo;s verify this matches the value in our model:</p>
+<div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ones = torch.ones_like(train_y)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#008000"># Compute prior covariance</span>
+</span></span><span style="display:flex;"><span>K_prior = model.covar_module(train_X).evaluate()
+</span></span><span style="display:flex;"><span>noise_covar = model.likelihood.noise
+</span></span><span style="display:flex;"><span>Sigma = K_prior + noise_covar * torch.eye(len(train_X))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#008000"># Compute precision matrix</span>
+</span></span><span style="display:flex;"><span>precision = torch.linalg.inv(Sigma)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#008000"># Compute constant mean parameter</span>
+</span></span><span style="display:flex;"><span>c = ((ones.T @ precision @ y) / precision.sum()).item()
+</span></span><span style="display:flex;"><span>print(round(c, 4))
+</span></span></code></pre></div><pre tabindex="0"><code>0.6263
+</code></pre><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>print(model.outcome_transform.untransform(model.mean_module.constant)[0])
+</span></span></code></pre></div><pre tabindex="0"><code>tensor([[0.6263]], grad_fn=&lt;AddBackward0&gt;)
+</code></pre><p>These appear to match!</p>
+<p>Now let&rsquo;s compare a GP where $c$ is equal to the MLE vs. one with $c$ equal to the observation mean:</p>
+<div style="display: flex; gap: 16px; justify-content: center;">
+  <img src="figures/simple_comparison_1.png" style="width: 48%;">
+  <img src="figures/simple_comparison_2.png" style="width: 48%;">
+</div>
+<p>The figure on the left shows the two posterior GPs fit on our original dataset. The blue curve shows the posterior predictive distribution of the GP whose prior mean is the MLE, while the orange curve shows the GP whose prior mean is the observation mean. The mean values are shown as horizontal dashed lines. The lengthscale and noise variance hyperparameters of each model were jointly fit via MLL optimization. The models agree for points in the domain with high correlation to the observed data, and diverge in regions far from existing observations.</p>
+<p>The figure on the right shows the same setup on an alternate dataset. We can see that the observation mean is biased toward the clustered points, while the MLE solution considers the correlation between similar observations. In the following section, I&rsquo;ll explore how these differences affect performance in BO.</p>
+<h2 id="revisiting-the-role-of-the-prior-mean-in-bayesian-optimization">Revisiting the role of the prior mean in Bayesian optimization</h2>
+<p>The authors of the original study showed a figure which I found to be somewhat surprising: choosing different values of $c$ results in very different forms of the expected improvement (EI) acquisition function. Importantly, however, they did not include the MLE in their set of prior means, which I show in the following figure:</p>
+<div id="fig3" class="figure">
+   <img src="figures/four_means_comparison.png" alt="Figure 3" style="width:110%; margin-left:auto; margin-right:auto">
+</div>
+<p>The figure shows the posterior predictive distribution for a GP with the constant parameter set to four different values: the mean, max, and min of the observed data, as well as the MLE. The second row shows the corresponding acquisition values computed by EI, and the red vertical dashed lines show the maximizer of the acquisition function&mdash;the next point to be queried during BO.</p>
+<p>In regions close to the training data, EI looks similar in each case. However, away from previous observations, EI is entirely determined by the prior mean, resulting in different choices of the next query.</p>
+<p><strong>This has an important implication for BO:</strong> as the policy gathers data and tends to exploit promising modes of the objective function, the observations will be biased toward high objective values. This is the whole premise of BO&mdash;we hope that it performs better than randomly acquiring data points, so ideally the mean of the acquired data should be higher than the true mean of the objective function. Thus, the observation mean will be biased toward high values.</p>
+<h2 id="comparing-prior-means">Comparing prior means</h2>
+<p>I compare the four different prior means shown in several settings. First, I  evaluate the four settings on eight different synthetic functions with up to 10 dimensions following the experimental setup from De Ath et al. Then, I also evaluate each mean function when optimizing for various molecular properties: QED, AutoDock Vina, and MM/GBSA scores. I primarily investigate the behavior when using EI as the acquisition function, but I also include additional results for UCB and Thompson sampling for the synthetic functions in <a href="#additional-results">Additional Results</a>.</p>
+<h3 id="synthetic-test-functions">Synthetic test functions</h3>
+<p>I compare each prior mean on eight synthetic test functions: Branin and Goldstein-Price ($d=2$), Shekel ($d=4$), Ackley ($d=5$), Hartmann ($d=6$), and Michalewicz, Rosenbrock, and Styblinski-Tang ($d=10$). The following figure shows the simple regret using EI across all eight test functions. The dark line and shaded regions correspond to the median and inner-quartile ranges across 50 random seeds.</p>
+<div id="fig4" class="figure">
+   <img src="figures/synthetic_ei.png" alt="Figure 4" style="width:100%; margin-left:auto; margin-right:auto">
+</div>
+<p>The authors of the original study noted that the observation minimum typically outperformed the observation mean in high dimensions, which was attributed to the non-exploratory behavior of this prior mean. This could be due to the fact that, as we acquire more data, the observation mean becomes biased toward high values, and places a large prior on unseen regions, resulting in more exploratory behavior. This can be a problem in high-dimensional domains where the search space grows exponentially with respect to the dimension and efficient exploration becomes infeasible.</p>
+<p>Interestingly, the MLE solution does not appear to suffer from this problem, consistently matching or outperforming the observation minimum across all objectives. This suggests that it is a reasonable out-of-the-box choice for the mean when little or no prior knowledge about the objective function is known.</p>
+<h3 id="molecular-optimization">Molecular optimization</h3>
+<p>In this section, I compare the four choices of prior mean on three molecular optimization objectives: QED, AutoDock Vina docking scores, and MM/GBSA-based binding affinity predictions. I am using a dataset from Andersen et al. (2025) which contains roughly 60,000 analogs of experimentally validated Mcl-1 inhibitors. I record the simple regret and retrieval rate&mdash;the proporiton of the top-1% of the dataset discovered&mdash;over 500 iterations, averaged across 5 random seeds.</p>
+<div id="fig5" class="figure">
+   <img src="figures/qed.png" alt="Figure 5a" style="width:100%; margin-left:auto; margin-right:auto">
+   <br>
+   <img src="figures/vina.png" alt="Figure 5b" style="width:100%; margin-left:auto; margin-right:auto">
+   <br>
+   <img src="figures/mmgbsa.png" alt="Figure 5c" style="width:100%; margin-left:auto; margin-right:auto">
+</div>
+<p>Similar to the experiments on synthetic test functions, it appears that there is little difference between the observation min and MLE in terms of simple regret, with the observation mean and max tending to perform slightly worse in earlier stages, yet eventually catching up. However, there don’t appear to be any statistically significant differents between the methods, as all IQRs tend to overlap.</p>
+<p>Interestingly, these same trends don&rsquo;t appear to translate consistently to the retrieval rate, which is arguably a better-suited metric for molecular discovery. In the case of QED, the observation mean and MLE outperform the alternatives, although this doesn&rsquo;t appear to translate to Vina and MM/GBSA scores, in which there are no clear winners. Overall, the MLE once again tends to perform the best or as well as the best-performing method in each setting, further supporting that this is a good out-of-the-box choice.</p>
+<h2 id="what-about-other-prior-means">What about other prior means?</h2>
+<p>So far I have focused on <em>constant</em> prior means, and different ways of computing the constant parameter $c$. Of course, we are not restricted to modeling with constant means. Indeed, the authors of the original study test several other forms of the mean function, including linear and quadratic functions, as well as random forests and RBF networks. However, these methods did not seem to provide clear advantages in the original study.</p>
+<p>I am typically skeptical of the ability of ML-based methods to accurately generalize to regions in the domain with little data, which is exactly the role of the prior mean. As Garnett says, &ldquo;extrapolation without strong prior knowledge can be a dangerous business&rdquo; [2]. However, it may be possible to incorporate such domain knowledge to improve OOD generalization. For example, in optimizing a physics-based objective, perhaps we can use a first-order approximation as the prior mean.</p>
+<p>To this end, I attempt to improve the performance of optimizing binding affinity when using a low-fidelity approximation as the prior mean. Molecular dynamics-based methods provide a high-fidelity proxy for binding affinity compared to docking-based methods. Thus, perhaps we can use AutoDock Vina scores as the prior mean when optimizing MM/GBSA.  Ideally, this should speed up the discovery of high-scoring candidates according to MM/GBSA. I test this choice of prior mean against a constant prior mean given by the MLE. The results are shown below:</p>
+<div id="fig6" class="figure">
+   <img src="figures/constant_vs_docking.png" alt="Figure 6" style="width:100%; margin-left:auto; margin-right:auto">
+</div>
+<p>Interestingly, the constant prior mean is actually more effective in identifying top-1% candidates in the dataset, achieving approximately 10% retrieval rate on average, compared to the docking prior mean which achieves roughly 5%. Interestingly, the docking prior mean appears to achieve a better simple regret at 500 iterations, suggesting that it could be more effective in identifying the global maximum, despite not achieiving good exploration compared to the constant prior mean. However, the differences in terms of simple regret do not appear to be statistically significant.</p>
+<p>I also perform t-SNE on the Morgan fingerprints of the dataset to understand the objective landscapes and exploratory behavior of each model. The figure below shows the resulting t-SNE projection of the dataset, colored by both MM/GBSA scores (left) and Vina scores (right). The points are binned based on the percentile of their scores.</p>
+<div id="fig7" class="figure">
+   <img src="figures/mmgbsa_vina_tsne.png" alt="Figure 7" style="width:100%; margin-left:auto; margin-right:auto">
+</div>
+<p>Interestingly, it appears that high MM/GBSA scores are spread out among different clusters of candidates, while high Vina scores appear to be restricted to a few distinct clusters. This suggests that MM/GBSA is inherently multi-modal in fingerprint space, providing a more complex and difficult objective landscape. This agrees with the results in the <a href="#molecular-optimization">Molecular optimization</a> section, where we were able to achieve a higher retrieval rate in terms of Vina scores compared to MM/GBSA in 500 iterations.</p>
+<p>Additionally, the figure below shows the candidates selected during BO for a single seed when using the constant vs. docking prior means. Darker points correspond to those selected at later iterations of BO.</p>
+<div id="fig8" class="figure">
+   <img src="figures/bo_obs_tsne.png" alt="Figure 8" style="width:100%; margin-left:auto; margin-right:auto">
+</div>
+<p>It&rsquo;s interesting to consider how the docking prior mean model updates its belief upon making new observations. For example, in regions with high Vina scores, yet low MM/GBSA scores, the model makes relatively few observations. Moreover, the model learns to explore regions with low Vina scores, yet high MM/GBSA scores. This is an important capability and addresses a concern in typical filtering-based approaches in drug discovery where we only candidates which appear promising according to low-fidelity oracles. This introduces a &ldquo;false negatives&rdquo; problem, in which we skip candidates which in reality show promise according to more accurate experiments.</p>
+<p>Despite this method being outperformed by the constant prior mean, the success of any method tends to be problem-specific, and there could be certain targets / datasets for which docking scores provide a meaningful prior for higher-fidelity binding affinity approximations. Moreover, this could provide an interesting avenue for multi-fidelity BO, which I plan to further explore in the future.</p>
+<p>Thanks for reading!</p>
+<h2 id="references">References</h2>
+<ol>
+<li>
+<p>George De Ath, Jonathan E. Fieldsend, and Richard M. Everson. “What do you Mean? The Role of the Mean Function in Bayesian Optimisation”. Proceedings of the 2020 Genetic and Evolutionary Computation Conference Companion. 2020</p>
+</li>
+<li>
+<p>Roman Garnett. Bayesian Optimization. Cambridge University Press, 2023.</p>
+</li>
+</ol>
+<h2 id="additional-results">Additional results</h2>
+<p>Here I also include the results for UCB and Thompson sampling on the synthetic test functions. Similar trends can be observed when using EI.</p>
+<h4 id="ucb">UCB</h4>
+<div id="fig9" class="figure">
+   <img src="figures/synthetic_ucb.png" alt="Figure 9" style="width:100%; margin-left:auto; margin-right:auto">
+</div>
+<br>
+<h4 id="thompson-sampling">Thompson sampling</h4>
+<div id="fig10" class="figure">
+   <img src="figures/synthetic_ts.png" alt="Figure 10" style="width:100%; margin-left:auto; margin-right:auto">
+</div>
+<div class="footnotes" role="doc-endnotes">
+<hr>
+<ol>
+<li id="fn:1">
+<p>If this looks unfamiliar, I derived it in a <a href="https://wvirany.github.io/posts/gp_intro/">previous post</a>!&#160;<a href="#fnref:1" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+<li id="fn:2">
+<p>This is meant to mimic the example dataset from the paper; however, I treat the problem as <em>maximization</em>.&#160;<a href="#fnref:2" class="footnote-backref" role="doc-backlink">&#x21a9;&#xfe0e;</a></p>
+</li>
+</ol>
+</div>
+
+    
+    <script src="https://giscus.app/client.js"
+        data-repo="wvirany/blog"
+        data-repo-id="R_kgDOMs9-zQ"
+        data-category=""
+        data-category-id="DIC_kwDOMs9-zc4CrdIu"
+        data-mapping="pathname"
+        data-strict="0"
+        data-reactions-enabled="1"
+        data-emit-metadata="0"
+        data-input-position="top"
+        data-theme="noborder_light"
+        data-lang="en"
+        data-loading="lazy"
+        crossorigin="anonymous"
+        async>
+</script>
+
+    
+  </div>
+
+  
+
+  
+
+  
+
+  
+  <div class="back-to-top">
+    <a href="#top">
+      back to top
+    </a>
+  </div>
+  
+
+</div>
+
+
+      </main>
+    </div>
+
+    <footer>
+      
+<style>
+  .katex a {
+    text-decoration: none;
+    color: inherit;
+  }
+  .katex a:hover {
+    text-decoration: none;
+  }
+</style>
+
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.css">
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.0/dist/katex.min.js"></script>
+
+<script defer
+  src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body);"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    renderMathInElement(document.body, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false }
+      ],
+      trust: (context) => ['\\htmlId', '\\href'].includes(context.command),
+      macros: {
+        "\\eqref": "\\href{###1}{(\\text{#1})}",
+        "\\ref": "\\href{###1}{\\text{#1}}",
+        "\\label": "\\htmlId{#1}{}",
+        "\\R": "\\mathbb{R}",
+        "\\bR": "\\mathbf{R}",
+        "\\C": "\\mathbb{C}",
+        "\\Z": "\\mathbb{Z}",
+        "\\N": "\\mathbb{N}",
+        "\\Q": "\\mathbb{Q}",
+        "\\E": "\\mathbb{E}",
+        "\\cD": "\\mathcal{D}",
+        "\\var": "\\operatorname{Var}",
+        "\\cov":"\\operatorname{cov}",
+        "\\x": "\\mathbf{x}",
+        "\\X": "\\mathbf{X}",
+        "\\w": "\\mathbf{w}",
+        "\\W": "\\mathbf{W}",
+        "\\y": "\\mathbf{y}",
+        "\\z": "\\mathbf{z}",
+        "\\Z": "\\mathbf{Z}",
+        "\\u": "\\mathbf{u}",
+        "\\U": "\\mathbf{U}",
+        "\\V": "\\mathbf{V}",
+        "\\I": "\\mathbf{I}",
+        "\\zv": "\\mathbf{0}",
+        "\\A": "\\mathbf{A}",
+        "\\a": "\\mathbf{a}",
+        "\\B": "\\mathbf{B}",
+        "\\b": "\\mathbf{b}",
+        "\\c": "\\mathbf{c}",
+        "\\D": "\\mathbf{D}",
+        "\\f": "\\mathbf{f}",
+        "\\M": "\\mathbf{M}",
+        "\\m": "\\mathbf{m}",
+        "\\bC": "\\mathbf{C}",
+        "\\J": "\\mathbf{J}",
+        "\\K": "\\mathbf{K}",
+        "\\L": "\\mathbf{L}",
+        "\\bS": "\\mathbf{S}",
+        "\\bmu": "\\boldsymbol{\\mu}",
+        "\\bphi": "\\boldsymbol{\\phi}",
+        "\\bepsilon": "\\boldsymbol{\\epsilon}",
+        "\\bSigma": "\\boldsymbol{\\Sigma}",
+        "\\bLambda": "\\boldsymbol{\\Lambda}",
+        "\\bPhi": "\\boldsymbol{\\Phi}",
+        "\\btheta": "\\boldsymbol{\\theta}",
+        "\\zero": "\\mathbf{0}",
+        "\\one": "\\mathbf{1}",
+        "\\T": "^{\\top}",
+        "\\p": "^\\prime",
+        "\\inv": "^{-1}",
+        "\\ij": "_{ij}",
+        "\\Norm": "\\mathcal{N}",
+        "\\GP": "\\mathcal{GP}",
+        "\\bmid": "\\,\\Big|\\,",
+        "\\gam": "\\text{Gamma}",
+        "\\nll": "\\text{NLL}",
+        "\\argmin": "\\underset{#1}{\\operatorname{argmin}}",
+        "\\argmax": "\\underset{#1}{\\operatorname{argmax}}\\;",
+        "\\diag": "\\operatorname{diag}",
+        "\\tr": "\\operatorname{tr}",
+        "\\pbmu": "\\frac{\\partial}{\\partial \\boldsymbol{\\mu}}",
+        "\\pSigma": "\\frac{\\partial}{\\partial \\Sigma}",
+        "\\pbx": "\\frac{\\partial}{\\partial \\mathbf{x}}",
+        "\\px": "\\frac{\\partial}{\\partial x}",
+        "\\pbA": "\\frac{\\partial}{\\partial \\mathbf{A}}",
+        "\\ml": "_\\text{ML}",
+      }
+    });
+  });
+</script>
+
+    </footer>
+
+  </body>
+
+  <script>
+
+  function isAuto() {
+    return document.body.classList.contains("auto");
+  }
+
+  function setTheme() {
+    if (!isAuto()) {
+      return
+    }
+
+    document.body.classList.remove("auto");
+    let cls = "light";
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      cls = "dark";
+    }
+
+    document.body.classList.add(cls);
+  }
+
+  function invertBody() {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+  }
+
+  if (isAuto()) {
+    window.matchMedia('(prefers-color-scheme: dark)').addListener(invertBody);
+  }
+
+  setTheme();
+
+</script>
+
+
+<script>
+  
+  function updateFigureNumbers() {
+
+      const figRefs = document.querySelectorAll('.fig-ref');
+      figRefs.forEach(ref => {
+          const figId = ref.getAttribute('href').slice(1);
+          const figElement = document.getElementById(figId);
+          if (figElement) {
+              const figIndex = Array.from(figures).indexOf(figElement) + 1;
+              ref.textContent = `Figure ${figIndex}`;
+          }
+      });
+  }
+
+  
+  window.addEventListener('load', updateFigureNumbers);
+</script>
+
+
+
+</html>
