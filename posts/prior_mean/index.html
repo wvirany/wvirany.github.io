@@ -18,7 +18,7 @@
 
 <title>
     
-    What do you really mean? Revisiting the role of the prior mean | Walter Virany
+    Revisiting the role of the prior mean in Bayesian optimization | Walter Virany
     
 </title>
 
@@ -114,7 +114,7 @@
 
     
 
-    <h1 class="single-title">What do you really mean? Revisiting the role of the prior mean</h1>
+    <h1 class="single-title">Revisiting the role of the prior mean in Bayesian optimization</h1>
     
 
     
@@ -128,7 +128,7 @@
 
       
       &nbsp; · &nbsp;
-      13 min read
+      14 min read
       
     </p>
 
@@ -227,7 +227,7 @@ $$</p>
 $$
 c = \frac{\sum_{i,j}\lambda_{ij}(y_i + y_j)}{\sum_{i,j}\lambda_{i,j}}.
 $$
-This considers the sum between all pairs of points, weighted by their precision. When the covariance between two points $\x_i, \x_j$ is high, the corresponding element of the precision matrix $\lambda_{i, j}$ will be low. Thus, multiple points which are correlated according to the covariance matrix will contribute less to computing $c$ than points which are independent from other observations.</p>
+This considers the sum between all pairs of points, weighted by their precision. When the covariance between two points $y_i, y_j$ is high, the corresponding element of the precision matrix $\lambda_{i, j}$ will be low. Thus, multiple points which are correlated according to the covariance matrix will contribute less to computing $c$ than points which are independent from other observations.</p>
 <p>Note that if the observations are independent, i.e., $\bSigma = \I$, then this is just the unweighted average. Also, note that we learn this parameter via gradient-based optimizers (e.g., Adam) rather than computing it in closed form, but since the loss with respect to $c$ in this case is convex, these optimizers have no trouble converging to the solution.</p>
 <p>Let&rsquo;s verify this matches the value in our model:</p>
 <div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>ones = torch.ones_like(train_y)
@@ -246,22 +246,26 @@ This considers the sum between all pairs of points, weighted by their precision.
 </span></span></code></pre></div><pre tabindex="0"><code>0.6263
 </code></pre><div class="highlight"><pre tabindex="0" style="background-color:#fff;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span>print(model.outcome_transform.untransform(model.mean_module.constant)[0])
 </span></span></code></pre></div><pre tabindex="0"><code>tensor([[0.6263]], grad_fn=&lt;AddBackward0&gt;)
-</code></pre><p>These appear to match!</p>
-<p>Now let&rsquo;s compare a GP where $c$ is equal to the MLE vs. one with $c$ equal to the observation mean:</p>
+</code></pre><p>These appear to match! Now let&rsquo;s compare a GP where $c$ is equal to the MLE vs. the observation mean:</p>
 <div style="display: flex; gap: 16px; justify-content: center;">
   <img src="figures/simple_comparison_1.png" style="width: 48%;">
   <img src="figures/simple_comparison_2.png" style="width: 48%;">
 </div>
 <p>The figure on the left shows the two posterior GPs fit on our original dataset. The blue curve shows the posterior predictive distribution of the GP whose prior mean is the MLE, while the orange curve shows the GP whose prior mean is the observation mean. The mean values are shown as horizontal dashed lines. The lengthscale and noise variance hyperparameters of each model were jointly fit via MLL optimization. The models agree for points in the domain with high correlation to the observed data, and diverge in regions far from existing observations.</p>
-<p>The figure on the right shows the same setup on an alternate dataset. We can see that the observation mean is biased toward the clustered points, while the MLE solution considers the correlation between similar observations. In the following section, I&rsquo;ll explore how these differences affect performance in BO.</p>
+<p>The figure on the right shows the same setup on an alternate dataset. We can see that the observation mean is biased toward the clustered points, while the MLE solution considers the correlation between similar observations.</p>
+<p><strong>This has an important implication for BO:</strong> as the policy gathers data and tends to exploit promising modes of the objective function, the observations will be biased toward high objective values. This is the whole premise of BO&mdash;we hope that it performs better than randomly acquiring data points, so ideally the mean of the acquired data should be higher than the true mean of the objective function. Thus, the observation mean will be biased toward high values. In the following section, I&rsquo;ll explore these differences.</p>
 <h2 id="revisiting-the-role-of-the-prior-mean-in-bayesian-optimization">Revisiting the role of the prior mean in Bayesian optimization</h2>
-<p>The authors of the original study showed a figure which I found to be somewhat surprising: choosing different values of $c$ results in very different forms of the expected improvement (EI) acquisition function. Importantly, however, they did not include the MLE in their set of prior means, which I show in the following figure:</p>
+<p>The authors of the original study showed a figure which I found to be somewhat surprising: choosing different values of $c$ results in very different forms of the expected improvement (EI) acquisition function. Importantly, however, they did not include the MLE in their set of prior means; the following figure is adapted from their work to include the MLE:</p>
 <div id="fig3" class="figure">
    <img src="figures/four_means_comparison.png" alt="Figure 3" style="width:110%; margin-left:auto; margin-right:auto">
 </div>
-<p>The figure shows the posterior predictive distribution for a GP with the constant parameter set to four different values: the mean, max, and min of the observed data, as well as the MLE. The second row shows the corresponding acquisition values computed by EI, and the red vertical dashed lines show the maximizer of the acquisition function&mdash;the next point to be queried during BO.</p>
-<p>In regions close to the training data, EI looks similar in each case. However, away from previous observations, EI is entirely determined by the prior mean, resulting in different choices of the next query.</p>
-<p><strong>This has an important implication for BO:</strong> as the policy gathers data and tends to exploit promising modes of the objective function, the observations will be biased toward high objective values. This is the whole premise of BO&mdash;we hope that it performs better than randomly acquiring data points, so ideally the mean of the acquired data should be higher than the true mean of the objective function. Thus, the observation mean will be biased toward high values.</p>
+<p>The figure shows the posterior predictive distribution for GPs fit on the same data corresponding to four different prior means: the mean, max, and min of the observed data, as well as the MLE. The second row shows the corresponding acquisition values computed by EI, and the red vertical dashed lines show the maximizer of the acquisition function&mdash;the next point to be queried during BO.</p>
+<p>In regions close to the training data, EI looks similar in each case. However, away from previous observations, EI is entirely determined by the prior mean, resulting in different choices of the next query. It&rsquo;s interesting to consider how each setting encodes various preferences:</p>
+<ul>
+<li>when $c = \min\y$, the acquisition function is pessimistic, assigning low EI to points far from previous observations</li>
+<li>when $c = \max \y$, the acquisition function is more optimistic, treating unseen points favorably</li>
+</ul>
+<p>Furthermore, when $c$ is the mean of $\y$, then over time it should approach the maximum, potentially leading to unwanted exploratory behavior.</p>
 <h2 id="comparing-prior-means">Comparing prior means</h2>
 <p>I compare the four different prior means shown in several settings. First, I  evaluate the four settings on eight different synthetic functions with up to 10 dimensions following the experimental setup from De Ath et al. Then, I also evaluate each mean function when optimizing for various molecular properties: QED, AutoDock Vina, and MM/GBSA scores. I primarily investigate the behavior when using EI as the acquisition function, but I also include additional results for UCB and Thompson sampling for the synthetic functions in <a href="#additional-results">Additional Results</a>.</p>
 <h3 id="synthetic-test-functions">Synthetic test functions</h3>
@@ -289,12 +293,12 @@ This considers the sum between all pairs of points, weighted by their precision.
 <div id="fig6" class="figure">
    <img src="figures/constant_vs_docking.png" alt="Figure 6" style="width:100%; margin-left:auto; margin-right:auto">
 </div>
-<p>Interestingly, the constant prior mean is actually more effective in identifying top-1% candidates in the dataset, achieving approximately 10% retrieval rate on average, compared to the docking prior mean which achieves roughly 5%. Interestingly, the docking prior mean appears to achieve a better simple regret at 500 iterations, suggesting that it could be more effective in identifying the global maximum, despite not achieiving good exploration compared to the constant prior mean. However, the differences in terms of simple regret do not appear to be statistically significant.</p>
+<p>Interestingly, the constant prior mean is actually more effective in identifying top-1% candidates in the dataset, achieving approximately 10% retrieval rate on average, compared to the docking prior mean which achieves roughly 5%. Conversely, the docking prior mean appears to achieve a better simple regret at 500 iterations, suggesting that it could be more effective in identifying the global maximum, despite not achieiving good exploration compared to the constant prior mean. However, the differences in terms of simple regret do not appear to be statistically significant.</p>
 <p>I also perform t-SNE on the Morgan fingerprints of the dataset to understand the objective landscapes and exploratory behavior of each model. The figure below shows the resulting t-SNE projection of the dataset, colored by both MM/GBSA scores (left) and Vina scores (right). The points are binned based on the percentile of their scores.</p>
 <div id="fig7" class="figure">
    <img src="figures/mmgbsa_vina_tsne.png" alt="Figure 7" style="width:100%; margin-left:auto; margin-right:auto">
 </div>
-<p>Interestingly, it appears that high MM/GBSA scores are spread out among different clusters of candidates, while high Vina scores appear to be restricted to a few distinct clusters. This suggests that MM/GBSA is inherently multi-modal in fingerprint space, providing a more complex and difficult objective landscape. This agrees with the results in the <a href="#molecular-optimization">Molecular optimization</a> section, where we were able to achieve a higher retrieval rate in terms of Vina scores compared to MM/GBSA in 500 iterations.</p>
+<p>It appears that high MM/GBSA scores are spread out among different clusters of candidates, while high Vina scores appear to be restricted to a few distinct clusters. This suggests that MM/GBSA is relatively more multi-modal in fingerprint space than Vina, providing a more complex and difficult objective landscape. This agrees with the results in the <a href="#molecular-optimization">Molecular optimization</a> section, where we were able to achieve a higher retrieval rate in terms of Vina scores compared to MM/GBSA in 500 iterations.</p>
 <p>Additionally, the figure below shows the candidates selected during BO for a single seed when using the constant vs. docking prior means. Darker points correspond to those selected at later iterations of BO.</p>
 <div id="fig8" class="figure">
    <img src="figures/bo_obs_tsne.png" alt="Figure 8" style="width:100%; margin-left:auto; margin-right:auto">
