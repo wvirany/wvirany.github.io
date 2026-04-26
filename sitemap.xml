@@ -23,9 +23,13 @@
     <loc>http://localhost:1313/posts/microbiome/</loc>
     <lastmod>2023-12-14T00:00:00+00:00</lastmod>
   </url><url>
+    <loc>http://localhost:1313/resources/blogs/</loc>
+  </url><url>
     <loc>http://localhost:1313/me/</loc>
   </url><url>
     <loc>http://localhost:1313/naive_bayes/</loc>
+  </url><url>
+    <loc>http://localhost:1313/resources/</loc>
   </url><url>
     <loc>http://localhost:1313/tags/</loc>
   </url><url>

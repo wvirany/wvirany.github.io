@@ -58,11 +58,18 @@
       <description>First, let&amp;rsquo;s establish the Naive Bayes classification problem.&#xA;Supppose we are given a dataset of $n$ iid observations $\cD = \{(\x^{(i)}, y_i)\}_{i=1}^n$, where each $\x^{(i)}$ is some $d$-dimensional input vector and $y_i \in \{1, 2, \ldots, K\}$ is the corresponding class label. Given a new input $\x$, the goal of classification is to correctly assign $\x$ to one of $K$ classes.&#xA;Let&amp;rsquo;s distinguish between two approaches to classification: discriminative vs. generative modeling.</description>
     </item>
     <item>
+      <title>Other great blogs</title>
+      <link>http://localhost:1313/resources/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/resources/</guid>
+      <description>Distill&#xA;Lil&amp;rsquo;Log&#xA;Matt Might&#xA;Practical Cheminformatics&#xA;Oxford Protein Informatics Group&#xA;Terence Tao</description>
+    </item>
+    <item>
       <title>Why the blog?</title>
       <link>http://localhost:1313/why/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/why/</guid>
-      <description>I initially created an academic page to host a portfolio where I could show off my projects to potential employers. However, it quickly turned into a small passion for writing about the things I&amp;rsquo;m working on. Now, I enjoy maintaining this blog for several reasons:&#xA;First, I often find myself looking for resources which dumb down complicated research topics or offer helpful career advice. I have benefitted substantially from other academic blogs on the internet, so I maintain this blog in an attempt to contribute to that community1.</description>
+      <description>I initially created an academic page to host a portfolio where I could show off my projects to potential employers. However, it quickly turned into a small passion for writing about the things I&amp;rsquo;m working on. Now, I enjoy maintaining this blog for several reasons:&#xA;First, I have benefitted substantially from other academic blogs on the internet, so I maintain this blog in an attempt to contribute to the research community.</description>
     </item>
   </channel>
 </rss>
