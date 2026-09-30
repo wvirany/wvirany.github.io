@@ -176,6 +176,43 @@
     }
 }
 
+.updates-more {
+    border: none;
+    border-radius: 0;
+    padding: 0;
+    margin: 0 0 2em;
+}
+
+.updates-more summary {
+    display: flex;
+    align-items: baseline;
+    font-weight: normal;
+    opacity: 0.65;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+    border-bottom: none;
+    border-radius: 0;
+}
+
+.updates-more summary:hover { opacity: 1; }
+
+.updates-more[open] summary {
+    border-bottom: none;
+    margin-bottom: .5rem;
+}
+
+.updates-more summary::before {
+    content: "▸";
+    margin-right: 0.4em;
+    font-size: 1.2em;
+}
+
+.updates-more[open] summary::before { content: "▾"; }
+
+.line-title a { text-decoration: none; }
+.line-title a:hover { text-decoration: underline; }
+
 </style>
 
 </head>
@@ -186,9 +223,9 @@
 
 <div class="bio-container">
   <div>
-    I'm currently pursuing an MSc in computer science at the University of Toronto under the supervision of Dr. Michał Koziarski and Dr. Mike Brudno.
-    My interests lie broadly in machine learning, statistics, and optimization, with applications in science.
-    In particular, I am currently focused on developing machine learning methods for drug discovery and precision medicine.
+    I'm a PhD student in computer science at the University of Toronto under the supervision of Dr. Michał Koziarski and Dr. Mike Brudno.
+    My interests lie broadly in probabilistic machine learning and algorithmic decision-making with applications in science.
+    In particular, I am currently focused on Bayesian optimization for drug discovery.
     <br><br>
     Before that, I received a B.S. in applied mathematics with minors in computer science and physics from the University of Colorado Boulder.
   </div>
@@ -239,53 +276,71 @@
 <h2>Updates</h2>
 
 <div class="post-line">
-  <p class="line-date">24 Nov 2025</p>
+    <p class="line-date">Sep 2026</p>
+    <div>
+        <p class="line-title">[New paper!] <span class="paper-title">"Hit Expansion via Localized Exploration of Chemical Space"</span> accepted at NeurIPS 2026</p>
+    </div>
+</div>
+
+<div class="post-line">
+    <p class="line-date">Aug 2026</p>
+    <div>
+        <p class="line-title">Awarded the Queen Elizabeth II Graduate Scholarship in Science and Technology (QEII-GSST)</p>
+    </div>
+</div>
+
+<div class="post-line">
+    <p class="line-date">Nov 2025</p>
+    <div>
+        <p class="line-title">[New paper!] <a href="https://arxiv.org/abs/2511.17078"><span class="paper-title">"Hash Collisions in Molecular Fingerprints: Effects on Molecular Property Prediction and Bayesian Optimization"</span></a> accepted at NeurIPS 2025 AI4Science workshop</p>
+    </div>
+</div>
+
+<div class="post-line">
+  <p class="line-date">Sep 2025</p>
   <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;New paper! (<a href="https://arxiv.org/abs/2511.17078">link</a>)</p>
+      <p class="line-title">Starting MSc in computer science at UofT with <a href="https://koziarskilab.com/">Koziarski Lab!</a></p>
   </div>
 </div>
 
 <div class="post-line">
-  <p class="line-date">1 Sep 2025</p>
+  <p class="line-date">Jan 2025</p>
   <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Starting MSc in computer science at UofT with <a href="https://koziarskilab.com/">Koziarski Lab!</a></p>
+      <p class="line-title">Presented at <a href="https://jointmathematicsmeetings.org/meetings/national/jmm2025/2314_program.html">JMM 2025</a></p>
   </div>
 </div>
 
-<div class="post-line">
-  <p class="line-date">10 Jan 2025</p>
-  <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Presented at <a href="https://jointmathematicsmeetings.org/meetings/national/jmm2025/2314_program.html">JMM 2025</a></p>
-  </div>
-</div>
+<details class="updates-more">
+  <summary>Old</summary>
 
-<div class="post-line">
-  <p class="line-date">15 Oct 2024</p>
-  <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Starting a research internship at <a href="https://mila.quebec/en">Mila</a></p>
+  <div class="post-line">
+    <p class="line-date">Oct 2024</p>
+    <div>
+        <p class="line-title">Starting a research internship at <a href="https://mila.quebec/en">Mila</a></p>
+    </div>
   </div>
-</div>
 
-<div class="post-line">
-  <p class="line-date">23 Jun 2024</p>
-  <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Participating in <a href="https://www.ipam.ucla.edu/programs/student-research-programs/research-in-industrial-projects-for-students-rips-2024-los-angeles/">RIPS</a> at <a href="https://www.ipam.ucla.edu/">IPAM</a> for Summer 2024</p>
+  <div class="post-line">
+    <p class="line-date">Jun 2024</p>
+    <div>
+        <p class="line-title">Participating in <a href="https://www.ipam.ucla.edu/programs/student-research-programs/research-in-industrial-projects-for-students-rips-2024-los-angeles/">RIPS</a> at <a href="https://www.ipam.ucla.edu/">IPAM</a> for Summer 2024</p>
+    </div>
   </div>
-</div>
 
-<div class="post-line">
-  <p class="line-date">9 May 2024</p>
-  <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Graduated from CU Boulder!</p>
+  <div class="post-line">
+    <p class="line-date">May 2024</p>
+    <div>
+        <p class="line-title">Graduated from CU Boulder!</p>
+    </div>
   </div>
-</div>
 
-<div class="post-line">
-  <p class="line-date">16 Nov 2023</p>
-  <div>
-      <p class="line-title">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Presented a <a href="https://www.youtube.com/watch?v=tXE_exIft0A&">talk</a> to the CU Boulder Applied Math department</p>
+  <div class="post-line">
+    <p class="line-date">Nov 2023</p>
+    <div>
+        <p class="line-title">Presented a <a href="https://www.youtube.com/watch?v=tXE_exIft0A&amp;">talk</a> to the CU Boulder Applied Math department</p>
+    </div>
   </div>
-</div>
+</details>
 
 </div>
 </body>
